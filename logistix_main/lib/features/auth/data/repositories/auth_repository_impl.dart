@@ -103,6 +103,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Map<String, dynamic>> verifyOtp(String phone, String otp, String sessionId) async {
     try {
+      print('DEBUG: Verifying OTP with phone: $phone');
+      
       final response = await _apiClient.post(
         ApiEndpoints.verifyOtp,
         data: {
@@ -112,15 +114,34 @@ class AuthRepositoryImpl implements AuthRepository {
         },
       );
 
-      if (response.data['access'] != null && response.data['refresh'] != null) {
+      print('DEBUG: OTP verification response: ${response.statusCode}');
+      print('DEBUG: Response data: ${response.data}');
+      
+      // Check for tokens in response
+      if (response.data['tokens'] != null) {
+        // Django nested format
+        final tokens = response.data['tokens'];
+        if (tokens['access'] != null && tokens['refresh'] != null) {
+          print('DEBUG: Found nested tokens structure');
+          await _authService.saveTokens(
+            tokens['access'],
+            tokens['refresh'],
+          );
+        }
+      } else if (response.data['access'] != null && response.data['refresh'] != null) {
+        // Flat format
+        print('DEBUG: Found flat tokens structure');
         await _authService.saveTokens(
           response.data['access'],
           response.data['refresh'],
         );
+      } else {
+        print('ERROR: No valid tokens found in verification response');
       }
 
       return response.data;
     } catch (e) {
+      print('ERROR: Failed to verify OTP: ${e.toString()}');
       throw Exception(_getErrorMessage(e));
     }
   }
@@ -129,6 +150,8 @@ class AuthRepositoryImpl implements AuthRepository {
    @override
   Future<Map<String, dynamic>> verifyOtpForLogin(String phone, String otp, String sessionId) async {
     try {
+      print('DEBUG: Verifying OTP for login with phone: $phone');
+      
       final response = await _apiClient.post(
         ApiEndpoints.verifyOtpForLogin,
         data: {
@@ -138,15 +161,34 @@ class AuthRepositoryImpl implements AuthRepository {
         },
       );
 
-      if (response.data['access'] != null && response.data['refresh'] != null) {
+      print('DEBUG: OTP verification response: ${response.statusCode}');
+      print('DEBUG: Response data: ${response.data}');
+      
+      // Check for tokens in response
+      if (response.data['tokens'] != null) {
+        // Django nested format
+        final tokens = response.data['tokens'];
+        if (tokens['access'] != null && tokens['refresh'] != null) {
+          print('DEBUG: Found nested tokens structure');
+          await _authService.saveTokens(
+            tokens['access'],
+            tokens['refresh'],
+          );
+        }
+      } else if (response.data['access'] != null && response.data['refresh'] != null) {
+        // Flat format
+        print('DEBUG: Found flat tokens structure');
         await _authService.saveTokens(
           response.data['access'],
           response.data['refresh'],
         );
+      } else {
+        print('ERROR: No valid tokens found in login response');
       }
 
       return response.data;
     } catch (e) {
+      print('ERROR: Failed to verify OTP: ${e.toString()}');
       throw Exception(_getErrorMessage(e));
     }
   }
