@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dio/dio.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/signup_screen.dart';
+import 'features/home/presentation/screens/home_screen.dart';
+import 'features/profile/presentation/bloc/user_bloc.dart';
 import 'core/network/api_client.dart';
 import 'core/services/auth_service.dart';
-import 'core/services/dummy_auth_service.dart';
 import 'core/config/app_config.dart';
+import 'core/repositories/user_repository.dart';
+import 'core/repositories/user_repository_impl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -41,30 +45,56 @@ API_KEY=development_key
   // Setup dependencies
   final prefs = await SharedPreferences.getInstance();
   
-  // Break the circular dependency by using a temporary dummy service
-  final dummyAuthService = DummyAuthService(prefs);
+  // Create a basic Dio instance first
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: AppConfig.baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ),
+  );
   
-  // Now we can create the ApiClient with the dummy service first
-  final apiClient = ApiClient(dummyAuthService);
+  // Create AuthService using dio
+  final authService = AuthService(dio, prefs);
   
-  // Then create the real AuthService with the ApiClient
-  final authService = AuthService(apiClient, prefs);
+  // Create ApiClient with full auth capabilities
+  final apiClient = ApiClient(authService);
   
-  // Finally create the repository
+  // Create repositories
   final AuthRepository authRepository = AuthRepositoryImpl(apiClient, authService);
+  final UserRepository userRepository = UserRepositoryImpl(apiClient);
   
-  runApp(MyApp(authRepository: authRepository));
+  runApp(MyApp(
+    authRepository: authRepository,
+    userRepository: userRepository,
+  ));
 }
 
 class MyApp extends StatelessWidget {
   final AuthRepository authRepository;
+  final UserRepository userRepository;
   
-  const MyApp({required this.authRepository, Key? key}) : super(key: key);
+  const MyApp({
+    required this.authRepository, 
+    required this.userRepository,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthBloc(authRepository),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(
+          create: (context) => AuthBloc(authRepository),
+        ),
+        BlocProvider<UserBloc>(
+          create: (context) => UserBloc(userRepository),
+        ),
+      ],
       child: MaterialApp(
         title: 'Logistix',
         debugShowCheckedModeBanner: false,
@@ -76,34 +106,27 @@ class MyApp extends StatelessWidget {
         routes: {
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => const SignupScreen(),
-          '/home': (context) => const HomePage(),
+          '/home': (context) => const HomeScreen(),
         },
       ),
     );
   }
 }
 
-// Simple HomePage to navigate to after login
+// Redirects to the main HomeScreen
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Logistix Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              context.read<AuthBloc>().add(Logout());
-              Navigator.of(context).pushReplacementNamed('/login');
-            },
-          ),
-        ],
-      ),
-      body: const Center(
-        child: Text('Welcome to Logistix!', style: TextStyle(fontSize: 24)),
+    // Navigate to the main HomeScreen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.of(context).pushReplacementNamed('/home');
+    });
+    
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }
