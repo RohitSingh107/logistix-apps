@@ -38,7 +38,7 @@ API_KEY=development_key
   // Force a specific IP for testing
   // If you're on an emulator, use 10.0.2.2 to connect to localhost
   // If you're on a real device, use your computer's actual IP address
-  dotenv.env['API_BASE_URL'] = 'http://10.0.2.2:8000';
+  // dotenv.env['API_BASE_URL'] = 'http://10.0.2.2:8000';
   
   print("API URL set to: ${dotenv.env['API_BASE_URL']}");
   
