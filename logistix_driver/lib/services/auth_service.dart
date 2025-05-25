@@ -63,4 +63,57 @@ class AuthService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> updateUserProfile(Map<String, dynamic> userData) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      
+      final response = await http.put(
+        Uri.parse('$baseUrl/users/profile/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(userData),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error updating user profile: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> createDriverProfile(String licenseNumber) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/driver/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({
+          'license_number': licenseNumber,
+          'is_available': true,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error creating driver profile: $e');
+      return null;
+    }
+  }
 } 
