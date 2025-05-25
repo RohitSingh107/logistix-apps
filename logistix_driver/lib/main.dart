@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logistix_driver/services/auth_service.dart';
+import 'package:logistix_driver/screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -88,18 +89,15 @@ class _LoginScreenState extends State<LoginScreen> {
     if (result != null) {
       if (!mounted) return;
       
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login successful!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      
-      // TODO: Navigate to home screen
-      // Navigator.of(context).pushReplacement(
-      //   MaterialPageRoute(builder: (context) => const HomeScreen()),
-      // );
+      if (result['is_new_user'] == true) {
+        // Show profile update dialog
+        _showProfileUpdateDialog(result['user']);
+      } else {
+        // Navigate to home screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,6 +107,71 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _showProfileUpdateDialog(Map<String, dynamic> userData) async {
+    final firstNameController = TextEditingController();
+    final lastNameController = TextEditingController();
+    final licenseNumberController = TextEditingController();
+
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Complete Your Profile'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: firstNameController,
+                decoration: const InputDecoration(labelText: 'First Name'),
+              ),
+              TextField(
+                controller: lastNameController,
+                decoration: const InputDecoration(labelText: 'Last Name'),
+              ),
+              TextField(
+                controller: licenseNumberController,
+                decoration: const InputDecoration(labelText: 'License Number'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              setState(() => _isLoading = true);
+              
+              // Update user profile
+              final updatedUser = await _authService.updateUserProfile({
+                'first_name': firstNameController.text,
+                'last_name': lastNameController.text,
+                'phone': userData['phone'],
+              });
+
+              if (updatedUser != null) {
+                // Create driver profile
+                final driverProfile = await _authService.createDriverProfile(
+                  licenseNumberController.text,
+                );
+
+                if (driverProfile != null) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  );
+                }
+              }
+
+              setState(() => _isLoading = false);
+            },
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
