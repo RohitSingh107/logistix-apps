@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "692907999235",
+    "project_id": "logistix-drive",
+    "storage_bucket": "logistix-drive.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:692907999235:android:f1b634a8fdd708ecac4e36",
+        "android_client_info": {
+          "package_name": "com.example.logistix_driver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXSjEjVMVG-O9vXAykT_yZ5Mli3lDEpJ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
