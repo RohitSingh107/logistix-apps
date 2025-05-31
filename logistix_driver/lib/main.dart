@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logistix_driver/services/auth_service.dart';
 import 'package:logistix_driver/screens/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:logistix_driver/services/notification_service.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -10,6 +11,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Initialize notification service
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  
   runApp(const MyApp());
 }
 
@@ -94,6 +100,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result != null) {
       if (!mounted) return;
+      
+      // Update FCM token after successful login
+      await _authService.updateFCMToken();
       
       if (result['is_new_user'] == true) {
         // Show profile update dialog
