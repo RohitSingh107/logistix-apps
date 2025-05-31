@@ -12,6 +12,10 @@ class NotificationService {
 
   Stream<NotificationModel> get notificationStream => _notificationController.stream;
 
+  Future<String?> getFCMToken() async {
+    return await _firebaseMessaging.getToken();
+  }
+
   Future<void> initialize() async {
     // Request permission for notifications
     await _firebaseMessaging.requestPermission(
