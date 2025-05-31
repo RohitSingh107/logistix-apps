@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AuthService {
   static const String baseUrl = 'http://10.0.2.2:8000/api';
@@ -114,6 +115,31 @@ class AuthService {
     } catch (e) {
       print('Error creating driver profile: $e');
       return null;
+    }
+  }
+
+  Future<bool> updateFCMToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      
+      if (fcmToken == null) return false;
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/update-fcm-token/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({'fcm_token': fcmToken}),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error updating FCM token: $e');
+      return false;
     }
   }
 } 
