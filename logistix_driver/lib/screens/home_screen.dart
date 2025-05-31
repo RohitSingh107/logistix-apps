@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logistix_driver/models/notification_model.dart';
 import 'package:logistix_driver/services/notification_service.dart';
+import 'package:flutter/services.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,6 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<NotificationModel> _notifications = [];
   late final NotificationService _notificationService;
   bool _isInitialized = false;
+  String? _fcmToken;
 
   @override
   void initState() {
@@ -24,6 +26,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _notificationService = NotificationService();
     await _notificationService.initialize();
     debugPrint('HomeScreen: Notification service initialized');
+    
+    // Get FCM token
+    _fcmToken = await _notificationService.getFCMToken();
+    setState(() {});
     
     _notificationService.notificationStream.listen((notification) {
       debugPrint('HomeScreen: Received notification: ${notification.title} - ${notification.body}');
@@ -60,6 +66,48 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
+          // FCM Token Section
+          Card(
+            margin: const EdgeInsets.all(8.0),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'FCM Token',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _fcmToken ?? 'Loading...',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.copy),
+                        onPressed: _fcmToken == null
+                            ? null
+                            : () {
+                                Clipboard.setData(ClipboardData(text: _fcmToken!));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('FCM Token copied to clipboard'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Notifications Section
           if (_notifications.isNotEmpty) ...[
             Padding(
               padding: const EdgeInsets.all(8.0),
