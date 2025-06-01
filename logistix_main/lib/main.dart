@@ -14,64 +14,78 @@ import 'core/services/auth_service.dart';
 import 'core/config/app_config.dart';
 import 'core/repositories/user_repository.dart';
 import 'core/repositories/user_repository_impl.dart';
+import 'core/di/service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Create placeholder .env file content if not exists
   try {
-    // First, try to load from .env file
-    await AppConfig.initialize();
-  } catch (e) {
-    // If .env file doesn't exist or has issues, use dotenv.testLoad for development
-    dotenv.testLoad(
-      fileInput: '''
+    print("Starting app initialization...");
+    
+    // Create placeholder .env file content if not exists
+    try {
+      print("Attempting to load .env file...");
+      await AppConfig.initialize();
+      print("Successfully loaded .env file");
+    } catch (e) {
+      print("Error loading .env file: $e");
+      print("Using test environment configuration");
+      // If .env file doesn't exist or has issues, use dotenv.testLoad for development
+      dotenv.testLoad(
+        fileInput: '''
 # For emulators, 10.0.2.2 points to the host machine's localhost
 # For real devices, use your computer's actual IP address
 API_BASE_URL=http://10.0.2.2:8000
 API_KEY=development_key
 '''
-    );
+      );
+    }
+    
+    print("API URL set to: ${dotenv.env['API_BASE_URL']}");
+    
+    // Setup dependencies
+    print("Setting up service locator...");
+    await setupServiceLocator();
+    print("Service locator setup complete");
+    
+    // Create repositories
+    print("Creating repositories...");
+    final AuthRepository authRepository = serviceLocator<AuthRepository>();
+    final UserRepository userRepository = serviceLocator<UserRepository>();
+    print("Repositories created successfully");
+    
+    print("Starting app...");
+    runApp(MyApp(
+      authRepository: authRepository,
+      userRepository: userRepository,
+    ));
+  } catch (e, stackTrace) {
+    print("Fatal error during app initialization: $e");
+    print("Stack trace: $stackTrace");
+    // Show error UI instead of crashing
+    runApp(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Failed to initialize app',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Error: $e',
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ));
   }
-  
-  // Force a specific IP for testing
-  // If you're on an emulator, use 10.0.2.2 to connect to localhost
-  // If you're on a real device, use your computer's actual IP address
-  // dotenv.env['API_BASE_URL'] = 'http://10.0.2.2:8000';
-  
-  print("API URL set to: ${dotenv.env['API_BASE_URL']}");
-  
-  // Setup dependencies
-  final prefs = await SharedPreferences.getInstance();
-  
-  // Create a basic Dio instance first
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: AppConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ),
-  );
-  
-  // Create AuthService using dio
-  final authService = AuthService(dio, prefs);
-  
-  // Create ApiClient with full auth capabilities
-  final apiClient = ApiClient(authService);
-  
-  // Create repositories
-  final AuthRepository authRepository = AuthRepositoryImpl(apiClient, authService);
-  final UserRepository userRepository = UserRepositoryImpl(apiClient);
-  
-  runApp(MyApp(
-    authRepository: authRepository,
-    userRepository: userRepository,
-  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -79,19 +93,19 @@ class MyApp extends StatelessWidget {
   final UserRepository userRepository;
   
   const MyApp({
-    required this.authRepository, 
-    required this.userRepository,
     Key? key,
+    required this.authRepository,
+    required this.userRepository,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthBloc>(
-          create: (context) => AuthBloc(authRepository),
+        BlocProvider(
+          create: (context) => AuthBloc(authRepository, serviceLocator<AuthService>()),
         ),
-        BlocProvider<UserBloc>(
+        BlocProvider(
           create: (context) => UserBloc(userRepository),
         ),
       ],
@@ -102,7 +116,14 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: const LoginScreen(), // Directly show login screen
+        home: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            if (state is AuthSuccess) {
+              return const HomeScreen();
+            }
+            return const LoginScreen();
+          },
+        ),
         routes: {
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => const SignupScreen(),

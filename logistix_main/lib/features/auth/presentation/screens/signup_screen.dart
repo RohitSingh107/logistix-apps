@@ -17,6 +17,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   String? _phone;
+  String? _firstName;
+  String? _lastName;
   String? _phoneError;
   String? _firstNameError;
   String? _lastNameError;
@@ -79,9 +81,11 @@ class _SignupScreenState extends State<SignupScreen> {
     
     setState(() {
       _phone = phone; // Make sure we store the phone number
+      _firstName = firstName;
+      _lastName = lastName;
     });
     
-    // Request OTP for signup (passing firstName and lastName directly in the event)
+    // Request OTP for signup (passing firstName and lastName)
     context.read<AuthBloc>().add(RequestOtp(
       phone,
       isLogin: false,
@@ -137,7 +141,6 @@ class _SignupScreenState extends State<SignupScreen> {
               MaterialPageRoute(
                 builder: (context) => OtpVerificationScreen(
                   phone: state.phone,
-                  sessionId: state.sessionId,
                   isLogin: false,
                   firstName: _firstNameController.text,
                   lastName: _lastNameController.text,
@@ -189,23 +192,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                PhoneInput(
-                  controller: _phoneController,
-                  errorText: _phoneError,
-                  onChanged: (phone) {
-                    setState(() {
-                      _phone = phone;
-                      _phoneError = null; // Clear error when user types
-                    });
-                  },
-                  onSubmitted: (phone) {
-                    setState(() {
-                      _phone = phone;
-                      _phoneError = null; // Clear error when user submits
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
                 TextFormField(
                   controller: _firstNameController,
                   decoration: InputDecoration(
@@ -235,6 +221,24 @@ class _SignupScreenState extends State<SignupScreen> {
                         _lastNameError = null;
                       });
                     }
+                  },
+                ),
+                const SizedBox(height: 24),
+                PhoneInput(
+                  controller: _phoneController,
+                  errorText: _phoneError,
+                  onChanged: (phone) {
+                    setState(() {
+                      _phone = phone;
+                      _phoneError = null;
+                    });
+                  },
+                  onSubmitted: (phone) {
+                    setState(() {
+                      _phone = phone;
+                      _phoneError = null;
+                    });
+                    _requestOtp();
                   },
                 ),
                 const SizedBox(height: 24),

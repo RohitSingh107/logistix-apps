@@ -83,13 +83,17 @@ class UserRepositoryImpl implements UserRepository {
       // Ensure we have a valid token before making this request
       await _apiClient.ensureValidToken();
       
-      final data = <String, dynamic>{};
+      final request = UserRequest(
+        phone: 0, // This will be ignored by the server
+        firstName: firstName ?? '',
+        lastName: lastName ?? '',
+        profilePicture: profilePicture,
+      );
       
-      if (firstName != null) data['first_name'] = firstName;
-      if (lastName != null) data['last_name'] = lastName;
-      if (profilePicture != null) data['profile_picture'] = profilePicture;
-      
-      final response = await _apiClient.put(ApiEndpoints.userProfile, data: data);
+      final response = await _apiClient.put(
+        ApiEndpoints.userProfile,
+        data: request.toJson(),
+      );
       return User.fromJson(response.data);
     } catch (e) {
       throw Exception(_getErrorMessage(e));
