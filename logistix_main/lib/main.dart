@@ -9,14 +9,19 @@ import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/signup_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
 import 'features/profile/presentation/bloc/user_bloc.dart';
+import 'features/theme/presentation/bloc/theme_bloc.dart';
+import 'features/theme/presentation/bloc/theme_event.dart';
+import 'features/theme/presentation/bloc/theme_state.dart';
 import 'core/network/api_client.dart';
 import 'core/services/auth_service.dart';
 import 'core/config/app_config.dart';
+import 'core/config/app_theme.dart';
 import 'core/repositories/user_repository.dart';
 import 'core/repositories/user_repository_impl.dart';
 import 'core/di/service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'features/profile/presentation/screens/create_profile_screen.dart';
+import 'features/settings/presentation/screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +65,7 @@ API_KEY=development_key
     runApp(MyApp(
       authRepository: authRepository,
       userRepository: userRepository,
+      sharedPreferences: serviceLocator<SharedPreferences>(),
     ));
   } catch (e, stackTrace) {
     print("Fatal error during app initialization: $e");
@@ -92,11 +98,13 @@ API_KEY=development_key
 class MyApp extends StatelessWidget {
   final AuthRepository authRepository;
   final UserRepository userRepository;
+  final SharedPreferences sharedPreferences;
   
   const MyApp({
     Key? key,
     required this.authRepository,
     required this.userRepository,
+    required this.sharedPreferences,
   }) : super(key: key);
 
   @override
@@ -109,32 +117,39 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => UserBloc(userRepository),
         ),
+        BlocProvider(
+          create: (context) => ThemeBloc(sharedPreferences)..add(const LoadThemeEvent()),
+        ),
       ],
-      child: MaterialApp(
-        title: 'Logistix',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
-        home: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if (state is AuthSuccess) {
-              return const HomeScreen();
-            }
-            return const LoginScreen();
-          },
-        ),
-        routes: {
-          '/login': (context) => const LoginScreen(),
-          '/signup': (context) => const SignupScreen(),
-          '/home': (context) => const HomeScreen(),
-          '/profile/create': (context) {
-            final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-            return CreateProfileScreen(
-              phone: args?['phone'] as String? ?? '',
-            );
-          },
+      child: BlocBuilder<ThemeBloc, ThemeState>(
+        builder: (context, themeState) {
+          return MaterialApp(
+            title: 'Logistix',
+            debugShowCheckedModeBanner: false,
+            theme: themeState is ThemeLoaded 
+              ? AppTheme.getTheme(themeState.themeName)
+              : AppTheme.getTheme(AppTheme.lightTheme),
+            home: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                if (state is AuthSuccess) {
+                  return const HomeScreen();
+                }
+                return const LoginScreen();
+              },
+            ),
+            routes: {
+              '/login': (context) => const LoginScreen(),
+              '/signup': (context) => const SignupScreen(),
+              '/home': (context) => const HomeScreen(),
+              '/profile/create': (context) {
+                final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+                return CreateProfileScreen(
+                  phone: args?['phone'] as String? ?? '',
+                );
+              },
+              '/settings': (context) => const SettingsScreen(),
+            },
+          );
         },
       ),
     );
