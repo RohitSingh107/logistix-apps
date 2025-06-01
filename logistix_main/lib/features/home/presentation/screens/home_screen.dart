@@ -5,6 +5,7 @@ import '../../../../core/config/app_theme.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../theme/presentation/bloc/theme_bloc.dart';
 import '../../../theme/presentation/bloc/theme_event.dart';
+import '../../../booking/presentation/screens/booking_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -205,18 +206,39 @@ class HomePage extends StatelessWidget {
     
     return Container(
       margin: const EdgeInsets.all(AppSpacing.md),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Where to?',
-          prefixIcon: Icon(
-            Icons.search,
-            color: theme.colorScheme.onSurface.withOpacity(0.5),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const BookingScreen()),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.lg,
           ),
-          filled: true,
-          fillColor: theme.colorScheme.surface,
-          border: OutlineInputBorder(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(AppRadius.sm),
-            borderSide: BorderSide.none,
+            border: Border.all(
+              color: theme.colorScheme.outline.withOpacity(0.2),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.search,
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Text(
+                'Where to?',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -273,7 +295,12 @@ class HomePage extends StatelessWidget {
     final theme = Theme.of(context);
     
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const BookingScreen()),
+        );
+      },
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
@@ -353,7 +380,12 @@ class HomePage extends StatelessWidget {
     final theme = Theme.of(context);
     
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const BookingScreen()),
+        );
+      },
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
