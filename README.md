@@ -19,7 +19,25 @@ Logistix is a comprehensive logistics management application built with Flutter,
 - Earnings tracking
 - Rating system
 
+## Architecture
 
+The application follows Clean Architecture principles with a feature-based organization:
+
+```
+lib/
+├── core/                 # Core functionality
+│   ├── di/              # Dependency injection
+│   ├── models/          # Core data models
+│   ├── network/         # Network handling
+│   └── services/        # Core services
+│
+└── features/            # Feature modules
+    ├── auth/            # Authentication
+    ├── booking/         # Booking management
+    ├── driver/          # Driver features
+    ├── trip/            # Trip management
+    └── wallet/          # Wallet management
+```
 
 ## Project Repository Structure
 
@@ -95,40 +113,16 @@ logistix-apps/
 └── README.md                # Main documentation
 ```
 
-## Architecture
+Each feature module follows a clean architecture pattern with:
+- **Data Layer**: Repository implementations
+- **Domain Layer**: Repository interfaces and business logic
+- **Presentation Layer**: UI components (screens, widgets)
 
-The application follows Clean Architecture principles with a feature-based organization:
-
-```
-lib/
-├── core/                 # Core functionality
-│   ├── di/              # Dependency injection
-│   ├── models/          # Core data models
-│   ├── network/         # Network handling
-│   └── services/        # Core services
-│
-└── features/            # Feature modules
-    ├── auth/            # Authentication
-    ├── booking/         # Booking management
-    ├── driver/          # Driver features
-    ├── trip/            # Trip management
-    └── wallet/          # Wallet management
-```
-
-logistix_main/
-├── lib/
-│   ├── core/                 # Core functionality shared across features
-│   │   ├── di/              # Dependency injection
-│   │   ├── models/          # Core data models
-│   │   ├── network/         # Network related code
-│   │   └── services/        # Core services
-│   │
-│   └── features/            # Feature modules
-│       ├── auth/            # Authentication feature
-│       ├── booking/         # Booking feature
-│       ├── driver/          # Driver feature
-│       ├── trip/            # Trip feature
-│       └── wallet/          # Wallet feature
+The core module contains shared functionality:
+- **Models**: Data classes with JSON serialization
+- **Services**: Core business logic
+- **Network**: API client and interceptors
+- **DI**: Dependency injection setup
 
 ## Getting Started
 
@@ -256,4 +250,4 @@ For support, email support@logistix.com or create an issue in the repository.
 ## Acknowledgments
 
 - Flutter team for the amazing framework
-- All contributors who have helped shape this project
+- All contributors who have helped shape this project 

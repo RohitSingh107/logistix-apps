@@ -12,11 +12,8 @@ class ApiClient {
   
   // List of endpoints that don't require authentication
   final List<String> _noAuthRequired = [
-    ApiEndpoints.requestOtp,
+    ApiEndpoints.login,
     ApiEndpoints.verifyOtp,
-    ApiEndpoints.requestOtpForLogin,
-    ApiEndpoints.verifyOtpForLogin,
-    ApiEndpoints.register,
     ApiEndpoints.refreshToken,
   ];
 
@@ -52,7 +49,7 @@ class ApiClient {
           // Only add auth header if endpoint requires authentication
           if (!_isAuthExcluded(options.path)) {
             print('DEBUG: Auth required for ${options.path}');
-            final token = _authService.accessToken;
+            final token = await _authService.getAccessToken();
             
             if (token != null) {
               print('DEBUG: Adding Authorization header with token');
@@ -63,7 +60,7 @@ class ApiClient {
               final refreshSuccess = await _authService.refreshAccessToken();
               if (refreshSuccess) {
                 print('DEBUG: Token refresh succeeded, adding new token to header');
-                options.headers['Authorization'] = 'Bearer ${_authService.accessToken}';
+                options.headers['Authorization'] = 'Bearer ${_authService.getAccessToken()}';
               } else {
                 print('DEBUG: Token refresh failed, proceeding without Authorization header');
               }
@@ -89,24 +86,29 @@ class ApiClient {
           if (error.response?.statusCode == 401) {
             print('DEBUG: 401 Unauthorized error, attempting token refresh');
             // Try to refresh the token
-            final refreshed = await _authService.refreshAccessToken();
-            if (refreshed) {
-              print('DEBUG: Token refreshed successfully, retrying request');
-              // Update auth header with new token
-              final token = _authService.accessToken;
-              error.requestOptions.headers['Authorization'] = 'Bearer $token';
-              
-              // Make sure the baseUrl is correct on retry
-              error.requestOptions.baseUrl = AppConfig.baseUrl;
-              
-              // Print debug info about retry
-              print('DEBUG: Retrying request to ${error.requestOptions.path} with new token');
-              print('DEBUG: Headers for retry: ${error.requestOptions.headers}');
-              
-              // Retry the original request with updated token
-              return handler.resolve(await _dio.fetch(error.requestOptions));
-            } else {
-              print('DEBUG: Token refresh failed, unable to retry request');
+            try {
+              final refreshToken = await _authService.getRefreshToken();
+              if (refreshToken != null) {
+                final response = await _dio.post(
+                  ApiEndpoints.refreshToken,
+                  data: {'refresh': refreshToken},
+                );
+                
+                if (response.data['access'] != null) {
+                  await _authService.saveTokens(
+                    response.data['access'],
+                    refreshToken,
+                  );
+                  
+                  // Retry the original request with new token
+                  error.requestOptions.headers['Authorization'] = 
+                    'Bearer ${response.data['access']}';
+                  return handler.resolve(await _dio.fetch(error.requestOptions));
+                }
+              }
+            } catch (e) {
+              // Refresh failed, clear tokens and let the error propagate
+              await _authService.clearTokens();
             }
           }
           return handler.next(error);

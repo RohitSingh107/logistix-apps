@@ -1,13 +1,13 @@
 class ApiEndpoints {
   // Auth endpoints
-  static const String requestOtp = '/api/users/request-otp/';
+  static const String login = '/api/users/login/';
   static const String verifyOtp = '/api/users/verify-otp/';
-  static const String requestOtpForLogin = '/api/users/login/request-otp/';
-  static const String verifyOtpForLogin = '/api/users/login/verify-otp/';
-  static const String register = '/api/users/register/';
   static const String refreshToken = '/api/users/token/refresh/';
+
+  // User endpoints
   static const String userProfile = '/api/users/profile/';
   static const String driverProfile = '/api/users/driver/profile/';
+  static const String createDriver = '/api/users/driver/';
 
   // Booking endpoints
   static const String createBooking = '/api/booking/create/';
@@ -21,6 +21,6 @@ class ApiEndpoints {
   static const String walletBalance = '/api/payments/wallet/balance/';
   static const String walletTransactions = '/api/payments/wallet/transactions/';
 
-  // Strategy endpoints
+  // Vehicle estimation endpoints
   static const String vehicleEstimates = '/api/strategy/vehicle-estimates/';
 } 

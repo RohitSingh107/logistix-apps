@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../../../core/services/auth_service.dart';
 
 // Events
 abstract class AuthEvent extends Equatable {
@@ -30,7 +31,6 @@ class RequestOtp extends AuthEvent {
 class VerifyOtp extends AuthEvent {
   final String phone;
   final String otp;
-  final String sessionId;
   final bool isLogin;
   final String? firstName;
   final String? lastName;
@@ -38,74 +38,16 @@ class VerifyOtp extends AuthEvent {
   const VerifyOtp({
     required this.phone,
     required this.otp,
-    required this.sessionId,
     required this.isLogin,
     this.firstName,
     this.lastName,
   });
 
   @override
-  List<Object?> get props => [phone, otp, sessionId, isLogin, firstName, lastName];
+  List<Object?> get props => [phone, otp, isLogin, firstName, lastName];
 }
 
-
-
-class RequestOtpForLogin extends AuthEvent {
-  final String phone;
-  final bool isLogin;
-  final String? firstName;
-  final String? lastName;
-
-  const RequestOtpForLogin  (
-    this.phone, {
-    this.isLogin = true,
-    this.firstName,
-    this.lastName,
-  });
-
-  @override
-  List<Object?> get props => [phone, isLogin, firstName, lastName];
-}
-
-class VerifyOtpForLogin extends AuthEvent {
-  final String phone;
-  final String otp;
-  final String sessionId;
-  final bool isLogin;
-  final String? firstName;
-  final String? lastName;
-
-  const VerifyOtpForLogin({
-    required this.phone,
-    required this.otp,
-    required this.sessionId,
-    required this.isLogin,
-    this.firstName,
-    this.lastName,
-  });
-
-  @override
-  List<Object?> get props => [phone, otp, sessionId, isLogin, firstName, lastName];
-}
-
-
-
-
-
-class Register extends AuthEvent {
-  final String phone;
-  final String firstName;
-  final String lastName;
-
-  const Register({
-    required this.phone,
-    required this.firstName,
-    required this.lastName,
-  });
-
-  @override
-  List<Object?> get props => [phone, firstName, lastName];
-}
+class CheckAuthStatus extends AuthEvent {}
 
 class Logout extends AuthEvent {}
 
@@ -123,20 +65,31 @@ class AuthLoading extends AuthState {}
 
 class OtpRequested extends AuthState {
   final String phone;
-  final String sessionId;
   final bool isLogin;
 
   const OtpRequested({
-    required this.phone, 
-    required this.sessionId,
+    required this.phone,
     required this.isLogin,
   });
 
   @override
-  List<Object?> get props => [phone, sessionId, isLogin];
+  List<Object?> get props => [phone, isLogin];
 }
 
-class AuthSuccess extends AuthState {}
+class AuthSuccess extends AuthState {
+  final bool isNewUser;
+  final Map<String, dynamic> userData;
+  final bool isAuthenticated;
+
+  const AuthSuccess({
+    required this.isNewUser,
+    required this.userData,
+    this.isAuthenticated = true,
+  });
+
+  @override
+  List<Object?> get props => [isNewUser, userData, isAuthenticated];
+}
 
 class AuthError extends AuthState {
   final String message;
@@ -150,18 +103,18 @@ class AuthError extends AuthState {
 // Bloc
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
-  String? phone;
-  String? sessionId;
+  final AuthService _authService;
   String? _firstName;
   String? _lastName;
 
-  AuthBloc(this._authRepository) : super(AuthInitial()) {
+  AuthBloc(this._authRepository, this._authService) : super(AuthInitial()) {
     on<RequestOtp>(_onRequestOtp);
     on<VerifyOtp>(_onVerifyOtp);
-    on<RequestOtpForLogin>(_onRequestOtpForLogin);
-    on<VerifyOtpForLogin>(_onVerifyOtpForLogin);
-    on<Register>(_onRegister);
+    on<CheckAuthStatus>(_onCheckAuthStatus);
     on<Logout>(_onLogout);
+
+    // Check authentication status when bloc is created
+    add(CheckAuthStatus());
   }
   
   // Method to store registration data
@@ -177,28 +130,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(AuthLoading());
       
-      // requestOtp is now only for phone verification (signup flow)
-      // Store registration data
-      _firstName = event.firstName;
-      _lastName = event.lastName;
+      // Store registration data if provided
+      if (event.firstName != null && event.lastName != null) {
+        storeRegistrationData(
+          firstName: event.firstName!,
+          lastName: event.lastName!,
+        );
+      }
       
-      // Store the registration data
-      storeRegistrationData(
-        firstName: _firstName ?? '',
-        lastName: _lastName ?? '',
-      );
-      
-      // Phone verification for signup
       await _authRepository.requestOtp(event.phone);
       
-      phone = event.phone;
-      // In a real app, you would get the session ID from the API response
-      sessionId = 'dummy_session_id';
-      
       emit(OtpRequested(
-        phone: event.phone, 
-        sessionId: sessionId!,
-        isLogin: false, // Always false for phone verification
+        phone: event.phone,
+        isLogin: event.isLogin,
       ));
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -209,85 +153,48 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(AuthLoading());
       
-      // Verify OTP for phone verification (signup)
       final response = await _authRepository.verifyOtp(
         event.phone,
         event.otp,
-        event.sessionId,
       );
 
-      // Complete registration after phone verification
-      final firstName = event.firstName ?? _firstName ?? '';
-      final lastName = event.lastName ?? _lastName ?? '';
-      
-      if (firstName.isEmpty || lastName.isEmpty) {
-        emit(AuthError("First name and last name are required for registration"));
-        return;
+      // Save tokens if they exist in the response
+      if (response['tokens'] != null) {
+        await _authRepository.saveTokens(
+          response['tokens']['access'],
+          response['tokens']['refresh'],
+        );
       }
-      
-      // Complete registration
-      await _authRepository.register(
-        event.phone,
-        firstName,
-        lastName,
-      );
 
-      emit(AuthSuccess());
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
+      // Save user data
+      if (response['user'] != null) {
+        await _authService.saveUserData(response['user']);
+      }
 
-
-  Future<void> _onRequestOtpForLogin(RequestOtpForLogin event, Emitter<AuthState> emit) async {
-    try {
-      emit(AuthLoading());
-      
-      // Only for login flow
-      await _authRepository.requestOtpForLogin(event.phone);
-      
-      phone = event.phone;
-      // In a real app, you would get the session ID from the API response
-      sessionId = 'dummy_session_id';
-      
-      emit(OtpRequested(
-        phone: event.phone, 
-        sessionId: sessionId!,
-        isLogin: true, // Always true for login
+      emit(AuthSuccess(
+        isNewUser: response['is_new_user'] ?? false,
+        userData: response,
       ));
     } catch (e) {
       emit(AuthError(e.toString()));
     }
   }
 
-  Future<void> _onVerifyOtpForLogin(VerifyOtpForLogin event, Emitter<AuthState> emit) async {
+  Future<void> _onCheckAuthStatus(CheckAuthStatus event, Emitter<AuthState> emit) async {
     try {
-      emit(AuthLoading());
-      
-      // Verify OTP for login only
-      final response = await _authRepository.verifyOtpForLogin(
-        event.phone,
-        event.otp,
-        event.sessionId,
-      );
-
-      emit(AuthSuccess());
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
-  Future<void> _onRegister(Register event, Emitter<AuthState> emit) async {
-    try {
-      emit(AuthLoading());
-      
-      // Direct registration (without OTP) - this would be used if we implement a different registration flow
-      await _authRepository.register(
-        event.phone,
-        event.firstName,
-        event.lastName,
-      );
-      
-      emit(AuthSuccess());
+      final isAuthenticated = await _authService.isAuthenticated();
+      if (isAuthenticated) {
+        final userData = await _authService.getCurrentUser();
+        if (userData != null) {
+          emit(AuthSuccess(
+            isNewUser: false,
+            userData: {'user': userData},
+            isAuthenticated: true,
+          ));
+          return;
+        }
+      }
+      emit(AuthInitial());
     } catch (e) {
       emit(AuthError(e.toString()));
     }

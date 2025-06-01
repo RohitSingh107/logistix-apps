@@ -34,20 +34,22 @@ class TripRepositoryImpl implements TripRepository {
     bool? isPaymentDone,
   }) async {
     try {
+      final request = TripUpdateRequest(
+        status: status,
+        finalFare: finalFare,
+        loadingStartTime: loadingStartTime,
+        loadingEndTime: loadingEndTime,
+        unloadingStartTime: unloadingStartTime,
+        unloadingEndTime: unloadingEndTime,
+        paymentTime: paymentTime,
+        finalDuration: finalDuration,
+        finalDistance: finalDistance,
+        isPaymentDone: isPaymentDone,
+      );
+
       final response = await _apiClient.post(
         ApiEndpoints.updateTrip(tripId),
-        data: {
-          'status': status.toString().split('.').last.toUpperCase(),
-          'final_fare': finalFare,
-          'loading_start_time': loadingStartTime?.toIso8601String(),
-          'loading_end_time': loadingEndTime?.toIso8601String(),
-          'unloading_start_time': unloadingStartTime?.toIso8601String(),
-          'unloading_end_time': unloadingEndTime?.toIso8601String(),
-          'payment_time': paymentTime?.toIso8601String(),
-          'final_duration': finalDuration,
-          'final_distance': finalDistance,
-          'is_payment_done': isPaymentDone,
-        },
+        data: request.toJson(),
       );
 
       return Trip.fromJson(response.data);

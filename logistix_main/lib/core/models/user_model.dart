@@ -1,14 +1,16 @@
-import 'package:equatable/equatable.dart';
-import 'base_model.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-class User extends BaseModel {
+part 'user_model.g.dart';
+
+@JsonSerializable()
+class User {
   final int id;
   final int phone;
   final String firstName;
   final String lastName;
   final String? profilePicture;
 
-  const User({
+  User({
     required this.id,
     required this.phone,
     required this.firstName,
@@ -16,27 +18,24 @@ class User extends BaseModel {
     this.profilePicture,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      phone: json['phone'],
-      firstName: json['first_name'],
-      lastName: json['last_name'],
-      profilePicture: json['profile_picture'],
-    );
-  }
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+  Map<String, dynamic> toJson() => _$UserToJson(this);
+}
 
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'phone': phone,
-      'first_name': firstName,
-      'last_name': lastName,
-      'profile_picture': profilePicture,
-    };
-  }
+@JsonSerializable()
+class UserRequest {
+  final int phone;
+  final String firstName;
+  final String lastName;
+  final String? profilePicture;
 
-  @override
-  List<Object?> get props => [id, phone, firstName, lastName, profilePicture];
+  UserRequest({
+    required this.phone,
+    required this.firstName,
+    required this.lastName,
+    this.profilePicture,
+  });
+
+  factory UserRequest.fromJson(Map<String, dynamic> json) => _$UserRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$UserRequestToJson(this);
 } 

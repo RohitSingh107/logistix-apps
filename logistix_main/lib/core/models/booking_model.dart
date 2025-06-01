@@ -1,33 +1,52 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
 
+part 'booking_model.g.dart';
+
 enum BookingStatus {
+  @JsonValue('REQUESTED')
   requested,
+  @JsonValue('SEARCHING')
   searching,
+  @JsonValue('ACCEPTED')
   accepted,
+  @JsonValue('CANCELLED')
   cancelled,
 }
 
 enum PaymentMode {
+  @JsonValue('CASH')
   cash,
+  @JsonValue('WALLET')
   wallet,
 }
 
+@JsonSerializable()
 class BookingRequest extends BaseModel {
   final int id;
   final String senderName;
   final String receiverName;
   final String senderPhone;
   final String receiverPhone;
+  @JsonKey(name: 'pickup_time')
   final DateTime pickupTime;
+  @JsonKey(name: 'pickup_address')
   final String pickupAddress;
+  @JsonKey(name: 'dropoff_address')
   final String dropoffAddress;
+  @JsonKey(name: 'goods_type')
   final String goodsType;
+  @JsonKey(name: 'goods_quantity')
   final String goodsQuantity;
+  @JsonKey(name: 'payment_mode')
   final PaymentMode paymentMode;
+  @JsonKey(name: 'estimated_fare')
   final double estimatedFare;
   final BookingStatus status;
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   const BookingRequest({
@@ -48,50 +67,10 @@ class BookingRequest extends BaseModel {
     required this.updatedAt,
   });
 
-  factory BookingRequest.fromJson(Map<String, dynamic> json) {
-    return BookingRequest(
-      id: json['id'],
-      senderName: json['sender_name'],
-      receiverName: json['receiver_name'],
-      senderPhone: json['sender_phone'],
-      receiverPhone: json['receiver_phone'],
-      pickupTime: DateTime.parse(json['pickup_time']),
-      pickupAddress: json['pickup_address'],
-      dropoffAddress: json['dropoff_address'],
-      goodsType: json['goods_type'],
-      goodsQuantity: json['goods_quantity'],
-      paymentMode: PaymentMode.values.firstWhere(
-        (e) => e.toString().split('.').last.toUpperCase() == json['payment_mode'],
-      ),
-      estimatedFare: json['estimated_fare'].toDouble(),
-      status: BookingStatus.values.firstWhere(
-        (e) => e.toString().split('.').last.toUpperCase() == json['status'],
-      ),
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-    );
-  }
+  factory BookingRequest.fromJson(Map<String, dynamic> json) => _$BookingRequestFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'sender_name': senderName,
-      'receiver_name': receiverName,
-      'sender_phone': senderPhone,
-      'receiver_phone': receiverPhone,
-      'pickup_time': pickupTime.toIso8601String(),
-      'pickup_address': pickupAddress,
-      'dropoff_address': dropoffAddress,
-      'goods_type': goodsType,
-      'goods_quantity': goodsQuantity,
-      'payment_mode': paymentMode.toString().split('.').last.toUpperCase(),
-      'estimated_fare': estimatedFare,
-      'status': status.toString().split('.').last.toUpperCase(),
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$BookingRequestToJson(this);
 
   @override
   List<Object?> get props => [
@@ -111,4 +90,16 @@ class BookingRequest extends BaseModel {
         createdAt,
         updatedAt,
       ];
+}
+
+@JsonSerializable()
+class BookingAcceptRequest {
+  final int bookingRequestId;
+
+  BookingAcceptRequest({
+    required this.bookingRequestId,
+  });
+
+  factory BookingAcceptRequest.fromJson(Map<String, dynamic> json) => _$BookingAcceptRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$BookingAcceptRequestToJson(this);
 } 

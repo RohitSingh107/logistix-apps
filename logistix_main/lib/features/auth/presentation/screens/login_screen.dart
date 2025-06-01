@@ -36,8 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
         _phoneError = null;
       });
       
-      // Use RequestOtpForLogin for login flow
-      context.read<AuthBloc>().add(RequestOtpForLogin(phone, isLogin: true));
+      // Use RequestOtp with isLogin=true for login flow
+      context.read<AuthBloc>().add(RequestOtp(phone, isLogin: true));
     } else {
       setState(() {
         _phoneError = 'Please enter a valid phone number';
@@ -59,8 +59,8 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Account Not Found'),
-        content: Text('$message\nWould you like to create a new account?'),
+        title: const Text('User Not Found'),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -69,12 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SignupScreen(),
-                ),
-              );
+              Navigator.pushNamed(context, '/signup');
             },
             child: const Text('Sign Up'),
           ),
@@ -97,7 +92,6 @@ class _LoginScreenState extends State<LoginScreen> {
               MaterialPageRoute(
                 builder: (context) => OtpVerificationScreen(
                   phone: state.phone,
-                  sessionId: state.sessionId,
                   isLogin: true,
                 ),
               ),
