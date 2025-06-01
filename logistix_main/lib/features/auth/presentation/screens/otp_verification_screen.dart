@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
+import '../../../profile/presentation/screens/create_profile_screen.dart';
+import '../../../home/presentation/screens/home_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phone;
@@ -121,10 +123,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         listener: (context, state) {
           if (state is AuthSuccess) {
             if (state.isNewUser) {
-              // Navigate to profile creation screen for new users
-              Navigator.of(context).pushReplacementNamed('/profile/create');
+              Navigator.of(context).pushReplacementNamed(
+                '/profile/create',
+                arguments: {'phone': widget.phone},
+              );
             } else {
-              // Navigate to home screen for existing users
               Navigator.of(context).pushReplacementNamed('/home');
             }
           } else if (state is AuthError) {

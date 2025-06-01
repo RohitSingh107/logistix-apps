@@ -25,9 +25,13 @@ enum PaymentMode {
 @JsonSerializable()
 class BookingRequest extends BaseModel {
   final int id;
+  @JsonKey(name: 'sender_name')
   final String senderName;
+  @JsonKey(name: 'receiver_name')
   final String receiverName;
+  @JsonKey(name: 'sender_phone')
   final String senderPhone;
+  @JsonKey(name: 'receiver_phone')
   final String receiverPhone;
   @JsonKey(name: 'pickup_time')
   final DateTime pickupTime;
@@ -94,6 +98,7 @@ class BookingRequest extends BaseModel {
 
 @JsonSerializable()
 class BookingAcceptRequest {
+  @JsonKey(name: 'booking_request_id')
   final int bookingRequestId;
 
   BookingAcceptRequest({

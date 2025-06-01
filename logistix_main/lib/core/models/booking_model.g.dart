@@ -9,10 +9,10 @@ part of 'booking_model.dart';
 BookingRequest _$BookingRequestFromJson(Map<String, dynamic> json) =>
     BookingRequest(
       id: (json['id'] as num).toInt(),
-      senderName: json['senderName'] as String,
-      receiverName: json['receiverName'] as String,
-      senderPhone: json['senderPhone'] as String,
-      receiverPhone: json['receiverPhone'] as String,
+      senderName: json['sender_name'] as String,
+      receiverName: json['receiver_name'] as String,
+      senderPhone: json['sender_phone'] as String,
+      receiverPhone: json['receiver_phone'] as String,
       pickupTime: DateTime.parse(json['pickup_time'] as String),
       pickupAddress: json['pickup_address'] as String,
       dropoffAddress: json['dropoff_address'] as String,
@@ -28,10 +28,10 @@ BookingRequest _$BookingRequestFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$BookingRequestToJson(BookingRequest instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'senderName': instance.senderName,
-      'receiverName': instance.receiverName,
-      'senderPhone': instance.senderPhone,
-      'receiverPhone': instance.receiverPhone,
+      'sender_name': instance.senderName,
+      'receiver_name': instance.receiverName,
+      'sender_phone': instance.senderPhone,
+      'receiver_phone': instance.receiverPhone,
       'pickup_time': instance.pickupTime.toIso8601String(),
       'pickup_address': instance.pickupAddress,
       'dropoff_address': instance.dropoffAddress,
@@ -59,11 +59,11 @@ const _$BookingStatusEnumMap = {
 BookingAcceptRequest _$BookingAcceptRequestFromJson(
         Map<String, dynamic> json) =>
     BookingAcceptRequest(
-      bookingRequestId: (json['bookingRequestId'] as num).toInt(),
+      bookingRequestId: (json['booking_request_id'] as num).toInt(),
     );
 
 Map<String, dynamic> _$BookingAcceptRequestToJson(
         BookingAcceptRequest instance) =>
     <String, dynamic>{
-      'bookingRequestId': instance.bookingRequestId,
+      'booking_request_id': instance.bookingRequestId,
     };

@@ -16,6 +16,7 @@ import 'core/repositories/user_repository.dart';
 import 'core/repositories/user_repository_impl.dart';
 import 'core/di/service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'features/profile/presentation/screens/create_profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -128,6 +129,12 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => const SignupScreen(),
           '/home': (context) => const HomeScreen(),
+          '/profile/create': (context) {
+            final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+            return CreateProfileScreen(
+              phone: args?['phone'] as String? ?? '',
+            );
+          },
         },
       ),
     );

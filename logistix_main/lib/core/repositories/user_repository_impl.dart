@@ -75,6 +75,7 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<User> updateUserProfile({
+    String? phone,
     String? firstName,
     String? lastName,
     String? profilePicture,
@@ -83,16 +84,24 @@ class UserRepositoryImpl implements UserRepository {
       // Ensure we have a valid token before making this request
       await _apiClient.ensureValidToken();
       
-      final request = UserRequest(
-        phone: 0, // This will be ignored by the server
-        firstName: firstName ?? '',
-        lastName: lastName ?? '',
-        profilePicture: profilePicture,
-      );
+      // First get the current user to ensure we have the phone number
+      final currentUser = await getCurrentUser();
+      
+      // Only send the fields that are being updated
+      final Map<String, dynamic> requestData = {
+        'phone': currentUser.phone, // Always include the current phone number
+        'first_name': firstName ?? currentUser.firstName, // Use current value if null
+        'last_name': lastName ?? currentUser.lastName, // Use current value if null
+      };
+      
+      // Only include profile picture if it's not null
+      if (profilePicture != null) {
+        requestData['profile_picture'] = profilePicture;
+      }
       
       final response = await _apiClient.put(
         ApiEndpoints.userProfile,
-        data: request.toJson(),
+        data: requestData,
       );
       return User.fromJson(response.data);
     } catch (e) {

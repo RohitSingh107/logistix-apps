@@ -32,18 +32,30 @@ enum TripStatus {
 class Trip extends BaseModel {
   final int id;
   final Driver driver;
+  @JsonKey(name: 'booking_request')
   final BookingRequest bookingRequest;
   final TripStatus status;
+  @JsonKey(name: 'loading_start_time')
   final DateTime? loadingStartTime;
+  @JsonKey(name: 'loading_end_time')
   final DateTime? loadingEndTime;
+  @JsonKey(name: 'unloading_start_time')
   final DateTime? unloadingStartTime;
+  @JsonKey(name: 'unloading_end_time')
   final DateTime? unloadingEndTime;
+  @JsonKey(name: 'payment_time')
   final DateTime? paymentTime;
+  @JsonKey(name: 'final_fare')
   final double finalFare;
+  @JsonKey(name: 'final_duration')
   final int? finalDuration;
+  @JsonKey(name: 'final_distance')
   final double? finalDistance;
+  @JsonKey(name: 'is_payment_done')
   final bool isPaymentDone;
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   Trip({
@@ -90,14 +102,23 @@ class Trip extends BaseModel {
 @JsonSerializable()
 class TripUpdateRequest {
   final TripStatus status;
+  @JsonKey(name: 'loading_start_time')
   final DateTime? loadingStartTime;
+  @JsonKey(name: 'loading_end_time')
   final DateTime? loadingEndTime;
+  @JsonKey(name: 'unloading_start_time')
   final DateTime? unloadingStartTime;
+  @JsonKey(name: 'unloading_end_time')
   final DateTime? unloadingEndTime;
+  @JsonKey(name: 'payment_time')
   final DateTime? paymentTime;
+  @JsonKey(name: 'final_fare')
   final double finalFare;
+  @JsonKey(name: 'final_duration')
   final int? finalDuration;
+  @JsonKey(name: 'final_distance')
   final double? finalDistance;
+  @JsonKey(name: 'is_payment_done')
   final bool? isPaymentDone;
 
   TripUpdateRequest({

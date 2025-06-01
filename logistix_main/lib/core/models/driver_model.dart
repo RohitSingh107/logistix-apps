@@ -7,9 +7,13 @@ part 'driver_model.g.dart';
 class Driver {
   final int id;
   final User user;
+  @JsonKey(name: 'license_number')
   final String licenseNumber;
+  @JsonKey(name: 'is_available')
   final bool isAvailable;
+  @JsonKey(name: 'average_rating')
   final double averageRating;
+  @JsonKey(name: 'total_earnings')
   final double totalEarnings;
 
   Driver({
@@ -27,7 +31,9 @@ class Driver {
 
 @JsonSerializable()
 class DriverRequest {
+  @JsonKey(name: 'license_number')
   final String licenseNumber;
+  @JsonKey(name: 'is_available')
   final bool isAvailable;
 
   DriverRequest({

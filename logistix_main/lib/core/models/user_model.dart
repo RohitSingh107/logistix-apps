@@ -6,8 +6,11 @@ part 'user_model.g.dart';
 class User {
   final int id;
   final int phone;
+  @JsonKey(name: 'first_name')
   final String firstName;
+  @JsonKey(name: 'last_name')
   final String lastName;
+  @JsonKey(name: 'profile_picture')
   final String? profilePicture;
 
   User({
@@ -25,8 +28,11 @@ class User {
 @JsonSerializable()
 class UserRequest {
   final int phone;
+  @JsonKey(name: 'first_name')
   final String firstName;
+  @JsonKey(name: 'last_name')
   final String lastName;
+  @JsonKey(name: 'profile_picture')
   final String? profilePicture;
 
   UserRequest({
