@@ -9,29 +9,29 @@ part of 'driver_model.dart';
 Driver _$DriverFromJson(Map<String, dynamic> json) => Driver(
       id: (json['id'] as num).toInt(),
       user: User.fromJson(json['user'] as Map<String, dynamic>),
-      licenseNumber: json['licenseNumber'] as String,
-      isAvailable: json['isAvailable'] as bool,
-      averageRating: (json['averageRating'] as num).toDouble(),
-      totalEarnings: (json['totalEarnings'] as num).toDouble(),
+      licenseNumber: json['license_number'] as String,
+      isAvailable: json['is_available'] as bool,
+      averageRating: (json['average_rating'] as num).toDouble(),
+      totalEarnings: (json['total_earnings'] as num).toDouble(),
     );
 
 Map<String, dynamic> _$DriverToJson(Driver instance) => <String, dynamic>{
       'id': instance.id,
       'user': instance.user,
-      'licenseNumber': instance.licenseNumber,
-      'isAvailable': instance.isAvailable,
-      'averageRating': instance.averageRating,
-      'totalEarnings': instance.totalEarnings,
+      'license_number': instance.licenseNumber,
+      'is_available': instance.isAvailable,
+      'average_rating': instance.averageRating,
+      'total_earnings': instance.totalEarnings,
     };
 
 DriverRequest _$DriverRequestFromJson(Map<String, dynamic> json) =>
     DriverRequest(
-      licenseNumber: json['licenseNumber'] as String,
-      isAvailable: json['isAvailable'] as bool? ?? true,
+      licenseNumber: json['license_number'] as String,
+      isAvailable: json['is_available'] as bool? ?? true,
     );
 
 Map<String, dynamic> _$DriverRequestToJson(DriverRequest instance) =>
     <String, dynamic>{
-      'licenseNumber': instance.licenseNumber,
-      'isAvailable': instance.isAvailable,
+      'license_number': instance.licenseNumber,
+      'is_available': instance.isAvailable,
     };

@@ -13,6 +13,8 @@ import '../../features/wallet/data/repositories/wallet_repository_impl.dart';
 import '../../features/wallet/domain/repositories/wallet_repository.dart';
 import '../../features/driver/data/repositories/driver_repository_impl.dart';
 import '../../features/driver/domain/repositories/driver_repository.dart';
+import '../../features/vehicle_estimation/data/repositories/vehicle_estimation_repository_impl.dart';
+import '../../features/vehicle_estimation/domain/repositories/vehicle_estimation_repository.dart';
 import 'package:dio/dio.dart';
 import '../repositories/user_repository_impl.dart';
 import '../repositories/user_repository.dart';
@@ -60,6 +62,10 @@ Future<void> setupServiceLocator() async {
 
   serviceLocator.registerLazySingleton<DriverRepository>(
     () => DriverRepositoryImpl(serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton<VehicleEstimationRepository>(
+    () => VehicleEstimationRepositoryImpl(serviceLocator()),
   );
 
   // Use Cases
