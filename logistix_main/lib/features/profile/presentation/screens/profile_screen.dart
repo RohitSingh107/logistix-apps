@@ -157,6 +157,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               [
                 _buildLinkItem(
                   context,
+                  Icons.settings,
+                  'Settings',
+                  () {
+                    Navigator.pushNamed(context, '/settings');
+                  },
+                ),
+                _buildLinkItem(
+                  context,
                   Icons.payment,
                   'Payment Methods',
                   () {
