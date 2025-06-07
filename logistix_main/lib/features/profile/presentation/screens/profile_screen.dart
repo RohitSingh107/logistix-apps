@@ -69,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildUserProfile(BuildContext context, User user) {
-    final memberSince = 'Jan 2023'; // This would come from the user model ideally
+    const memberSince = 'Jan 2023'; // This would come from the user model ideally
     
     return RefreshIndicator(
       onRefresh: () async {
