@@ -4,6 +4,10 @@ import '../widgets/map_widget.dart';
 import '../widgets/ola_map_widget.dart';
 import '../../../../core/config/app_theme.dart';
 import '../../../../core/services/map_service_interface.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../vehicle_estimation/domain/usecases/get_vehicle_estimates.dart';
+import '../../../vehicle_estimation/data/models/vehicle_estimate_response.dart';
+import '../../../vehicle_estimation/presentation/widgets/vehicle_estimate_card.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({Key? key}) : super(key: key);
@@ -17,16 +21,20 @@ class _BookingScreenState extends State<BookingScreen> {
   MapLatLng? _dropLocation;
   String _pickupAddress = '';
   String _dropAddress = '';
-  MapLatLng? _currentMapCenter;
-  final bool _isBottomSheetExpanded = true;
   
-  // Default to Chennai center
-  final MapLatLng _defaultLocation = MapLatLng(13.0827, 80.2707);
+  // Vehicle estimation
+  List<VehicleEstimateResponse> _vehicleEstimates = [];
+  VehicleEstimateResponse? _selectedVehicle;
+  bool _isLoadingEstimates = false;
+  String? _estimationError;
+  bool _usingFallbackData = false;
+  
+  late final GetVehicleEstimates _getVehicleEstimates;
 
   @override
   void initState() {
     super.initState();
-    _currentMapCenter = MapLatLng(13.0827, 80.2707); // Default to Chennai
+    _getVehicleEstimates = serviceLocator<GetVehicleEstimates>();
   }
 
   Future<void> _selectLocation(bool isPickup) async {
@@ -49,75 +57,51 @@ class _BookingScreenState extends State<BookingScreen> {
           _dropLocation = result['location'];
           _dropAddress = result['address'];
         }
-        
-        // Center map on newly selected location
-        _currentMapCenter = result['location'];
       });
+      
+      // Fetch vehicle estimates if both locations are selected
+      if (_pickupLocation != null && _dropLocation != null) {
+        _fetchVehicleEstimates();
+      }
     }
   }
 
-  List<OlaMapMarker> _buildMarkers() {
-    List<OlaMapMarker> markers = [];
-    
-    if (_pickupLocation != null) {
-      markers.add(
-        OlaMapMarker(
-          point: _pickupLocation!,
-          width: 40,
-          height: 40,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.green,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.trip_origin,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-        ),
+  Future<void> _fetchVehicleEstimates() async {
+    if (_pickupLocation == null || _dropLocation == null) return;
+
+    setState(() {
+      _isLoadingEstimates = true;
+      _estimationError = null;
+      _vehicleEstimates.clear();
+      _selectedVehicle = null;
+      _usingFallbackData = false;
+    });
+
+    try {
+      final estimates = await _getVehicleEstimates(
+        pickupLatitude: _pickupLocation!.lat,
+        pickupLongitude: _pickupLocation!.lng,
+        dropoffLatitude: _dropLocation!.lat,
+        dropoffLongitude: _dropLocation!.lng,
       );
+
+      setState(() {
+        _vehicleEstimates = estimates;
+        _isLoadingEstimates = false;
+        _usingFallbackData = estimates.isNotEmpty && estimates.first.vehicleTitle.contains('Two Wheeler');
+        // Auto-select the first vehicle if available
+        if (estimates.isNotEmpty) {
+          _selectedVehicle = estimates.first;
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingEstimates = false;
+        _estimationError = 'Unable to get live estimates. Showing standard rates.';
+        _usingFallbackData = true;
+      });
+      print('Error fetching vehicle estimates: $e');
     }
-    
-    if (_dropLocation != null) {
-      markers.add(
-        OlaMapMarker(
-          point: _dropLocation!,
-          width: 40,
-          height: 40,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.location_on,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-        ),
-      );
-    }
-    
-    return markers;
   }
 
   void _confirmBooking() {
@@ -131,54 +115,21 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    // TODO: Implement booking logic here
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _buildVehicleSelectionSheet(),
-    );
-  }
+    if (_selectedVehicle == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a vehicle'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
-  Widget _buildVehicleSelectionSheet() {
-    final theme = Theme.of(context);
-    
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.outline.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Select Vehicle Type',
-            style: theme.textTheme.headlineSmall,
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          // Vehicle options would go here
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Booking confirmed! Finding drivers...'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text('Confirm Booking'),
-          ),
-        ],
+    // TODO: Implement actual booking logic here
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Booking ${_selectedVehicle!.vehicleTitle} for ₹${_selectedVehicle!.estimatedFare.toStringAsFixed(0)}'),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -186,254 +137,168 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
     
     return Scaffold(
-      body: Stack(
+      backgroundColor: theme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: theme.colorScheme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Book a Ride',
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Column(
         children: [
-          // Map View (Full Screen)
-          if (_currentMapCenter != null)
-            MapWidget(
-              initialPosition: _currentMapCenter!,
-              initialZoom: 13.0,
-              markers: _buildMarkers(),
-              showUserLocation: true,
-            ),
-          
-          // Top Bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.5),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: theme.colorScheme.surface,
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back),
-                          onPressed: () => Navigator.pop(context),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Text(
+                    'Where are you going?',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  
+                  // Pickup location
+                  _buildLocationTile(
+                    icon: Icons.trip_origin,
+                    iconColor: Colors.green,
+                    title: 'Pickup Location',
+                    subtitle: _pickupAddress.isNotEmpty ? _pickupAddress : 'Select pickup location',
+                    onTap: () => _selectLocation(true),
+                  ),
+                  
+                  const SizedBox(height: AppSpacing.md),
+                  
+                  // Drop location
+                  _buildLocationTile(
+                    icon: Icons.location_on,
+                    iconColor: Colors.red,
+                    title: 'Drop Location',
+                    subtitle: _dropAddress.isNotEmpty ? _dropAddress : 'Select drop location',
+                    onTap: () => _selectLocation(false),
+                  ),
+                  
+                  const SizedBox(height: AppSpacing.lg),
+                  
+                  // Trip info (if both locations selected)
+                  if (_pickupLocation != null && _dropLocation != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withOpacity(0.2),
                         ),
                       ),
-                      const Spacer(),
-                      if (_pickupLocation != null && _dropLocation != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                            vertical: AppSpacing.sm,
-                          ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface,
-                            borderRadius: BorderRadius.circular(AppRadius.round),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Column(
                             children: [
                               Icon(
-                                Icons.route,
-                                size: 16,
+                                Icons.straighten,
                                 color: theme.colorScheme.primary,
+                                size: 20,
                               ),
-                              const SizedBox(width: AppSpacing.xs),
+                              const SizedBox(height: AppSpacing.xs),
                               Text(
-                                '${_calculateDistance()} km • ${_estimateTime()} min',
-                                style: theme.textTheme.bodySmall?.copyWith(
+                                '${_calculateDistance()} km',
+                                style: theme.textTheme.titleSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          
-          // Bottom Sheet
-          DraggableScrollableSheet(
-            initialChildSize: _isBottomSheetExpanded ? 0.35 : 0.25,
-            minChildSize: 0.25,
-            maxChildSize: 0.7,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(AppRadius.lg),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 20,
-                      offset: const Offset(0, -5),
-                    ),
-                  ],
-                ),
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: Column(
-                    children: [
-                      // Handle
-                      Container(
-                        margin: const EdgeInsets.only(top: AppSpacing.sm),
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.outline.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      
-                      // Location Cards
-                      Padding(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Column(
-                          children: [
-                            // Title
-                            Text(
-                              'Where are you going?',
-                              style: theme.textTheme.headlineSmall,
-                            ),
-                            const SizedBox(height: AppSpacing.lg),
-                            
-                            // Pickup location
-                            _buildLocationTile(
-                              icon: Icons.trip_origin,
-                              iconColor: Colors.green,
-                              title: 'Pickup Location',
-                              subtitle: _pickupAddress ?? 'Select pickup location',
-                              onTap: () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SimpleLocationSelectionScreen(
-                                      title: 'Set pickup location',
-                                      initialLocation: _pickupLocation,
-                                    ),
-                                  ),
-                                );
-                                
-                                if (result != null) {
-                                  setState(() {
-                                    _pickupLocation = result['location'];
-                                    _pickupAddress = result['address'];
-                                  });
-                                  _updateRoute();
-                                }
-                              },
-                            ),
-                            
-                            const SizedBox(height: 16),
-                            
-                            // Drop location
-                            _buildLocationTile(
-                              icon: Icons.location_on,
-                              iconColor: Colors.red,
-                              title: 'Drop Location',
-                              subtitle: _dropAddress ?? 'Select drop location',
-                              onTap: () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SimpleLocationSelectionScreen(
-                                      title: 'Set drop-off location',
-                                      initialLocation: _dropLocation,
-                                    ),
-                                  ),
-                                );
-                                
-                                if (result != null) {
-                                  setState(() {
-                                    _dropLocation = result['location'];
-                                    _dropAddress = result['address'];
-                                  });
-                                  _updateRoute();
-                                }
-                              },
-                            ),
-                            
-                            const SizedBox(height: AppSpacing.lg),
-                            
-                            // Fare Estimate (if both locations selected)
-                            if (_pickupLocation != null && _dropLocation != null) ...[
-                              Container(
-                                padding: const EdgeInsets.all(AppSpacing.md),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.payments,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                        const SizedBox(width: AppSpacing.sm),
-                                        Text(
-                                          'Estimated Fare',
-                                          style: theme.textTheme.titleMedium,
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      '₹${_estimateFare()}',
-                                      style: theme.textTheme.headlineSmall?.copyWith(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
+                              Text(
+                                'Distance',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
                                 ),
                               ),
-                              const SizedBox(height: AppSpacing.lg),
                             ],
-                            
-                            // Action Button
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: (_pickupLocation != null && _dropLocation != null) 
-                                  ? _confirmBooking 
-                                  : null,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.all(AppSpacing.lg),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                                  ),
+                          ),
+                          Container(
+                            height: 30,
+                            width: 1,
+                            color: theme.colorScheme.outline.withOpacity(0.3),
+                          ),
+                          Column(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                color: theme.colorScheme.primary,
+                                size: 20,
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                '${_estimateTime()} min',
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                child: Text(
-                                  (_pickupLocation == null || _dropLocation == null)
-                                    ? 'Select Locations'
-                                    : 'Choose Vehicle',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              ),
+                              Text(
+                                'Duration',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                  
+                  // Available Vehicles Section
+                  if (_pickupLocation != null && _dropLocation != null) ...[
+                    Text(
+                      'Available Vehicles',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    
+                    // Fallback data notification
+                    if (_usingFallbackData && _vehicleEstimates.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
+                          border: Border.all(
+                            color: Colors.amber.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.amber[700],
+                              size: 20,
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: Text(
+                                'Showing standard rates. Live estimates temporarily unavailable.',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.amber[700],
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -441,13 +306,169 @@ class _BookingScreenState extends State<BookingScreen> {
                         ),
                       ),
                     ],
-                  ),
-                ),
-              );
-            },
+                    
+                    // Loading state
+                    if (_isLoadingEstimates) ...[
+                      Center(
+                        child: Column(
+                          children: [
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              'Getting vehicle estimates...',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ]
+                    
+                    // Error state
+                    else if (_estimationError != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.error.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(
+                            color: theme.colorScheme.error.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: theme.colorScheme.error,
+                              size: 48,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              _estimationError!,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            ElevatedButton(
+                              onPressed: _fetchVehicleEstimates,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.colorScheme.error,
+                              ),
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ]
+                    
+                    // Vehicle estimates
+                    else if (_vehicleEstimates.isNotEmpty) ...[
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _vehicleEstimates.length,
+                        itemBuilder: (context, index) {
+                          final estimate = _vehicleEstimates[index];
+                          return VehicleEstimateCard(
+                            estimate: estimate,
+                            isSelected: _selectedVehicle == estimate,
+                            onTap: () {
+                              setState(() {
+                                _selectedVehicle = estimate;
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ]
+                    
+                    // No estimates available
+                    else ...[
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(
+                            color: theme.colorScheme.outline.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.directions_car_outlined,
+                              color: theme.colorScheme.onSurface.withOpacity(0.5),
+                              size: 48,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              'No vehicles available for this route',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    
+                    // Add bottom padding for the fixed button
+                    const SizedBox(height: 100),
+                  ],
+                ],
+              ),
+            ),
           ),
         ],
       ),
+      
+      // Fixed confirmation button at bottom
+      bottomNavigationBar: (_pickupLocation != null && _dropLocation != null && _vehicleEstimates.isNotEmpty)
+          ? Container(
+              padding: EdgeInsets.only(
+                left: AppSpacing.lg,
+                right: AppSpacing.lg,
+                bottom: MediaQuery.of(context).padding.bottom + AppSpacing.md,
+                top: AppSpacing.md,
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _selectedVehicle != null ? _confirmBooking : null,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      _selectedVehicle != null 
+                        ? 'Confirm Booking • ₹${_selectedVehicle!.estimatedFare.toStringAsFixed(0)}'
+                        : 'Select a Vehicle',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -466,16 +487,23 @@ class _BookingScreenState extends State<BookingScreen> {
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppRadius.round),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: theme.colorScheme.outline.withOpacity(0.2),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: iconColor.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -483,7 +511,7 @@ class _BookingScreenState extends State<BookingScreen> {
               child: Icon(
                 icon,
                 color: iconColor,
-                size: 20,
+                size: 24,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -495,15 +523,16 @@ class _BookingScreenState extends State<BookingScreen> {
                     title,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     subtitle,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -511,7 +540,7 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             Icon(
               Icons.chevron_right,
-              color: theme.colorScheme.onSurface.withOpacity(0.3),
+              color: theme.colorScheme.onSurface.withOpacity(0.4),
             ),
           ],
         ),
@@ -545,34 +574,6 @@ class _BookingScreenState extends State<BookingScreen> {
     final double km = double.parse(_calculateDistance());
     // Assuming average speed of 30 km/h in city
     return (km / 30 * 60).round();
-  }
-
-  int _estimateFare() {
-    if (_pickupLocation == null || _dropLocation == null) return 0;
-    
-    final double km = double.parse(_calculateDistance());
-    // Base fare: 40, Per km: 15
-    return (40 + (km * 15)).round();
-  }
-
-  void _updateRoute() {
-    // Update the map center to show both locations
-    if (_pickupLocation != null && _dropLocation != null) {
-      // Calculate the center point between pickup and drop
-      final centerLat = (_pickupLocation!.lat + _dropLocation!.lat) / 2;
-      final centerLng = (_pickupLocation!.lng + _dropLocation!.lng) / 2;
-      setState(() {
-        _currentMapCenter = MapLatLng(centerLat, centerLng);
-      });
-    } else if (_pickupLocation != null) {
-      setState(() {
-        _currentMapCenter = _pickupLocation;
-      });
-    } else if (_dropLocation != null) {
-      setState(() {
-        _currentMapCenter = _dropLocation;
-      });
-    }
   }
 }
 
