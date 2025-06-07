@@ -13,8 +13,9 @@ import '../../features/wallet/data/repositories/wallet_repository_impl.dart';
 import '../../features/wallet/domain/repositories/wallet_repository.dart';
 import '../../features/driver/data/repositories/driver_repository_impl.dart';
 import '../../features/driver/domain/repositories/driver_repository.dart';
-import '../../features/vehicle_estimation/data/repositories/vehicle_estimation_repository_impl.dart';
-import '../../features/vehicle_estimation/domain/repositories/vehicle_estimation_repository.dart';
+import '../../features/vehicle_estimation/data/repositories/vehicle_estimation_repository.dart';
+import '../../features/vehicle_estimation/domain/repositories/vehicle_estimation_repository_interface.dart';
+import '../../features/vehicle_estimation/domain/usecases/get_vehicle_estimates.dart';
 import 'package:dio/dio.dart';
 import '../repositories/user_repository_impl.dart';
 import '../repositories/user_repository.dart';
@@ -64,8 +65,13 @@ Future<void> setupServiceLocator() async {
     () => DriverRepositoryImpl(serviceLocator()),
   );
 
-  serviceLocator.registerLazySingleton<VehicleEstimationRepository>(
-    () => VehicleEstimationRepositoryImpl(serviceLocator()),
+  serviceLocator.registerLazySingleton<VehicleEstimationRepositoryInterface>(
+    () => VehicleEstimationRepository(serviceLocator()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton<GetVehicleEstimates>(
+    () => GetVehicleEstimates(serviceLocator()),
   );
 
   // Use Cases
