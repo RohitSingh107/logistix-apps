@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'simple_location_selection_screen.dart';
 import '../widgets/map_widget.dart';
+import '../widgets/ola_map_widget.dart';
 import '../../../../core/config/app_theme.dart';
+import '../../../../core/services/map_service_interface.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({Key? key}) : super(key: key);
@@ -13,20 +13,20 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  LatLng? _pickupLocation;
-  LatLng? _dropLocation;
+  MapLatLng? _pickupLocation;
+  MapLatLng? _dropLocation;
   String _pickupAddress = '';
   String _dropAddress = '';
-  LatLng? _currentMapCenter;
-  bool _isBottomSheetExpanded = true;
+  MapLatLng? _currentMapCenter;
+  final bool _isBottomSheetExpanded = true;
   
   // Default to Chennai center
-  final LatLng _defaultLocation = LatLng(13.0827, 80.2707);
+  final MapLatLng _defaultLocation = MapLatLng(13.0827, 80.2707);
 
   @override
   void initState() {
     super.initState();
-    _currentMapCenter = const LatLng(13.0827, 80.2707); // Default to Chennai
+    _currentMapCenter = MapLatLng(13.0827, 80.2707); // Default to Chennai
   }
 
   Future<void> _selectLocation(bool isPickup) async {
@@ -56,15 +56,15 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  List<Marker> _buildMarkers() {
-    List<Marker> markers = [];
+  List<OlaMapMarker> _buildMarkers() {
+    List<OlaMapMarker> markers = [];
     
     if (_pickupLocation != null) {
       markers.add(
-        Marker(
+        OlaMapMarker(
+          point: _pickupLocation!,
           width: 40,
           height: 40,
-          point: _pickupLocation!,
           child: Container(
             decoration: BoxDecoration(
               color: Colors.green,
@@ -90,10 +90,10 @@ class _BookingScreenState extends State<BookingScreen> {
     
     if (_dropLocation != null) {
       markers.add(
-        Marker(
+        OlaMapMarker(
+          point: _dropLocation!,
           width: 40,
           height: 40,
-          point: _dropLocation!,
           child: Container(
             decoration: BoxDecoration(
               color: Colors.red,
@@ -465,7 +465,7 @@ class _BookingScreenState extends State<BookingScreen> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: theme.colorScheme.background,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppRadius.round),
           border: Border.all(
             color: theme.colorScheme.outline.withOpacity(0.2),
@@ -522,13 +522,20 @@ class _BookingScreenState extends State<BookingScreen> {
   String _calculateDistance() {
     if (_pickupLocation == null || _dropLocation == null) return '0';
     
-    final Distance distance = Distance();
-    final double km = distance.as(
-      LengthUnit.Kilometer,
-      _pickupLocation!,
-      _dropLocation!,
-    );
+    // Use Haversine formula for distance calculation
+    const double R = 6371; // Earth's radius in kilometers
     
+    double lat1Rad = _pickupLocation!.lat * (3.14159265359 / 180);
+    double lat2Rad = _dropLocation!.lat * (3.14159265359 / 180);
+    double deltaLatRad = (_dropLocation!.lat - _pickupLocation!.lat) * (3.14159265359 / 180);
+    double deltaLngRad = (_dropLocation!.lng - _pickupLocation!.lng) * (3.14159265359 / 180);
+
+    double a = (deltaLatRad / 2).abs() * (deltaLatRad / 2).abs() +
+        lat1Rad.abs() * lat2Rad.abs() *
+        (deltaLngRad / 2).abs() * (deltaLngRad / 2).abs();
+    double c = 2 * (a > 1 ? 1 : a);
+
+    double km = R * c;
     return km.toStringAsFixed(1);
   }
 
@@ -552,10 +559,10 @@ class _BookingScreenState extends State<BookingScreen> {
     // Update the map center to show both locations
     if (_pickupLocation != null && _dropLocation != null) {
       // Calculate the center point between pickup and drop
-      final centerLat = (_pickupLocation!.latitude + _dropLocation!.latitude) / 2;
-      final centerLng = (_pickupLocation!.longitude + _dropLocation!.longitude) / 2;
+      final centerLat = (_pickupLocation!.lat + _dropLocation!.lat) / 2;
+      final centerLng = (_pickupLocation!.lng + _dropLocation!.lng) / 2;
       setState(() {
-        _currentMapCenter = LatLng(centerLat, centerLng);
+        _currentMapCenter = MapLatLng(centerLat, centerLng);
       });
     } else if (_pickupLocation != null) {
       setState(() {

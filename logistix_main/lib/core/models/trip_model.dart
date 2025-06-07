@@ -58,7 +58,7 @@ class Trip extends BaseModel {
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
-  Trip({
+  const Trip({
     required this.id,
     required this.driver,
     required this.bookingRequest,
@@ -77,6 +77,7 @@ class Trip extends BaseModel {
   });
 
   factory Trip.fromJson(Map<String, dynamic> json) => _$TripFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$TripToJson(this);
 
   @override

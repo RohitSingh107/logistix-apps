@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import '../../../../core/models/trip_model.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
