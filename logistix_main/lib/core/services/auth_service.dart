@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -11,26 +10,33 @@ class AuthService {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
   static const String _tokenExpiryKey = 'token_expiry';
+  static const String _userDataKey = 'user_data';
   static const int _refreshThresholdMinutes = 5; // Refresh token if less than 5 minutes left
 
   AuthService(this._dio, this._prefs);
 
-  String? get accessToken {
-    final token = _prefs.getString(_accessTokenKey);
-    print('DEBUG: Getting access token: ${token != null ? "Token exists" : "No token found"}');
-    return token;
-  }
-  
+  String? get accessToken => _prefs.getString(_accessTokenKey);
   String? get refreshToken => _prefs.getString(_refreshTokenKey);
+  Map<String, dynamic>? get userData {
+    final data = _prefs.getString(_userDataKey);
+    return data != null ? jsonDecode(data) : null;
+  }
 
-  Future<void> saveTokens(String access, String refresh) async {
-    print('DEBUG: Saving tokens - Access: ${access.substring(0, math.min(20, access.length))}..., Refresh: ${refresh.substring(0, math.min(20, refresh.length))}...');
-    await _prefs.setString(_accessTokenKey, access);
-    await _prefs.setString(_refreshTokenKey, refresh);
+  Future<String?> getAccessToken() async {
+    return _prefs.getString(_accessTokenKey);
+  }
+
+  Future<String?> getRefreshToken() async {
+    return _prefs.getString(_refreshTokenKey);
+  }
+
+  Future<void> saveTokens(String accessToken, String refreshToken) async {
+    await _prefs.setString(_accessTokenKey, accessToken);
+    await _prefs.setString(_refreshTokenKey, refreshToken);
     
     try {
       // Extract and save expiration time
-      final decodedToken = JwtDecoder.decode(access);
+      final decodedToken = JwtDecoder.decode(accessToken);
       final expiryTime = decodedToken['exp'] * 1000; // Convert to milliseconds
       await _prefs.setInt(_tokenExpiryKey, expiryTime);
       print('DEBUG: Token expiry saved: ${DateTime.fromMillisecondsSinceEpoch(expiryTime)}');
@@ -44,55 +50,33 @@ class AuthService {
     print('DEBUG: Tokens saved - Access: ${savedAccess != null}, Refresh: ${savedRefresh != null}');
   }
 
+  Future<void> saveUserData(Map<String, dynamic> userData) async {
+    await _prefs.setString(_userDataKey, jsonEncode(userData));
+  }
+
   Future<void> clearTokens() async {
-    print('DEBUG: Clearing all tokens');
+    print('DEBUG: Clearing all tokens and user data');
     await _prefs.remove(_accessTokenKey);
     await _prefs.remove(_refreshTokenKey);
     await _prefs.remove(_tokenExpiryKey);
+    await _prefs.remove(_userDataKey);
   }
 
-  // Check if token needs refresh (less than threshold minutes remaining)
   bool _shouldRefreshToken() {
-    try {
-      final token = accessToken;
-      if (token == null) {
-        print('DEBUG: Should refresh token - No token found');
-        return true;
-      }
-      
-      final expiryTime = _prefs.getInt(_tokenExpiryKey);
-      if (expiryTime == null) {
-        // If no expiry saved, check using JwtDecoder
-        if (JwtDecoder.isExpired(token)) {
-          print('DEBUG: Should refresh token - Token is expired');
-          return true;
-        }
-        
-        final decodedToken = JwtDecoder.decode(token);
-        final expMillis = decodedToken['exp'] * 1000;
-        final now = DateTime.now().millisecondsSinceEpoch;
-        
-        // Refresh if token expires within threshold minutes
-        final thresholdMillis = _refreshThresholdMinutes * 60 * 1000;
-        final shouldRefresh = (expMillis - now) < thresholdMillis;
-        print('DEBUG: Should refresh token - ${shouldRefresh ? "Yes" : "No"}, Expires in: ${(expMillis - now) / 60000} minutes');
-        return shouldRefresh;
-      } else {
-        final now = DateTime.now().millisecondsSinceEpoch;
-        final thresholdMillis = _refreshThresholdMinutes * 60 * 1000;
-        final shouldRefresh = (expiryTime - now) < thresholdMillis;
-        print('DEBUG: Should refresh token - ${shouldRefresh ? "Yes" : "No"}, Expires in: ${(expiryTime - now) / 60000} minutes');
-        return shouldRefresh;
-      }
-    } catch (e) {
-      print('ERROR: Error checking token expiry: $e');
-      return true; // Refresh on error
-    }
+    final expiryTime = _prefs.getInt(_tokenExpiryKey);
+    if (expiryTime == null) return true;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final timeUntilExpiry = expiryTime - now;
+    final minutesUntilExpiry = timeUntilExpiry / (1000 * 60);
+
+    print('DEBUG: Token expires in ${minutesUntilExpiry.toStringAsFixed(1)} minutes');
+    return minutesUntilExpiry < _refreshThresholdMinutes;
   }
 
   Future<bool> refreshAccessToken() async {
     try {
-      final refresh = refreshToken;
+      final refresh = await getRefreshToken();
       if (refresh == null) {
         print('DEBUG: Cannot refresh token - No refresh token available');
         return false;
@@ -133,7 +117,7 @@ class AuthService {
 
   // Check and refresh token if needed
   Future<bool> ensureValidToken() async {
-    if (accessToken == null) return false;
+    if (getAccessToken() == null) return false;
     if (_shouldRefreshToken()) {
       return await refreshAccessToken();
     }
@@ -141,8 +125,20 @@ class AuthService {
   }
 
   // Check if user is authenticated
-  bool isAuthenticated() {
-    final token = accessToken;
-    return token != null && !JwtDecoder.isExpired(token);
+  Future<bool> isAuthenticated() async {
+    final token = await getAccessToken();
+    if (token == null) return false;
+    
+    try {
+      return !JwtDecoder.isExpired(token);
+    } catch (e) {
+      print('Error checking token expiration: $e');
+      return false;
+    }
+  }
+
+  // Get current user data
+  Future<Map<String, dynamic>?> getCurrentUser() async {
+    return userData;
   }
 } 

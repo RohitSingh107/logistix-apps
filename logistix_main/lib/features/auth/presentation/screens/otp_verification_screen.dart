@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
+import '../../../profile/presentation/screens/create_profile_screen.dart';
+import '../../../home/presentation/screens/home_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phone;
-  final String sessionId;
   final bool isLogin;
   final String? firstName;
   final String? lastName;
@@ -13,7 +14,6 @@ class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({
     super.key,
     required this.phone,
-    required this.sessionId,
     required this.isLogin,
     this.firstName,
     this.lastName,
@@ -80,30 +80,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       return;
     }
     
-    // Use different events based on login or signup flow
-    if (widget.isLogin) {
-      // For login, use VerifyOtpForLogin
-      context.read<AuthBloc>().add(
-        VerifyOtpForLogin(
-          phone: widget.phone,
-          otp: otp,
-          sessionId: widget.sessionId,
-          isLogin: widget.isLogin,
-        ),
-      );
-    } else {
-      // For signup, use VerifyOtp (for phone verification)
-      context.read<AuthBloc>().add(
-        VerifyOtp(
-          phone: widget.phone,
-          otp: otp,
-          sessionId: widget.sessionId,
-          isLogin: widget.isLogin,
-          firstName: widget.firstName,
-          lastName: widget.lastName,
-        ),
-      );
-    }
+    context.read<AuthBloc>().add(
+      VerifyOtp(
+        phone: widget.phone,
+        otp: otp,
+        isLogin: widget.isLogin,
+        firstName: widget.firstName,
+        lastName: widget.lastName,
+      ),
+    );
   }
 
   void _handleVerificationError(String errorMessage) {
@@ -137,7 +122,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-            Navigator.of(context).pushReplacementNamed('/home');
+            if (state.isNewUser) {
+              Navigator.of(context).pushReplacementNamed(
+                '/profile/create',
+                arguments: {'phone': widget.phone},
+              );
+            } else {
+              Navigator.of(context).pushReplacementNamed('/home');
+            }
           } else if (state is AuthError) {
             _handleVerificationError(state.message);
           }
@@ -158,27 +150,21 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 children: List.generate(
                   6,
                   (index) => SizedBox(
-                    width: 45,
+                    width: 40,
                     child: TextField(
                       controller: _controllers[index],
                       focusNode: _focusNodes[index],
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      maxLength: 1,
                       decoration: InputDecoration(
+                        counterText: '',
+                        errorText: _errorText != null && index == 0 ? _errorText : null,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Colors.red),
-                        ),
                       ),
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.number,
                       inputFormatters: [
-                        LengthLimitingTextInputFormatter(1),
                         FilteringTextInputFormatter.digitsOnly,
                       ],
                       onChanged: (value) => _handleOtpInput(value, index),
@@ -186,17 +172,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              if (_errorText != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    _errorText!,
-                    style: const TextStyle(color: Colors.red, fontSize: 14),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
                   return ElevatedButton(
@@ -229,20 +205,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
-                  // Use different events for resend based on login or signup flow
-                  if (widget.isLogin) {
-                    context.read<AuthBloc>().add(RequestOtpForLogin(
-                      widget.phone,
-                      isLogin: true,
-                    ));
-                  } else {
-                    context.read<AuthBloc>().add(RequestOtp(
-                      widget.phone,
-                      isLogin: false,
-                      firstName: widget.firstName,
-                      lastName: widget.lastName,
-                    ));
-                  }
+                  context.read<AuthBloc>().add(RequestOtp(
+                    widget.phone,
+                    isLogin: widget.isLogin,
+                    firstName: widget.firstName,
+                    lastName: widget.lastName,
+                  ));
                 },
                 child: const Text('Resend OTP'),
               ),

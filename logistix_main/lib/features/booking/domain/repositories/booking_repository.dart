@@ -1,6 +1,7 @@
 import '../../../../core/models/booking_model.dart';
 
 abstract class BookingRepository {
+  /// Create a new booking request
   Future<BookingRequest> createBooking({
     required String senderName,
     required String receiverName,
@@ -20,5 +21,6 @@ abstract class BookingRepository {
     required double estimatedFare,
   });
 
+  /// Accept a booking request
   Future<void> acceptBooking(int bookingRequestId);
 } 

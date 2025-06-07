@@ -157,6 +157,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               [
                 _buildLinkItem(
                   context,
+                  Icons.settings,
+                  'Settings',
+                  () {
+                    Navigator.pushNamed(context, '/settings');
+                  },
+                ),
+                _buildLinkItem(
+                  context,
                   Icons.payment,
                   'Payment Methods',
                   () {
@@ -337,8 +345,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             TextButton(
               onPressed: () {
-                // Update profile
+                // Update profile with current phone number
                 context.read<UserBloc>().add(UpdateUserProfile(
+                  phone: user.phone.toString(),
                   firstName: firstNameController.text,
                   lastName: lastNameController.text,
                 ));

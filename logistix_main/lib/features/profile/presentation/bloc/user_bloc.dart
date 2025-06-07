@@ -14,11 +14,13 @@ abstract class UserEvent extends Equatable {
 class LoadUserProfile extends UserEvent {}
 
 class UpdateUserProfile extends UserEvent {
+  final String? phone;
   final String? firstName;
   final String? lastName;
   final String? profilePicture;
 
   const UpdateUserProfile({
+    this.phone,
     this.firstName,
     this.lastName,
     this.profilePicture,
@@ -81,6 +83,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     try {
       emit(UserLoading());
       final user = await _userRepository.updateUserProfile(
+        phone: event.phone,
         firstName: event.firstName,
         lastName: event.lastName,
         profilePicture: event.profilePicture,

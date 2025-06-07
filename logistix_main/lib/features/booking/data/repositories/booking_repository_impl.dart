@@ -60,9 +60,10 @@ class BookingRepositoryImpl implements BookingRepository {
   @override
   Future<void> acceptBooking(int bookingRequestId) async {
     try {
+      final request = BookingAcceptRequest(bookingRequestId: bookingRequestId);
       await _apiClient.post(
         ApiEndpoints.acceptBooking,
-        data: {'booking_request_id': bookingRequestId},
+        data: request.toJson(),
       );
     } catch (e) {
       rethrow;

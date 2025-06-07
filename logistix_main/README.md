@@ -1,40 +1,149 @@
-# Logistix Flutter App
+# Logistix - Logistics Management Application
 
-A professional Flutter application with clean architecture and best practices.
+Logistix is a comprehensive logistics management application built with Flutter, designed to streamline the process of booking and managing logistics services. The application supports both customer and driver interfaces, providing a seamless experience for all users.
 
-## Project Structure
+## Features
+
+### Customer Features
+- User authentication with OTP
+- Booking management
+- Real-time trip tracking
+- Wallet management
+- Payment processing
+- Trip history
+
+### Driver Features
+- Driver profile management
+- Booking acceptance
+- Trip status updates
+- Earnings tracking
+- Rating system
+
+
+
+## Project Repository Structure
+
+```
+logistix-apps/
+├── logistix_main/              # Main application
+│   ├── lib/
+│   │   ├── core/              # Core functionality
+│   │   │   ├── di/
+│   │   │   │   └── service_locator.dart
+│   │   │   ├── models/
+│   │   │   │   ├── base_model.dart
+│   │   │   │   ├── booking_model.dart
+│   │   │   │   ├── driver_model.dart
+│   │   │   │   ├── trip_model.dart
+│   │   │   │   ├── user_model.dart
+│   │   │   │   └── wallet_model.dart
+│   │   │   ├── network/
+│   │   │   │   └── api_client.dart
+│   │   │   └── services/
+│   │   │       ├── api_endpoints.dart
+│   │   │       └── auth_service.dart
+│   │   │
+│   │   └── features/          # Feature modules
+│   │       ├── auth/
+│   │       │   ├── data/
+│   │       │   │   └── repositories/
+│   │       │   │       └── auth_repository_impl.dart
+│   │       │   └── domain/
+│   │       │       └── repositories/
+│   │       │           └── auth_repository.dart
+│   │       ├── booking/
+│   │       │   ├── data/
+│   │       │   │   └── repositories/
+│   │       │   │       └── booking_repository_impl.dart
+│   │       │   └── domain/
+│   │       │       └── repositories/
+│   │       │           └── booking_repository.dart
+│   │       ├── driver/
+│   │       │   ├── data/
+│   │       │   │   └── repositories/
+│   │       │   │       └── driver_repository_impl.dart
+│   │       │   └── domain/
+│   │       │       └── repositories/
+│   │       │           └── driver_repository.dart
+│   │       ├── trip/
+│   │       │   ├── data/
+│   │       │   │   └── repositories/
+│   │       │   │       └── trip_repository_impl.dart
+│   │       │   └── domain/
+│   │       │       └── repositories/
+│   │       │           └── trip_repository.dart
+│   │       └── wallet/
+│   │           ├── data/
+│   │           │   └── repositories/
+│   │           │       └── wallet_repository_impl.dart
+│   │           └── domain/
+│   │               └── repositories/
+│   │                   └── wallet_repository.dart
+│   │
+│   ├── test/                  # Test files
+│   ├── assets/               # Static assets
+│   │   ├── images/
+│   │   └── icons/
+│   ├── pubspec.yaml          # Dependencies
+│   └── README.md            # Project documentation
+│
+├── logistix_driver/          # Driver application
+│   └── ...                  # Similar structure to main app
+│
+├── .gitignore
+├── LICENSE
+└── README.md                # Main documentation
+```
+
+## Architecture
+
+The application follows Clean Architecture principles with a feature-based organization:
 
 ```
 lib/
-├── core/
-│   ├── config/         # App configuration
-│   ├── di/            # Dependency injection
-│   ├── models/        # Base models
-│   ├── network/       # API client and interceptors
-│   └── repositories/  # Base repository interfaces
-├── features/          # Feature-based modules
-│   └── auth/         # Example feature module
-│       ├── data/
-│       │   ├── models/
-│       │   └── repositories/
-│       ├── domain/
-│       │   ├── entities/
-│       │   └── usecases/
-│       └── presentation/
-│           ├── bloc/
-│           ├── pages/
-│           └── widgets/
-└── shared/           # Shared widgets and utilities
-    ├── widgets/
-    └── utils/
+├── core/                 # Core functionality
+│   ├── di/              # Dependency injection
+│   ├── models/          # Core data models
+│   ├── network/         # Network handling
+│   └── services/        # Core services
+│
+└── features/            # Feature modules
+    ├── auth/            # Authentication
+    ├── booking/         # Booking management
+    ├── driver/          # Driver features
+    ├── trip/            # Trip management
+    └── wallet/          # Wallet management
 ```
 
-## Setup Instructions
+logistix_main/
+├── lib/
+│   ├── core/                 # Core functionality shared across features
+│   │   ├── di/              # Dependency injection
+│   │   ├── models/          # Core data models
+│   │   ├── network/         # Network related code
+│   │   └── services/        # Core services
+│   │
+│   └── features/            # Feature modules
+│       ├── auth/            # Authentication feature
+│       ├── booking/         # Booking feature
+│       ├── driver/          # Driver feature
+│       ├── trip/            # Trip feature
+│       └── wallet/          # Wallet feature
 
-1. Create a `.env` file in the root directory with the following content:
-```
-API_BASE_URL=http://your-django-backend-url
-API_KEY=your-api-key
+## Getting Started
+
+### Prerequisites
+- Flutter SDK (>=3.0.0)
+- Dart SDK (>=3.0.0)
+- Android Studio / VS Code
+- Git
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/logistix-apps.git
+cd logistix-apps
 ```
 
 2. Install dependencies:
@@ -42,54 +151,109 @@ API_KEY=your-api-key
 flutter pub get
 ```
 
-3. Run the app:
+3. Generate code:
+```bash
+flutter pub run build_runner build
+```
+
+4. Run the app:
 ```bash
 flutter run
 ```
 
-## Features
+## Project Structure
 
-- Clean Architecture
-- BLoC Pattern for State Management
-- Dependency Injection with GetIt
-- API Integration with Dio
-- Local Storage with Hive
-- Responsive UI with ScreenUtil
-- Environment Configuration
-- Error Handling
-- Logging
+### Core Components
 
-## Best Practices
+#### Models
+- Data classes representing application entities
+- JSON serialization support
+- Equatable implementation for value comparison
 
-1. **Code Organization**
-   - Feature-first architecture
-   - Separation of concerns
-   - Clean architecture principles
+#### Services
+- Authentication service
+- API endpoint management
+- Token management
 
-2. **State Management**
-   - BLoC pattern for complex state
-   - Provider for simple state
-   - Repository pattern for data
+#### Network
+- API client implementation
+- Interceptor management
+- Error handling
 
-3. **API Integration**
-   - Centralized API client
-   - Interceptors for logging and error handling
-   - Repository pattern for data access
+### Feature Modules
 
-4. **Error Handling**
-   - Global error handling
-   - Custom exceptions
-   - User-friendly error messages
+Each feature module contains:
+- Data layer (repositories)
+- Domain layer (interfaces)
+- Presentation layer (UI)
 
-5. **Testing**
-   - Unit tests
-   - Widget tests
-   - Integration tests
+## Dependencies
+
+### Core Dependencies
+- `flutter_bloc`: State management
+- `dio`: Network requests
+- `shared_preferences`: Local storage
+- `hive`: Local database
+- `json_annotation`: JSON serialization
+- `jwt_decoder`: JWT token handling
+
+### UI Dependencies
+- `flutter_screenutil`: Responsive UI
+- `cached_network_image`: Image caching
+- `cupertino_icons`: iOS-style icons
+
+## API Integration
+
+The application integrates with a RESTful API backend. Key endpoints include:
+
+- Authentication: `/api/users/`
+- Booking: `/api/booking/`
+- Trip: `/api/trip/`
+- Wallet: `/api/payments/wallet/`
+- Driver: `/api/users/driver/`
+
+## Development
+
+### Code Generation
+After modifying models, run:
+```bash
+flutter pub run build_runner build
+```
+
+### Testing
+Run tests using:
+```bash
+flutter test
+```
+
+### Building
+For Android:
+```bash
+flutter build apk
+```
+
+For iOS:
+```bash
+flutter build ios
+```
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+For support, email support@logistix.com or create an issue in the repository.
+
+## Acknowledgments
+
+- Flutter team for the amazing framework
+- All contributors who have helped shape this project
