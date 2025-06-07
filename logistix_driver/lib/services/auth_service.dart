@@ -10,6 +10,8 @@ class AuthService {
   Future<bool> sendOTP(String phone) async {
     try {
       print('Sending OTP to $phone');
+      print('Using API URL: $baseUrl/users/login/');
+      
       final response = await http.post(
         Uri.parse('$baseUrl/users/login/'),
         headers: {
@@ -19,15 +21,17 @@ class AuthService {
         body: jsonEncode({'phone': phone}),
       );
 
-      print('OTP Send Response: ${response.statusCode}');
+      print('OTP Send Response Status: ${response.statusCode}');
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         return true;
       }
+      print('Failed to send OTP. Status code: ${response.statusCode}');
       return false;
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error sending OTP: $e');
+      print('Stack trace: $stackTrace');
       return false;
     }
   }
@@ -35,6 +39,8 @@ class AuthService {
   Future<Map<String, dynamic>?> verifyOTP(String phone, String otp) async {
     try {
       print('Verifying OTP for $phone with code $otp');
+      print('Using API URL: $baseUrl/users/verify-otp/');
+      
       final response = await http.post(
         Uri.parse('$baseUrl/users/verify-otp/'),
         headers: {
@@ -47,7 +53,7 @@ class AuthService {
         }),
       );
 
-      print('Verify OTP Response: ${response.statusCode}');
+      print('Verify OTP Response Status: ${response.statusCode}');
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
@@ -59,9 +65,11 @@ class AuthService {
         await prefs.setString('user_data', jsonEncode(data['user']));
         return data;
       }
+      print('Failed to verify OTP. Status code: ${response.statusCode}');
       return null;
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error verifying OTP: $e');
+      print('Stack trace: $stackTrace');
       return null;
     }
   }

@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
+import '../../domain/repositories/auth_repository.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
 import '../../../../core/services/auth_service.dart';
-import '../../domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final ApiClient _apiClient;
@@ -10,207 +10,75 @@ class AuthRepositoryImpl implements AuthRepository {
 
   AuthRepositoryImpl(this._apiClient, this._authService);
 
-  /// Extracts a user-friendly error message from various error response formats
-  String _getErrorMessage(dynamic error) {
-    if (error is DioException) {
-      // Handle connection errors
-      if (error.type == DioExceptionType.connectionError) {
-        return "Network error: Couldn't connect to the server. Please check your internet connection.";
-      } else if (error.type == DioExceptionType.connectionTimeout ||
-                error.type == DioExceptionType.receiveTimeout ||
-                error.type == DioExceptionType.sendTimeout) {
-        return "Connection timeout: Server is taking too long to respond. Please try again later.";
-      }
-      
-      // Handle response errors (server responded with error status)
-      if (error.response != null) {
-        final statusCode = error.response!.statusCode;
-        final data = error.response!.data;
-        
-        // Try to extract error message from response data in different formats
-        if (data is Map<String, dynamic>) {
-          // Check for error key
-          if (data.containsKey('error')) {
-            final errorMsg = data['error'];
-            
-            // Handle duplicate phone number
-            if (errorMsg is String && errorMsg.contains('duplicate key value') && 
-                errorMsg.contains('phone')) {
-              return "This phone number is already registered. Please login instead.";
-            }
-            
-            return errorMsg.toString();
-          }
-          
-          // Check for detail key (Django REST Framework style)
-          if (data.containsKey('detail')) {
-            return data['detail'].toString();
-          }
-          
-          // Check for message key
-          if (data.containsKey('message')) {
-            return data['message'].toString();
-          }
-        }
-        
-        // If we couldn't extract a specific message, use a generic one based on status code
-        switch (statusCode) {
-          case 400:
-            return "Invalid request data. Please check your information.";
-          case 401:
-            return "Authentication required. Please log in again.";
-          case 403:
-            return "You don't have permission to access this resource.";
-          case 404:
-            return "Resource not found.";
-          case 409:
-            return "Conflict with existing data.";
-          case 429:
-            return "Too many requests. Please try again later.";
-          case 500:
-          case 502:
-          case 503:
-          case 504:
-            return "Server error. Please try again later.";
-          default:
-            return "An unexpected error occurred (Status $statusCode).";
-        }
-      }
-    }
-    
-    // For any other kind of error
-    return error.toString();
-  }
-
   @override
   Future<void> requestOtp(String phone) async {
     try {
-      await _apiClient.post(ApiEndpoints.requestOtp, data: {'phone': phone});
-    } catch (e) {
-      throw Exception(_getErrorMessage(e));
-    }
-  }
-
-    @override
-  Future<void> requestOtpForLogin(String phone) async {
-    try {
-      await _apiClient.post(ApiEndpoints.requestOtpForLogin, data: {'phone': phone});
-    } catch (e) {
-      throw Exception(_getErrorMessage(e));
+      await _apiClient.post(
+        ApiEndpoints.login,
+        data: {'phone': phone},
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
     }
   }
 
   @override
-  Future<Map<String, dynamic>> verifyOtp(String phone, String otp, String sessionId) async {
+  Future<Map<String, dynamic>> verifyOtp(String phone, String otp) async {
     try {
-      print('DEBUG: Verifying OTP with phone: $phone');
-      
       final response = await _apiClient.post(
         ApiEndpoints.verifyOtp,
         data: {
           'phone': phone,
           'otp': otp,
-          'session_id': sessionId,
         },
       );
 
-      print('DEBUG: OTP verification response: ${response.statusCode}');
-      print('DEBUG: Response data: ${response.data}');
-      
-      // Check for tokens in response
-      if (response.data['tokens'] != null) {
-        // Django nested format
-        final tokens = response.data['tokens'];
-        if (tokens['access'] != null && tokens['refresh'] != null) {
-          print('DEBUG: Found nested tokens structure');
-          await _authService.saveTokens(
-            tokens['access'],
-            tokens['refresh'],
-          );
-        }
-      } else if (response.data['access'] != null && response.data['refresh'] != null) {
-        // Flat format
-        print('DEBUG: Found flat tokens structure');
-        await _authService.saveTokens(
-          response.data['access'],
-          response.data['refresh'],
-        );
-      } else {
-        print('ERROR: No valid tokens found in verification response');
-      }
-
       return response.data;
-    } catch (e) {
-      print('ERROR: Failed to verify OTP: ${e.toString()}');
-      throw Exception(_getErrorMessage(e));
-    }
-  }
-
-
-   @override
-  Future<Map<String, dynamic>> verifyOtpForLogin(String phone, String otp, String sessionId) async {
-    try {
-      print('DEBUG: Verifying OTP for login with phone: $phone');
-      
-      final response = await _apiClient.post(
-        ApiEndpoints.verifyOtpForLogin,
-        data: {
-          'phone': phone,
-          'otp': otp,
-          'session_id': sessionId,
-        },
-      );
-
-      print('DEBUG: OTP verification response: ${response.statusCode}');
-      print('DEBUG: Response data: ${response.data}');
-      
-      // Check for tokens in response
-      if (response.data['tokens'] != null) {
-        // Django nested format
-        final tokens = response.data['tokens'];
-        if (tokens['access'] != null && tokens['refresh'] != null) {
-          print('DEBUG: Found nested tokens structure');
-          await _authService.saveTokens(
-            tokens['access'],
-            tokens['refresh'],
-          );
-        }
-      } else if (response.data['access'] != null && response.data['refresh'] != null) {
-        // Flat format
-        print('DEBUG: Found flat tokens structure');
-        await _authService.saveTokens(
-          response.data['access'],
-          response.data['refresh'],
-        );
-      } else {
-        print('ERROR: No valid tokens found in login response');
-      }
-
-      return response.data;
-    } catch (e) {
-      print('ERROR: Failed to verify OTP: ${e.toString()}');
-      throw Exception(_getErrorMessage(e));
+    } on DioException catch (e) {
+      throw _handleError(e);
     }
   }
 
   @override
-  Future<void> register(String phone, String firstName, String lastName) async {
+  Future<String> refreshToken(String refreshToken) async {
     try {
-      await _apiClient.post(
-        ApiEndpoints.register,
-        data: {
-          'phone': phone,
-          'first_name': firstName,
-          'last_name': lastName,
-        },
+      final response = await _apiClient.post(
+        ApiEndpoints.refreshToken,
+        data: {'refresh': refreshToken},
       );
-    } catch (e) {
-      throw Exception(_getErrorMessage(e));
+
+      return response.data['access'];
+    } on DioException catch (e) {
+      throw _handleError(e);
     }
   }
 
   @override
   Future<void> logout() async {
-    await _authService.clearTokens();
+    try {
+      // Clear all stored tokens locally
+      await _authService.clearTokens();
+    } catch (e) {
+      throw Exception('Failed to logout: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> saveTokens(String accessToken, String refreshToken) async {
+    try {
+      await _authService.saveTokens(accessToken, refreshToken);
+    } catch (e) {
+      throw Exception('Failed to save tokens: ${e.toString()}');
+    }
+  }
+
+  Exception _handleError(DioException error) {
+    if (error.response?.data is Map) {
+      final data = error.response?.data as Map;
+      if (data.containsKey('detail')) {
+        return Exception(data['detail']);
+      }
+    }
+    return Exception(error.message ?? 'An error occurred');
   }
 } 

@@ -1,12 +1,18 @@
 import 'package:equatable/equatable.dart';
 import 'base_model.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'wallet_model.g.dart';
+
+@JsonSerializable()
 class WalletTransaction extends BaseModel {
   final int id;
   final double amount;
   final String typeTx;
   final String? remarks;
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   const WalletTransaction({
@@ -18,28 +24,10 @@ class WalletTransaction extends BaseModel {
     required this.updatedAt,
   });
 
-  factory WalletTransaction.fromJson(Map<String, dynamic> json) {
-    return WalletTransaction(
-      id: json['id'],
-      amount: json['amount'].toDouble(),
-      typeTx: json['type_tx'],
-      remarks: json['remarks'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-    );
-  }
+  factory WalletTransaction.fromJson(Map<String, dynamic> json) => _$WalletTransactionFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'amount': amount,
-      'type_tx': typeTx,
-      'remarks': remarks,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$WalletTransactionToJson(this);
 
   @override
   List<Object?> get props => [id, amount, typeTx, remarks, createdAt, updatedAt];
