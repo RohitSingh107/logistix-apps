@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final profile = await _authService.getDriverProfile();
       if (profile != null && mounted) {
-        setState(() {
+      setState(() {
           _driverProfile = profile;
           _isAvailable = profile['is_available'] ?? false;
           _isInitialized = true;
@@ -47,9 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       debugPrint('Error fetching driver profile: $e');
       if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
+    setState(() {
+      _isInitialized = true;
+    });
       }
     }
   }
@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
       return const Scaffold(
@@ -196,10 +196,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
                         '${_driverProfile!['user']['first_name']} ${_driverProfile!['user']['last_name']}',
                         style: const TextStyle(
                           fontSize: 18,
@@ -222,15 +222,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(
                               color: Colors.grey.shade600,
                               fontSize: 14,
-                            ),
+                                  ),
                           ),
                         ],
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 16),
           ],
           
@@ -247,8 +247,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade700,
-                      ),
-                    ),
+              ),
+            ),
                     const SizedBox(height: 4),
                     Text(
                       _isAvailable ? 'Online - Ready for bookings' : 'Offline - Not accepting bookings',
@@ -272,10 +272,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   activeTrackColor: Colors.green,
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: Colors.grey.shade400,
-                ),
-              ),
+                      ),
+                    ),
             ],
-          ),
+              ),
           
           // Loading indicator when updating
           if (_isUpdatingAvailability) ...[

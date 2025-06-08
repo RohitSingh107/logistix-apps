@@ -319,4 +319,105 @@ class AuthService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> updatePaymentStatus(int tripId, bool isPaymentDone) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      
+      print('Updating payment status for trip $tripId to: $isPaymentDone');
+      final response = await http.post(
+        Uri.parse('$baseUrl/trip/update/$tripId/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({'is_payment_done': isPaymentDone}),
+      );
+
+      print('Update Payment Status Response: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error updating payment status: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getWalletBalance() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      
+      print('Fetching wallet balance');
+      final response = await http.get(
+        Uri.parse('$baseUrl/payments/wallet/balance/'),
+        headers: {
+          'accept': '*/*',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      print('Get Wallet Balance Response: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching wallet balance: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getWalletTransactions({
+    int page = 1,
+    int pageSize = 10,
+    String? startTime,
+    String? endTime,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      
+      // Build query parameters
+      final queryParams = <String, String>{
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
+      };
+      
+      if (startTime != null) queryParams['start_time'] = startTime;
+      if (endTime != null) queryParams['end_time'] = endTime;
+      
+      final uri = Uri.parse('$baseUrl/payments/wallet/transactions/').replace(
+        queryParameters: queryParams,
+      );
+      
+      print('Fetching wallet transactions: $uri');
+      final response = await http.get(
+        uri,
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      print('Get Wallet Transactions Response: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching wallet transactions: $e');
+      return null;
+    }
+  }
 } 
