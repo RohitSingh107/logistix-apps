@@ -265,4 +265,58 @@ class AuthService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getDriverTrips({int page = 1, int pageSize = 10}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      
+      print('Fetching driver trips - Page: $page, Size: $pageSize');
+      final response = await http.get(
+        Uri.parse('$baseUrl/trip/list/?for_driver=true&page=$page&page_size=$pageSize'),
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      print('Get Driver Trips Response: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching driver trips: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getTripDetail(int tripId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      
+      print('Fetching trip detail for ID: $tripId');
+      final response = await http.get(
+        Uri.parse('$baseUrl/trip/detail/$tripId/'),
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      print('Get Trip Detail Response: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching trip detail: $e');
+      return null;
+    }
+  }
 } 
