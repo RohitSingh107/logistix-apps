@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../../../core/config/app_theme.dart';
+import '../../../../core/utils/image_utils.dart';
 import '../../../vehicle_estimation/data/models/vehicle_estimate_response.dart';
 import '../../data/models/booking_request.dart';
 import '../../data/models/trip_detail.dart';
 import '../../data/services/booking_service.dart';
 import '../../../../core/di/service_locator.dart';
+import 'trip_details_screen.dart';
 
 class DriverSearchScreen extends StatefulWidget {
-  final int tripId;
   final BookingResponse bookingDetails;
   final VehicleEstimateResponse selectedVehicle;
 
   const DriverSearchScreen({
     Key? key,
-    required this.tripId,
     required this.bookingDetails,
     required this.selectedVehicle,
   }) : super(key: key);
@@ -25,34 +25,30 @@ class DriverSearchScreen extends StatefulWidget {
 
 class _DriverSearchScreenState extends State<DriverSearchScreen>
     with TickerProviderStateMixin {
+  
   late AnimationController _searchAnimationController;
   late AnimationController _pulseAnimationController;
   late Animation<double> _searchAnimation;
   late Animation<double> _pulseAnimation;
   
   TripDetail? _tripDetail;
+  BookingResponse? _currentBooking;
   bool _isSearching = true;
-  String _searchText = 'Looking for drivers nearby...';
+  String _searchText = 'Processing your booking request...';
   int _searchDots = 0;
   Timer? _searchTimer;
-  StreamSubscription<TripDetail>? _tripStatusSubscription;
+  StreamSubscription<dynamic>? _statusSubscription;
   
   late final BookingService _bookingService;
-
-  final List<String> _searchMessages = [
-    'Looking for drivers nearby',
-    'Finding the best driver for you',
-    'Connecting with available drivers',
-    'Almost there, hang tight',
-  ];
 
   @override
   void initState() {
     super.initState();
+    _currentBooking = widget.bookingDetails;
     _bookingService = BookingService(serviceLocator());
     _setupAnimations();
     _startSearchAnimation();
-    _startPollingTripStatus();
+    _startPollingBookingStatus();
   }
 
   void _setupAnimations() {
@@ -95,32 +91,55 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
       
       setState(() {
         _searchDots = (_searchDots + 1) % 4;
-        if (_searchDots == 0) {
-          final currentIndex = _searchMessages.indexOf(_searchText.split('.').first);
-          final nextIndex = (currentIndex + 1) % _searchMessages.length;
-          _searchText = _searchMessages[nextIndex];
-        }
       });
     });
   }
 
-  void _startPollingTripStatus() {
-    _tripStatusSubscription = _bookingService
-        .pollTripStatus(widget.tripId)
+  void _startPollingBookingStatus() {
+    _statusSubscription = _bookingService
+        .pollBookingStatus(widget.bookingDetails.id)
         .listen(
-      (tripDetail) {
-        setState(() {
-          _tripDetail = tripDetail;
-          if (tripDetail.hasDriver) {
-            _isSearching = false;
-            _searchAnimationController.stop();
-            _pulseAnimationController.stop();
-            _searchTimer?.cancel();
+      (statusObject) {
+        if (statusObject is BookingResponse) {
+          setState(() {
+            _currentBooking = statusObject;
+            _searchText = _bookingService.getStatusMessage(statusObject);
+            
+            if (statusObject.isCancelled) {
+              _isSearching = false;
+              _searchAnimationController.stop();
+              _pulseAnimationController.stop();
+              _searchTimer?.cancel();
+            }
+          });
+                  } else if (statusObject is TripDetail) {
+            setState(() {
+              _tripDetail = statusObject;
+              _searchText = _bookingService.getStatusMessage(statusObject);
+              
+              if (statusObject.hasDriver) {
+                _isSearching = false;
+                _searchAnimationController.stop();
+                _pulseAnimationController.stop();
+                _searchTimer?.cancel();
+                
+                // Navigate to trip details screen
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (mounted) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TripDetailsScreen(tripDetail: statusObject),
+                      ),
+                    );
+                  }
+                });
+              }
+            });
           }
-        });
       },
       onError: (error) {
-        print('Error polling trip status: $error');
+        print('Error polling status: $error');
         // Continue polling on error
       },
     );
@@ -131,12 +150,40 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
     _searchAnimationController.dispose();
     _pulseAnimationController.dispose();
     _searchTimer?.cancel();
-    _tripStatusSubscription?.cancel();
+    _statusSubscription?.cancel();
     super.dispose();
   }
 
   String _getDotsString() {
     return '.' * _searchDots;
+  }
+
+  // Helper method for profile images
+  ImageProvider? _getProfileImage(String? profilePicture) {
+    if (profilePicture == null) return null;
+    
+    final fullUrl = ImageUtils.getFullProfilePictureUrl(profilePicture);
+    if (fullUrl != null && ImageUtils.isValidProfilePictureUrl(profilePicture)) {
+      return NetworkImage(fullUrl);
+    }
+    
+    return null; // Will show default letter avatar
+  }
+
+  String _getHeaderTitle() {
+    if (_currentBooking != null) {
+      switch (_currentBooking!.status) {
+        case 'REQUESTED':
+          return 'Processing Request';
+        case 'SEARCHING':
+          return 'Finding Your Driver';
+        case 'ACCEPTED':
+          return 'Driver Found!';
+        default:
+          return 'Finding Your Driver';
+      }
+    }
+    return 'Finding Your Driver';
   }
 
   @override
@@ -146,9 +193,91 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       body: SafeArea(
-        child: _isSearching 
-          ? _buildSearchingView(theme)
-          : _buildDriverFoundView(theme),
+        child: _buildCurrentView(theme),
+      ),
+    );
+  }
+
+  Widget _buildCurrentView(ThemeData theme) {
+    // Check if booking was cancelled
+    if (_currentBooking?.isCancelled == true) {
+      return _buildCancelledView(theme);
+    }
+    
+    // Check if driver found
+    if (!_isSearching && _tripDetail?.hasDriver == true) {
+      return _buildDriverFoundView(theme);
+    }
+    
+    // Default searching view
+    return _buildSearchingView(theme);
+  }
+
+  Widget _buildCancelledView(ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.red.withOpacity(0.1),
+              border: Border.all(
+                color: Colors.red,
+                width: 3,
+              ),
+            ),
+            child: const Icon(
+              Icons.close,
+              color: Colors.red,
+              size: 60,
+            ),
+          ),
+          
+          const SizedBox(height: AppSpacing.xl),
+          
+          Text(
+            'Booking Cancelled',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          
+          const SizedBox(height: AppSpacing.lg),
+          
+          Text(
+            'Your booking request has been cancelled. You can try creating a new booking.',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          
+          const SizedBox(height: AppSpacing.xl * 2),
+          
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+              ),
+              child: const Text(
+                'Back to Home',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -167,7 +296,7 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
               ),
               Expanded(
                 child: Text(
-                  'Finding Your Driver',
+                  _getHeaderTitle(),
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -356,10 +485,11 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundImage: driver.user.profilePicture != null
-                          ? NetworkImage(driver.user.profilePicture!)
-                          : null,
-                      child: driver.user.profilePicture == null
+                      backgroundImage: _getProfileImage(driver.user.profilePicture),
+                      onBackgroundImageError: (exception, stackTrace) {
+                        print('Error loading profile image: $exception');
+                      },
+                      child: _getProfileImage(driver.user.profilePicture) == null
                           ? Text(
                               driver.user.firstName[0].toUpperCase(),
                               style: const TextStyle(
