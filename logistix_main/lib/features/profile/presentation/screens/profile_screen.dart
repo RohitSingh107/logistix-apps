@@ -347,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 // Update profile with current phone number
                 context.read<UserBloc>().add(UpdateUserProfile(
-                  phone: user.phone.toString(),
+                  phone: user.phone,
                   firstName: firstNameController.text,
                   lastName: lastNameController.text,
                 ));

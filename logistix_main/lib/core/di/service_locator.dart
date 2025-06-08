@@ -16,6 +16,7 @@ import '../../features/driver/domain/repositories/driver_repository.dart';
 import '../../features/vehicle_estimation/data/repositories/vehicle_estimation_repository.dart';
 import '../../features/vehicle_estimation/domain/repositories/vehicle_estimation_repository_interface.dart';
 import '../../features/vehicle_estimation/domain/usecases/get_vehicle_estimates.dart';
+import '../../features/booking/data/services/booking_service.dart';
 import 'package:dio/dio.dart';
 import '../repositories/user_repository_impl.dart';
 import '../repositories/user_repository.dart';
@@ -33,6 +34,10 @@ Future<void> setupServiceLocator() async {
   // Services
   serviceLocator.registerLazySingleton<AuthService>(
     () => AuthService(serviceLocator(), serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton<BookingService>(
+    () => BookingService(serviceLocator()),
   );
 
   // Network

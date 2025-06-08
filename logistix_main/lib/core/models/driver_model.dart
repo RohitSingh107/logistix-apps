@@ -12,7 +12,7 @@ class Driver {
   @JsonKey(name: 'is_available')
   final bool isAvailable;
   @JsonKey(name: 'average_rating')
-  final double averageRating;
+  final String averageRating;
   @JsonKey(name: 'total_earnings')
   final double totalEarnings;
 
@@ -27,6 +27,15 @@ class Driver {
 
   factory Driver.fromJson(Map<String, dynamic> json) => _$DriverFromJson(json);
   Map<String, dynamic> toJson() => _$DriverToJson(this);
+
+  // Helper method to convert string rating to double
+  double get rating {
+    try {
+      return double.parse(averageRating);
+    } catch (e) {
+      return 0.0;
+    }
+  }
 }
 
 @JsonSerializable()
