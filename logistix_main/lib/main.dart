@@ -19,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'features/profile/presentation/screens/create_profile_screen.dart';
 import 'features/settings/presentation/screens/settings_screen.dart';
 import 'features/booking/presentation/screens/map_test_screen.dart';
+import 'features/wallet/presentation/screens/wallet_screen.dart';
 import 'core/services/test_map_service.dart';
 
 void main() async {
@@ -155,6 +156,7 @@ class MyApp extends StatelessWidget {
               },
               '/settings': (context) => const SettingsScreen(),
               '/map-test': (context) => const MapTestScreen(),
+              '/wallet': (context) => const WalletScreen(),
             },
           );
         },

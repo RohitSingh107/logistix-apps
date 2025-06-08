@@ -32,7 +32,7 @@ class WalletRepositoryImpl implements WalletRepository {
         },
       );
 
-      return (response.data as List)
+      return (response.data['transactions'] as List)
           .map((json) => WalletTransaction.fromJson(json))
           .toList();
     } catch (e) {
