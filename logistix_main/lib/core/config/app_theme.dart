@@ -32,11 +32,9 @@ class AppTheme {
       tertiary: Color(0xFF2196F3), // Blue for info
       error: Color(0xFFE91E63),
       surface: Color(0xFFF5F5F5),
-      background: Color(0xFFFFFFFF),
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: Color(0xFF1A1A1A),
-      onBackground: Color(0xFF1A1A1A),
     ),
     
     // App Bar Theme
@@ -141,7 +139,7 @@ class AppTheme {
     ),
     
     // Card Theme
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: Colors.white,
       surfaceTintColor: Colors.white,
       elevation: 2,
@@ -227,11 +225,9 @@ class AppTheme {
       tertiary: Color(0xFF64B5F6),
       error: Color(0xFFFF5252),
       surface: Color(0xFF1E1E1E),
-      background: Color(0xFF121212),
       onPrimary: Color(0xFF1A1A1A),
       onSecondary: Color(0xFF1A1A1A),
       onSurface: Color(0xFFE0E0E0),
-      onBackground: Color(0xFFE0E0E0),
     ),
     
     appBarTheme: AppBarTheme(
@@ -324,7 +320,7 @@ class AppTheme {
       ),
     ),
     
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: const Color(0xFF2C2C2C),
       surfaceTintColor: const Color(0xFF2C2C2C),
       elevation: 2,
@@ -407,11 +403,9 @@ class AppTheme {
       tertiary: Color(0xFF00897B),
       error: Color(0xFFD32F2F),
       surface: Color(0xFFF5F5F5),
-      background: Color(0xFFFFFFFF),
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: Color(0xFF212121),
-      onBackground: Color(0xFF212121),
     ),
     
     appBarTheme: AppBarTheme(
@@ -504,7 +498,7 @@ class AppTheme {
       ),
     ),
     
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: Colors.white,
       surfaceTintColor: Colors.white,
       elevation: 2,

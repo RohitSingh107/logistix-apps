@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
-import '../../../profile/presentation/screens/create_profile_screen.dart';
-import '../../../home/presentation/screens/home_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phone;

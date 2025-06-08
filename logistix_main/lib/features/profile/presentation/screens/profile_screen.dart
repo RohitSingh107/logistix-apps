@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/models/user_model.dart';
+import '../../../../core/utils/image_utils.dart';
 import '../../presentation/bloc/user_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
@@ -69,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildUserProfile(BuildContext context, User user) {
-    final memberSince = 'Jan 2023'; // This would come from the user model ideally
+    const memberSince = 'Jan 2023'; // This would come from the user model ideally
     
     return RefreshIndicator(
       onRefresh: () async {
@@ -85,17 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: Theme.of(context).primaryColor.withOpacity(0.1),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Theme.of(context).primaryColor,
-                    child: Text(
-                      user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '',
-                      style: const TextStyle(
-                        fontSize: 30,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  _buildProfileAvatar(user),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -155,6 +146,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context,
               'Account Settings',
               [
+                _buildLinkItem(
+                  context,
+                  Icons.account_balance_wallet,
+                  'My Wallet',
+                  () {
+                    Navigator.pushNamed(context, '/wallet');
+                  },
+                ),
                 _buildLinkItem(
                   context,
                   Icons.settings,
@@ -347,7 +346,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 // Update profile with current phone number
                 context.read<UserBloc>().add(UpdateUserProfile(
-                  phone: user.phone.toString(),
+                  phone: user.phone,
                   firstName: firstNameController.text,
                   lastName: lastNameController.text,
                 ));
@@ -400,6 +399,102 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       },
     );
+  }
+
+  // Helper method for profile images
+  ImageProvider? _getProfileImage(String? profilePicture) {
+    if (profilePicture == null) return null;
+    
+    final fullUrl = ImageUtils.getFullProfilePictureUrl(profilePicture);
+    if (fullUrl != null && ImageUtils.isValidProfilePictureUrl(profilePicture)) {
+      return NetworkImage(fullUrl);
+    }
+    
+    return null; // Will show default letter avatar
+  }
+
+  Widget _buildProfileAvatar(User user) {
+    final String initial = user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '';
+    final profileImage = _getProfileImage(user.profilePicture);
+    
+    if (profileImage != null) {
+      return Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).primaryColor,
+        ),
+        child: ClipOval(
+          child: Image.network(
+            ImageUtils.getFullProfilePictureUrl(user.profilePicture!) ?? '',
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).primaryColor,
+                ),
+                child: Center(
+                  child: Text(
+                    initial,
+                    style: const TextStyle(
+                      fontSize: 30,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                ),
+                child: Center(
+                  child: SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).primaryColor,
+        ),
+        child: Center(
+          child: Text(
+            initial,
+            style: const TextStyle(
+              fontSize: 30,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildSection(BuildContext context, String title, List<Widget> children) {
