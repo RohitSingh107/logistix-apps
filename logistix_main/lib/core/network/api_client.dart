@@ -113,7 +113,8 @@ class ApiClient {
           return handler.next(error);
         },
         onResponse: (response, handler) {
-          print('DEBUG: Received response for ${response.requestOptions.path} with status ${response.statusCode}');
+          // Debug logging disabled in production
+// print('DEBUG: Received response for ${response.requestOptions.path} with status ${response.statusCode}');
           return handler.next(response);
         },
       ),
