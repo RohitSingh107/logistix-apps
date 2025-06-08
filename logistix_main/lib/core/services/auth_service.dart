@@ -117,7 +117,6 @@ class AuthService {
 
   // Check and refresh token if needed
   Future<bool> ensureValidToken() async {
-    if (getAccessToken() == null) return false;
     if (_shouldRefreshToken()) {
       return await refreshAccessToken();
     }

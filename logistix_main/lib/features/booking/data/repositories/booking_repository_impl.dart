@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import '../../../../core/models/booking_model.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
@@ -51,7 +50,9 @@ class BookingRepositoryImpl implements BookingRepository {
         },
       );
 
-      return BookingRequest.fromJson(response.data);
+      // Extract the booking_request data from the nested response
+      final bookingData = response.data['booking_request'] as Map<String, dynamic>;
+      return BookingRequest.fromJson(bookingData);
     } catch (e) {
       rethrow;
     }

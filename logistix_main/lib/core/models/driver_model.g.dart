@@ -11,7 +11,7 @@ Driver _$DriverFromJson(Map<String, dynamic> json) => Driver(
       user: User.fromJson(json['user'] as Map<String, dynamic>),
       licenseNumber: json['license_number'] as String,
       isAvailable: json['is_available'] as bool,
-      averageRating: (json['average_rating'] as num).toDouble(),
+      averageRating: json['average_rating'] as String,
       totalEarnings: (json['total_earnings'] as num).toDouble(),
     );
 

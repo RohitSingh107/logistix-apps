@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/models/user_model.dart';
 import '../../presentation/bloc/user_bloc.dart';
 
 class CreateProfileScreen extends StatefulWidget {
