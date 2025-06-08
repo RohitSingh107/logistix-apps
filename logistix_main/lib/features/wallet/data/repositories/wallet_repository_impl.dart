@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import '../../../../core/models/wallet_model.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
@@ -33,9 +32,29 @@ class WalletRepositoryImpl implements WalletRepository {
         },
       );
 
-      return (response.data as List)
+      return (response.data['transactions'] as List)
           .map((json) => WalletTransaction.fromJson(json))
           .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<WalletTopupResponse> topupWallet({
+    required double amount,
+    String? remarks,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        ApiEndpoints.walletTopup,
+        data: {
+          'amount': amount,
+          if (remarks != null) 'remarks': remarks,
+        },
+      );
+
+      return WalletTopupResponse.fromJson(response.data);
     } catch (e) {
       rethrow;
     }

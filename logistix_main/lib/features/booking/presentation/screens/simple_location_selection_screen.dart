@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 import '../../data/services/location_service.dart';
 import '../widgets/map_widget.dart';
+import '../../../../core/services/map_service_interface.dart';
 import 'dart:async';
 
 class SimpleLocationSelectionScreen extends StatefulWidget {
   final String title;
-  final LatLng? initialLocation;
+  final MapLatLng? initialLocation;
 
   const SimpleLocationSelectionScreen({
     Key? key,
@@ -26,7 +26,8 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
   List<PlaceResult> _recentSearches = [];
   bool _isLoading = false;
   bool _showMap = false;
-  LatLng? _selectedLocation;
+  MapLatLng? _selectedLocation;
+  MapLatLng? _userLocation; // Add user location for search
   String _selectedAddress = '';
   
   Timer? _debounceTimer;
@@ -34,7 +35,7 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
   @override
   void initState() {
     super.initState();
-    _loadRecentSearches();
+    _loadInitialData();
   }
 
   @override
@@ -44,9 +45,15 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
     super.dispose();
   }
 
-  Future<void> _loadRecentSearches() async {
+  Future<void> _loadInitialData() async {
+    // Load user location and set as default
+    final defaultLocation = widget.initialLocation ?? await _locationService.getDefaultLocation();
+    
     final recent = await _locationService.getRecentSearches();
+    
     setState(() {
+      _userLocation = defaultLocation;
+      _selectedLocation = defaultLocation;
       _recentSearches = recent;
     });
   }
@@ -66,7 +73,11 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
     });
 
     _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
-      final results = await _locationService.searchPlaces(query);
+      final results = await _locationService.searchPlaces(
+        query,
+        userLocation: _userLocation,
+        radius: 50000, // 50km radius
+      );
       
       if (mounted) {
         setState(() {
@@ -86,7 +97,7 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
       final position = await _locationService.getCurrentLocation();
       
       if (position != null) {
-        final location = LatLng(position.latitude, position.longitude);
+        final location = MapLatLng(position.latitude, position.longitude);
         final address = await _locationService.getAddressFromLatLng(location);
         
         if (mounted) {
@@ -127,7 +138,7 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
   void _showMapSelection() {
     setState(() {
       _showMap = true;
-      _selectedLocation = widget.initialLocation ?? const LatLng(13.0827, 80.2707);
+      _selectedLocation = _userLocation ?? MapLatLng(13.0827, 80.2707);
     });
   }
 
@@ -318,7 +329,7 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
         children: [
           // Map
           MapWidget(
-            initialPosition: _selectedLocation ?? const LatLng(13.0827, 80.2707),
+            initialPosition: _selectedLocation ?? MapLatLng(13.0827, 80.2707),
             markers: const [],
             onTap: (location) async {
               final address = await _locationService.getAddressFromLatLng(location);

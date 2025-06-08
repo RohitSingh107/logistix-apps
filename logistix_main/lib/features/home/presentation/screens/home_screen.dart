@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/bottom_navbar.dart';
 import '../../../../core/config/app_theme.dart';
+import '../../../../core/di/service_locator.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
-import '../../../theme/presentation/bloc/theme_bloc.dart';
-import '../../../theme/presentation/bloc/theme_event.dart';
 import '../../../booking/presentation/screens/booking_screen.dart';
+import '../../../booking/presentation/screens/orders_screen.dart';
+import '../../../booking/presentation/screens/trip_details_screen.dart';
+import '../../../booking/data/services/booking_service.dart';
+import '../../../booking/data/models/booking_list_response.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -19,8 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     const HomePage(),
-    const OrdersPage(),
-    const OffersPage(),
+    const OrdersScreen(),
     const ProfileScreen(),
   ];
 
@@ -42,16 +44,53 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late final BookingService _bookingService;
+  List<BookingListItem> _recentBookings = [];
+  bool _isLoadingBookings = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _bookingService = BookingService(serviceLocator());
+    _loadRecentBookings();
+  }
+
+  Future<void> _loadRecentBookings() async {
+    setState(() {
+      _isLoadingBookings = true;
+    });
+
+    try {
+      final bookingListResponse = await _bookingService.getBookingList();
+      setState(() {
+        // Sort by creation date (most recent first) and take only 3
+        _recentBookings = bookingListResponse.bookingRequests
+            .take(3)
+            .toList();
+        _isLoadingBookings = false;
+      });
+    } catch (e) {
+      setState(() {
+        _recentBookings = [];
+        _isLoadingBookings = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -60,17 +99,14 @@ class HomePage extends StatelessWidget {
               // Header
               _buildHeader(context),
               
-              // Exclusive Offer Banner
-              _buildOfferBanner(context),
+              // Main Search Bar
+              _buildMainSearchBar(context),
               
-              // Search Bar
-              _buildSearchBar(context),
+              // Quick Service Access
+              _buildQuickServiceAccess(context),
               
               // Vehicle Categories
               _buildVehicleCategories(context),
-              
-              // Quick Actions
-              _buildQuickActions(context),
               
               // Recent Activity
               _buildRecentActivity(context),
@@ -88,112 +124,38 @@ class HomePage extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
         children: [
-          Icon(
-            Icons.location_on,
-            color: theme.colorScheme.primary,
-            size: 20,
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Expanded(
-            child: Text(
-              'Current Location',
-              style: theme.textTheme.titleMedium,
-            ),
-          ),
-          // Theme Switcher Button
-          PopupMenuButton<String>(
-            icon: Icon(
-              Icons.brightness_6,
-              color: theme.colorScheme.onSurface,
-            ),
-            onSelected: (String themeName) {
-              context.read<ThemeBloc>().add(ChangeThemeEvent(themeName));
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem(
-                value: AppTheme.lightTheme,
-                child: Text('Light Theme'),
-              ),
-              const PopupMenuItem(
-                value: AppTheme.darkTheme,
-                child: Text('Dark Theme'),
-              ),
-              const PopupMenuItem(
-                value: AppTheme.blueTheme,
-                child: Text('Blue Theme'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOfferBanner(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.primary.withOpacity(0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: Row(
-        children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Exclusive Offer!',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    color: theme.colorScheme.onPrimary,
+                  'Good Morning!',
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Get 20% off on your first 3 orders',
+                  'Book a delivery service',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onPrimary.withOpacity(0.9),
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: theme.colorScheme.primary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
-                    ),
-                  ),
-                  child: const Text('Claim Now'),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
           Container(
-            width: 80,
-            height: 80,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(AppRadius.sm),
+              color: theme.colorScheme.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.local_shipping,
-              size: 40,
-              color: theme.colorScheme.onPrimary,
+            child: IconButton(
+              icon: Icon(
+                Icons.notifications_outlined,
+                color: theme.colorScheme.primary,
+              ),
+              onPressed: () {
+                // Navigate to notifications
+              },
             ),
           ),
         ],
@@ -201,11 +163,11 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
+  Widget _buildMainSearchBar(BuildContext context) {
     final theme = Theme.of(context);
     
     return Container(
-      margin: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: GestureDetector(
         onTap: () {
           Navigator.push(
@@ -214,32 +176,163 @@ class HomePage extends StatelessWidget {
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.lg,
-          ),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            color: theme.colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.2),
+              color: theme.colorScheme.primary.withOpacity(0.2),
+              width: 1,
             ),
           ),
           child: Row(
             children: [
               Icon(
                 Icons.search,
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.primary,
+                size: 28,
               ),
               const SizedBox(width: AppSpacing.md),
-              Text(
-                'Where to?',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Where do you want to send?',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      'Tap to select pickup and drop location',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward,
+                color: theme.colorScheme.primary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickServiceAccess(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Quick Services',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: _buildServiceCard(
+                  context,
+                  icon: Icons.flash_on,
+                  title: 'Express Delivery',
+                  subtitle: 'Fast & reliable',
+                  color: Colors.orange,
+                  gradient: [Colors.orange.shade400, Colors.orange.shade600],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: _buildServiceCard(
+                  context,
+                  icon: Icons.shopping_bag,
+                  title: 'Shop & Drop',
+                  subtitle: 'We buy & deliver',
+                  color: Colors.green,
+                  gradient: [Colors.green.shade400, Colors.green.shade600],
                 ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required List<Color> gradient,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const BookingScreen()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -249,35 +342,48 @@ class HomePage extends StatelessWidget {
     final theme = Theme.of(context);
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Our Vehicle Category',
-            style: theme.textTheme.headlineSmall,
+            'Choose Vehicle Type',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildVehicleCard(
-                context,
-                icon: Icons.two_wheeler,
-                label: '2 Wheeler',
-                color: Colors.orange,
+              Expanded(
+                child: _buildVehicleCard(
+                  context,
+                  icon: Icons.two_wheeler,
+                  label: 'Bike',
+                  subtitle: 'Small items',
+                  color: Colors.orange,
+                ),
               ),
-              _buildVehicleCard(
-                context,
-                icon: Icons.airport_shuttle,
-                label: '3 Wheeler',
-                color: Colors.green,
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _buildVehicleCard(
+                  context,
+                  icon: Icons.airport_shuttle,
+                  label: 'Auto',
+                  subtitle: 'Medium load',
+                  color: Colors.green,
+                ),
               ),
-              _buildVehicleCard(
-                context,
-                icon: Icons.local_shipping,
-                label: '4 Wheeler',
-                color: Colors.blue,
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _buildVehicleCard(
+                  context,
+                  icon: Icons.local_shipping,
+                  label: 'Mini Truck',
+                  subtitle: 'Large items',
+                  color: Colors.blue,
+                ),
               ),
             ],
           ),
@@ -290,90 +396,6 @@ class HomePage extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String label,
-    required Color color,
-  }) {
-    final theme = Theme.of(context);
-    
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const BookingScreen()),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(
-            color: color.withOpacity(0.3),
-            width: 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 48,
-              color: color,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Quick Actions',
-            style: theme.textTheme.headlineSmall,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  context,
-                  icon: Icons.inventory_2,
-                  title: 'Package Delivery',
-                  subtitle: 'Send items anywhere',
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _buildActionCard(
-                  context,
-                  icon: Icons.shopping_cart,
-                  title: 'Shop & Drop',
-                  subtitle: 'Get items delivered',
-                  color: theme.colorScheme.secondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
     required String subtitle,
     required Color color,
   }) {
@@ -390,7 +412,11 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: color.withOpacity(0.2),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -399,35 +425,33 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(AppSpacing.sm),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(AppRadius.sm),
+                shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: color,
                 size: 32,
+                color: color,
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  Text(
-                    subtitle,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              label,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
+            ),
+            Text(
+              subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -447,169 +471,241 @@ class HomePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Your Recent Activity',
-                style: theme.textTheme.headlineSmall,
+                'Recent Activity',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               TextButton(
-                onPressed: () {},
-                child: const Text('View All'),
+                onPressed: () {
+                  // Navigate to orders tab (index 1) in the home screen
+                  final homeScreenState = context.findAncestorStateOfType<_HomeScreenState>();
+                  homeScreenState?._onItemTapped(1);
+                },
+                child: Text(
+                  'View All',
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          _buildActivityItem(
-            context,
-            title: 'Package to Anna Nagar',
-            subtitle: 'Delivered on 15 Feb',
-            amount: '₹150',
-            isCompleted: true,
+          if (_isLoadingBookings)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(AppSpacing.lg),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_recentBookings.isEmpty)
+            _buildEmptyState(theme)
+          else
+            ..._recentBookings.map((booking) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: _buildActivityItem(context, booking),
+            )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        children: [
+          Icon(
+            Icons.history,
+            size: 64,
+            color: theme.colorScheme.onSurface.withOpacity(0.3),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'No Recent Activity',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          _buildActivityItem(
-            context,
-            title: 'Pickup from Velachery',
-            subtitle: 'Scheduled for 16 Feb',
-            amount: '₹90',
-            isCompleted: false,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActivityItem(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required String amount,
-    required bool isCompleted,
-  }) {
-    final theme = Theme.of(context);
-    
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: isCompleted 
-                ? theme.colorScheme.secondary.withOpacity(0.1)
-                : theme.colorScheme.primary.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              isCompleted ? Icons.check_circle : Icons.schedule,
-              color: isCompleted 
-                ? theme.colorScheme.secondary
-                : theme.colorScheme.primary,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleMedium,
-                ),
-                Text(
-                  subtitle,
-                  style: theme.textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
           Text(
-            amount,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
+            'Your recent bookings will appear here',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
-}
 
-class OrdersPage extends StatelessWidget {
-  const OrdersPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildActivityItem(BuildContext context, BookingListItem booking) {
     final theme = Theme.of(context);
     
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Orders'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return GestureDetector(
+      onTap: () => _onBookingTapped(booking),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(
+            color: theme.colorScheme.outline.withOpacity(0.1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
           children: [
-            Icon(
-              Icons.receipt_long,
-              size: 80,
-              color: theme.colorScheme.primary,
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: booking.statusColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _getStatusIcon(booking.status),
+                color: booking.statusColor,
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Your Orders',
-              style: theme.textTheme.headlineMedium,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${booking.goodsType} to ${booking.shortDropoffAddress}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '${booking.statusMessage} • ${DateFormat('MMM dd, HH:mm').format(booking.createdAt)}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm),
             Text(
-              'No orders yet',
-              style: theme.textTheme.bodyMedium,
+              '₹${booking.estimatedFare.toStringAsFixed(0)}',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class OffersPage extends StatelessWidget {
-  const OffersPage({Key? key}) : super(key: key);
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'REQUESTED':
+        return Icons.schedule;
+      case 'SEARCHING':
+        return Icons.search;
+      case 'ACCEPTED':
+        return Icons.check_circle;
+      case 'CANCELLED':
+        return Icons.cancel;
+      default:
+        return Icons.info;
+    }
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Offers'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.local_offer,
-              size: 80,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Special Offers',
-              style: theme.textTheme.headlineMedium,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'No offers available',
-              style: theme.textTheme.bodyMedium,
-            ),
-          ],
+  void _onBookingTapped(BookingListItem booking) {
+    if (booking.tripId != null && booking.isAccepted) {
+      // Navigate to trip details if booking is accepted and has trip_id
+      _navigateToTripDetails(booking.tripId!);
+    } else {
+      // Navigate to booking details for other cases
+      _navigateToBookingDetails(booking);
+    }
+  }
+
+  void _navigateToTripDetails(int tripId) async {
+    try {
+      final tripDetail = await _bookingService.getTripDetail(tripId);
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TripDetailsScreen(tripDetail: tripDetail),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load trip details: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _navigateToBookingDetails(BookingListItem booking) {
+    // Show booking details in a dialog for non-accepted bookings
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Booking #${booking.id}'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDetailRow('Status', booking.statusMessage),
+              _buildDetailRow('From', booking.pickupAddress),
+              _buildDetailRow('To', booking.dropoffAddress),
+              _buildDetailRow('Goods', '${booking.goodsType} (${booking.goodsQuantity})'),
+              _buildDetailRow('Fare', '₹${booking.estimatedFare.toStringAsFixed(0)}'),
+              _buildDetailRow('Payment', booking.paymentMode),
+              _buildDetailRow('Created', DateFormat('MMM dd, yyyy at HH:mm').format(booking.createdAt)),
+            ],
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label:',
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(value),
+        ],
       ),
     );
   }

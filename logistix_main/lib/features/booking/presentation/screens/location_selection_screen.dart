@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import '../widgets/map_widget.dart';
 import '../../../../core/config/app_theme.dart';
 import '../../data/services/location_service.dart';
+import '../../../../core/services/map_service_interface.dart';
 import 'dart:async';
-import '../widgets/map_view.dart';
-import '../../../../core/constants/app_constants.dart';
 
 class LocationSelectionScreen extends StatefulWidget {
   final String title;
-  final LatLng? initialLocation;
+  final MapLatLng? initialLocation;
 
   const LocationSelectionScreen({
     Key? key,
@@ -35,13 +31,13 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
   List<SavedPlace> _savedPlaces = [];
   bool _isLoading = false;
   bool _showMap = false;
-  LatLng? _selectedLocation;
+  MapLatLng? _selectedLocation;
+  MapLatLng? _userLocation; // Add user location for search
   String _selectedAddress = '';
   
   @override
   void initState() {
     super.initState();
-    _selectedLocation = widget.initialLocation ?? LatLng(13.0827, 80.2707);
     _searchFocusNode.addListener(() {
       if (!_searchFocusNode.hasFocus) {
         setState(() {});
@@ -51,10 +47,15 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
   }
 
   Future<void> _loadInitialData() async {
+    // Load user location and set as default
+    final defaultLocation = widget.initialLocation ?? await _locationService.getDefaultLocation();
+    
     final recent = await _locationService.getRecentSearches();
     final saved = await _locationService.getSavedPlaces();
     
     setState(() {
+      _selectedLocation = defaultLocation;
+      _userLocation = defaultLocation;
       _recentSearches = recent;
       _savedPlaces = saved;
     });
@@ -83,7 +84,11 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
     });
 
     _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
-      final results = await _locationService.searchPlaces(query);
+      final results = await _locationService.searchPlaces(
+        query,
+        userLocation: _userLocation,
+        radius: 50000, // 50km radius
+      );
       
       if (mounted) {
         setState(() {
@@ -103,7 +108,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
       final position = await _locationService.getCurrentLocation();
       
       if (position != null) {
-        final location = LatLng(position.latitude, position.longitude);
+        final location = MapLatLng(position.latitude, position.longitude);
         final address = await _locationService.getAddressFromLatLng(location);
         
         if (mounted) {
@@ -136,7 +141,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
     if (mounted) {
       Navigator.pop(context, {
         'location': place.location,
-        'address': place.title + ', ' + place.subtitle,
+        'address': '${place.title}, ${place.subtitle}',
       });
     }
   }
@@ -194,7 +199,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
     final isSearching = _searchFocusNode.hasFocus || _searchController.text.isNotEmpty;
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       body: Stack(
         children: [
           // Map (Full screen)
@@ -202,7 +207,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
             MapWidget(
               initialPosition: _selectedLocation!,
               initialZoom: 16.0,
-              onCameraMove: (LatLng location) {
+              onCameraMove: (MapLatLng location) {
                 setState(() {
                   _selectedLocation = location;
                 });
@@ -285,7 +290,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                               )
                             : null,
                           filled: true,
-                          fillColor: theme.colorScheme.background,
+                          fillColor: theme.colorScheme.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(AppRadius.sm),
                             borderSide: BorderSide(
@@ -514,7 +519,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                         Container(
                           padding: const EdgeInsets.all(AppSpacing.md),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.background,
+                            color: theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(AppRadius.sm),
                             border: Border.all(
                               color: theme.colorScheme.outline.withOpacity(0.2),
@@ -522,7 +527,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                           ),
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.location_on,
                                 color: Colors.red,
                               ),
@@ -625,7 +630,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
         children: [
           // Map
           MapWidget(
-            initialPosition: _selectedLocation ?? const LatLng(13.0827, 80.2707),
+            initialPosition: _selectedLocation ?? MapLatLng(13.0827, 80.2707),
             markers: const [],
             onTap: (location) async {
               final address = await _locationService.getAddressFromLatLng(location);
@@ -726,7 +731,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
     }
   }
 
-  Future<void> _getAddressFromLatLng(LatLng location) async {
+  Future<void> _getAddressFromLatLng(MapLatLng location) async {
     final address = await _locationService.getAddressFromLatLng(location);
     setState(() {
       _selectedAddress = address;

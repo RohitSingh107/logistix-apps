@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -8,6 +7,7 @@ part 'wallet_model.g.dart';
 class WalletTransaction extends BaseModel {
   final int id;
   final double amount;
+  @JsonKey(name: 'type_tx')
   final String typeTx;
   final String? remarks;
   @JsonKey(name: 'created_at')
@@ -31,4 +31,25 @@ class WalletTransaction extends BaseModel {
 
   @override
   List<Object?> get props => [id, amount, typeTx, remarks, createdAt, updatedAt];
+}
+
+@JsonSerializable()
+class WalletTopupResponse extends BaseModel {
+  final String message;
+  final double balance;
+  final WalletTransaction wallet;
+
+  const WalletTopupResponse({
+    required this.message,
+    required this.balance,
+    required this.wallet,
+  });
+
+  factory WalletTopupResponse.fromJson(Map<String, dynamic> json) => _$WalletTopupResponseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$WalletTopupResponseToJson(this);
+
+  @override
+  List<Object?> get props => [message, balance, wallet];
 } 

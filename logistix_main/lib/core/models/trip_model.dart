@@ -58,7 +58,7 @@ class Trip extends BaseModel {
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
-  Trip({
+  const Trip({
     required this.id,
     required this.driver,
     required this.bookingRequest,
@@ -77,6 +77,7 @@ class Trip extends BaseModel {
   });
 
   factory Trip.fromJson(Map<String, dynamic> json) => _$TripFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$TripToJson(this);
 
   @override
@@ -137,54 +138,3 @@ class TripUpdateRequest {
   factory TripUpdateRequest.fromJson(Map<String, dynamic> json) => _$TripUpdateRequestFromJson(json);
   Map<String, dynamic> toJson() => _$TripUpdateRequestToJson(this);
 }
-
-class Driver extends BaseModel {
-  final int id;
-  final User user;
-  final String licenseNumber;
-  final bool isAvailable;
-  final double averageRating;
-  final double totalEarnings;
-
-  const Driver({
-    required this.id,
-    required this.user,
-    required this.licenseNumber,
-    required this.isAvailable,
-    required this.averageRating,
-    required this.totalEarnings,
-  });
-
-  factory Driver.fromJson(Map<String, dynamic> json) {
-    return Driver(
-      id: json['id'],
-      user: User.fromJson(json['user']),
-      licenseNumber: json['license_number'],
-      isAvailable: json['is_available'],
-      averageRating: double.parse(json['average_rating']),
-      totalEarnings: json['total_earnings'].toDouble(),
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'user': user.toJson(),
-      'license_number': licenseNumber,
-      'is_available': isAvailable,
-      'average_rating': averageRating.toString(),
-      'total_earnings': totalEarnings,
-    };
-  }
-
-  @override
-  List<Object?> get props => [
-        id,
-        user,
-        licenseNumber,
-        isAvailable,
-        averageRating,
-        totalEarnings,
-      ];
-} 
