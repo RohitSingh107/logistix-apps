@@ -159,7 +159,6 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => DriverSearchScreen(
-              tripId: bookingResponse.id,
               bookingDetails: bookingResponse,
               selectedVehicle: widget.selectedVehicle,
             ),

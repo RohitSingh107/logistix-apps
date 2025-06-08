@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/models/user_model.dart';
+import '../../../../core/utils/image_utils.dart';
 import '../../presentation/bloc/user_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 
@@ -88,13 +89,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: Theme.of(context).primaryColor,
-                    child: Text(
-                      user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '',
-                      style: const TextStyle(
-                        fontSize: 30,
-                        color: Colors.white,
-                      ),
-                    ),
+                    backgroundImage: _getProfileImage(user.profilePicture),
+                    onBackgroundImageError: (exception, stackTrace) {
+                      print('Error loading profile image: $exception');
+                    },
+                    child: _getProfileImage(user.profilePicture) == null
+                        ? Text(
+                            user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '',
+                            style: const TextStyle(
+                              fontSize: 30,
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -400,6 +407,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       },
     );
+  }
+
+  // Helper method for profile images
+  ImageProvider? _getProfileImage(String? profilePicture) {
+    if (profilePicture == null) return null;
+    
+    final fullUrl = ImageUtils.getFullProfilePictureUrl(profilePicture);
+    if (fullUrl != null && ImageUtils.isValidProfilePictureUrl(profilePicture)) {
+      return NetworkImage(fullUrl);
+    }
+    
+    return null; // Will show default letter avatar
   }
 
   Widget _buildSection(BuildContext context, String title, List<Widget> children) {

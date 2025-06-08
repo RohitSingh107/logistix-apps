@@ -137,4 +137,4 @@ class TripUpdateRequest {
 
   factory TripUpdateRequest.fromJson(Map<String, dynamic> json) => _$TripUpdateRequestFromJson(json);
   Map<String, dynamic> toJson() => _$TripUpdateRequestToJson(this);
-} 
+}

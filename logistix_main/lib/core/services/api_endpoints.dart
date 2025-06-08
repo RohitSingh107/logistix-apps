@@ -12,6 +12,7 @@ class ApiEndpoints {
   // Booking endpoints
   static const String createBooking = '/api/booking/create/';
   static const String acceptBooking = '/api/booking/accept/';
+  static String bookingDetail(int bookingId) => '/api/booking/detail/$bookingId/';
 
   // Trip endpoints
   static String tripDetail(int tripId) => '/api/trip/detail/$tripId/';

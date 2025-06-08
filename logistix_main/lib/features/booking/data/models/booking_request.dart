@@ -59,6 +59,7 @@ class BookingRequest {
 
 class BookingResponse {
   final int id;
+  final int? tripId; // Only present when status is ACCEPTED
   final String senderName;
   final String receiverName;
   final String senderPhone;
@@ -76,6 +77,7 @@ class BookingResponse {
 
   BookingResponse({
     required this.id,
+    this.tripId,
     required this.senderName,
     required this.receiverName,
     required this.senderPhone,
@@ -98,6 +100,7 @@ class BookingResponse {
     
     return BookingResponse(
       id: bookingData['id'] as int,
+      tripId: bookingData['trip_id'] as int?, // Optional field
       senderName: bookingData['sender_name'] as String,
       receiverName: bookingData['receiver_name'] as String,
       senderPhone: bookingData['sender_phone'] as String,
@@ -113,5 +116,27 @@ class BookingResponse {
       createdAt: DateTime.parse(bookingData['created_at'] as String),
       updatedAt: DateTime.parse(bookingData['updated_at'] as String),
     );
+  }
+
+  // Helper methods to check status
+  bool get isRequested => status == 'REQUESTED';
+  bool get isSearching => status == 'SEARCHING';
+  bool get isAccepted => status == 'ACCEPTED';
+  bool get isCancelled => status == 'CANCELLED';
+
+  // Helper method to get user-friendly status message
+  String get statusMessage {
+    switch (status) {
+      case 'REQUESTED':
+        return 'Booking Requested';
+      case 'SEARCHING':
+        return 'Searching for Driver';
+      case 'ACCEPTED':
+        return 'Accepted by Driver';
+      case 'CANCELLED':
+        return 'Booking Cancelled';
+      default:
+        return status;
+    }
   }
 } 
