@@ -19,6 +19,7 @@ class _TripScreenState extends State<TripScreen> {
   String _elapsedTime = '';
   final AuthService _authService = AuthService();
   bool _isUpdatingStatus = false;
+  bool _isUpdatingPayment = false;
 
   @override
   void initState() {
@@ -134,6 +135,20 @@ class _TripScreenState extends State<TripScreen> {
   Future<void> _updateTripStatusAndCompleteTrip() async {
     if (_isUpdatingStatus) return;
 
+    // Check if payment is required and not done
+    final paymentMode = bookingRequest['payment_mode'] ?? '';
+    final isPaymentDone = trip['is_payment_done'] ?? false;
+    
+    if (paymentMode == 'CASH' && !isPaymentDone) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please mark payment as received before completing the trip.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isUpdatingStatus = true;
     });
@@ -194,6 +209,55 @@ class _TripScreenState extends State<TripScreen> {
     }
   }
 
+  Future<void> _updatePaymentStatus(bool isPaymentDone) async {
+    if (_isUpdatingPayment) return;
+
+    setState(() {
+      _isUpdatingPayment = true;
+    });
+
+    try {
+      final result = await _authService.updatePaymentStatus(trip['id'], isPaymentDone);
+      
+      if (result != null && mounted) {
+        setState(() {
+          trip = result['trip'];
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isPaymentDone 
+                ? 'Payment marked as received' 
+                : 'Payment marked as pending'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to update payment status. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating payment status: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingPayment = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final tripStatus = trip['status'] ?? 'ACCEPTED';
@@ -247,6 +311,12 @@ class _TripScreenState extends State<TripScreen> {
             // Booking Details
             _buildBookingDetailsCard(),
             const SizedBox(height: 16),
+
+            // Payment Status Card (only for CASH payments)
+            if (bookingRequest['payment_mode'] == 'CASH')
+              _buildPaymentStatusCard(),
+            if (bookingRequest['payment_mode'] == 'CASH')
+              const SizedBox(height: 16),
 
             // Contact Information
             _buildContactCard(),
@@ -573,6 +643,145 @@ class _TripScreenState extends State<TripScreen> {
           color: Theme.of(context).primaryColor,
         ),
       ],
+    );
+  }
+
+  Widget _buildPaymentStatusCard() {
+    final isPaymentDone = trip['is_payment_done'] ?? false;
+    final tripStatus = trip['status'] ?? 'ACCEPTED';
+    final isCompleted = tripStatus == 'COMPLETED';
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Payment Status',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isPaymentDone ? Colors.green.shade50 : Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isPaymentDone ? Colors.green.shade200 : Colors.orange.shade200,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        isPaymentDone ? Icons.payment : Icons.pending,
+                        color: isPaymentDone ? Colors.green.shade600 : Colors.orange.shade600,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cash Payment',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: isPaymentDone ? Colors.green.shade800 : Colors.orange.shade800,
+                              ),
+                            ),
+                            Text(
+                              '₹${trip['final_fare']?.toString() ?? '0'}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isPaymentDone ? Colors.green.shade700 : Colors.orange.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Transform.scale(
+                        scale: 1.2,
+                        child: Switch(
+                          value: isPaymentDone,
+                          onChanged: (_isUpdatingPayment || isCompleted) 
+                              ? null 
+                              : (value) => _updatePaymentStatus(value),
+                          activeColor: Colors.white,
+                          activeTrackColor: Colors.green,
+                          inactiveThumbColor: Colors.white,
+                          inactiveTrackColor: Colors.orange.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          isPaymentDone 
+                              ? 'Payment received and confirmed' 
+                              : 'Mark as received when customer pays',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isPaymentDone ? Colors.green.shade700 : Colors.orange.shade700,
+                          ),
+                        ),
+                      ),
+                      if (_isUpdatingPayment) ...[
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isPaymentDone ? Colors.green.shade600 : Colors.orange.shade600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (!isPaymentDone && !isCompleted) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.warning, color: Colors.red.shade600, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Trip cannot be completed until payment is received',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.red.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 } 
