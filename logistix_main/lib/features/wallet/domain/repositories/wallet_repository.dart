@@ -9,4 +9,10 @@ abstract class WalletRepository {
     String? transactionType,
     int? limit,
   });
+  
+  /// Add money to the wallet
+  Future<WalletTopupResponse> topupWallet({
+    required double amount,
+    String? remarks,
+  });
 } 

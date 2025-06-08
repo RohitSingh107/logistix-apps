@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/config/app_theme.dart';
 import '../../../../core/services/map_service_interface.dart';
+import '../../../../core/models/booking_model.dart';
 import '../../../vehicle_estimation/data/models/vehicle_estimate_response.dart';
-import '../../data/models/booking_request.dart';
+import '../../../wallet/domain/repositories/wallet_repository.dart';
+import '../../../wallet/presentation/bloc/wallet_bloc.dart';
+import '../../../wallet/presentation/widgets/add_balance_modal.dart';
+import '../../data/models/booking_request.dart' as data_models;
 import '../../data/services/booking_service.dart';
+import '../../domain/repositories/booking_repository.dart';
+import '../bloc/booking_bloc.dart';
+import '../widgets/insufficient_balance_modal.dart';
 import '../../../../core/di/service_locator.dart';
 import 'driver_search_screen.dart';
 
-class BookingDetailsScreen extends StatefulWidget {
+class BookingDetailsScreen extends StatelessWidget {
   final MapLatLng pickupLocation;
   final MapLatLng dropLocation;
   final String pickupAddress;
@@ -24,10 +32,50 @@ class BookingDetailsScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<BookingDetailsScreen> createState() => _BookingDetailsScreenState();
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => BookingBloc(
+            bookingRepository: serviceLocator<BookingRepository>(),
+            walletRepository: serviceLocator<WalletRepository>(),
+          ),
+        ),
+        BlocProvider(
+          create: (context) => WalletBloc(serviceLocator<WalletRepository>()),
+        ),
+      ],
+      child: _BookingDetailsContent(
+        pickupLocation: pickupLocation,
+        dropLocation: dropLocation,
+        pickupAddress: pickupAddress,
+        dropAddress: dropAddress,
+        selectedVehicle: selectedVehicle,
+      ),
+    );
+  }
 }
 
-class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
+class _BookingDetailsContent extends StatefulWidget {
+  final MapLatLng pickupLocation;
+  final MapLatLng dropLocation;
+  final String pickupAddress;
+  final String dropAddress;
+  final VehicleEstimateResponse selectedVehicle;
+
+  const _BookingDetailsContent({
+    required this.pickupLocation,
+    required this.dropLocation,
+    required this.pickupAddress,
+    required this.dropAddress,
+    required this.selectedVehicle,
+  });
+
+  @override
+  State<_BookingDetailsContent> createState() => _BookingDetailsContentState();
+}
+
+class _BookingDetailsContentState extends State<_BookingDetailsContent> {
   final _formKey = GlobalKey<FormState>();
   final _scrollController = ScrollController();
   
@@ -43,9 +91,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   bool _sameAsReceiver = false;
   String _selectedPaymentMode = 'CASH';
   DateTime _selectedPickupTime = DateTime.now().add(const Duration(minutes: 30));
-  bool _isSubmitting = false;
   
-  final List<String> _paymentModes = ['CASH', 'WALLET', 'UPI'];
+  final List<String> _paymentModes = ['CASH', 'WALLET'];
   final List<String> _goodsTypes = [
     'Electronics',
     'Furniture',
@@ -128,12 +175,27 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    // Check wallet balance if wallet payment is selected
+    if (_selectedPaymentMode == 'WALLET') {
+      if (mounted) {
+        context.read<BookingBloc>().add(
+          CheckWalletBalance(widget.selectedVehicle.estimatedFare)
+        );
+      }
+      return;
+    }
 
-    try {
-      final bookingRequest = BookingRequest(
+    // Proceed with booking creation for cash payment
+    _createBooking();
+  }
+
+  void _createBooking() {
+    final paymentMode = _selectedPaymentMode == 'WALLET' 
+        ? PaymentMode.wallet 
+        : PaymentMode.cash;
+
+    context.read<BookingBloc>().add(
+      CreateBookingEvent(
         senderName: _senderNameController.text.trim(),
         receiverName: _receiverNameController.text.trim(),
         senderPhone: _senderPhoneController.text.trim(),
@@ -148,12 +210,79 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         vehicleTypeId: widget.selectedVehicle.vehicleType,
         goodsType: _goodsTypeController.text.trim(),
         goodsQuantity: _goodsQuantityController.text.trim(),
-        paymentMode: _selectedPaymentMode,
+        paymentMode: paymentMode,
         estimatedFare: widget.selectedVehicle.estimatedFare,
-      );
+      ),
+    );
+  }
 
-      final bookingResponse = await _bookingService.createBooking(bookingRequest);
+  void _showInsufficientBalanceModal(BuildContext context, WalletBalanceInsufficient state) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: false,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xl),
+        ),
+      ),
+      builder: (modalContext) => BlocProvider.value(
+        value: context.read<WalletBloc>(),
+        child: InsufficientBalanceModal(
+          currentBalance: state.balance,
+          requiredAmount: state.requiredAmount,
+          shortfall: state.shortfall,
+          onAddBalance: () {
+            Navigator.pop(modalContext);
+            _showAddBalanceModalWithAmount(context, state.shortfall);
+          },
+          onCancel: () {
+            Navigator.pop(modalContext);
+            context.read<BookingBloc>().add(ResetBookingState());
+          },
+        ),
+      ),
+    );
+  }
 
+  void _showAddBalanceModalWithAmount(BuildContext context, double suggestedAmount) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.lg),
+        ),
+      ),
+      builder: (modalContext) => BlocProvider.value(
+        value: context.read<WalletBloc>(),
+        child: AddBalanceModal(suggestedAmount: suggestedAmount),
+      ),
+    );
+  }
+
+  void _navigateToDriverSearch(BookingRequest booking) {
+    // Create the booking request for the service
+    final bookingRequest = data_models.BookingRequest(
+      senderName: booking.senderName,
+      receiverName: booking.receiverName,
+      senderPhone: booking.senderPhone,
+      receiverPhone: booking.receiverPhone,
+      pickupLatitude: widget.pickupLocation.lat,
+      pickupLongitude: widget.pickupLocation.lng,
+      dropoffLatitude: widget.dropLocation.lat,
+      dropoffLongitude: widget.dropLocation.lng,
+      pickupTime: booking.pickupTime,
+      pickupAddress: booking.pickupAddress,
+      dropoffAddress: booking.dropoffAddress,
+      vehicleTypeId: widget.selectedVehicle.vehicleType,
+      goodsType: booking.goodsType,
+      goodsQuantity: booking.goodsQuantity,
+      paymentMode: booking.paymentMode.toString().split('.').last.toUpperCase(),
+      estimatedFare: booking.estimatedFare,
+    );
+
+    _bookingService.createBooking(bookingRequest).then((bookingResponse) {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -165,7 +294,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           ),
         );
       }
-    } catch (e) {
+    }).catchError((e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -175,155 +304,192 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           ),
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: theme.colorScheme.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Booking Details',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Trip summary
-                    _buildTripSummary(theme),
-                    const SizedBox(height: AppSpacing.xl),
-                    
-                    // Sender details
-                    _buildSectionTitle(theme, 'Sender Details'),
-                    const SizedBox(height: AppSpacing.md),
-                    _buildSenderForm(theme),
-                    const SizedBox(height: AppSpacing.lg),
-                    
-                    // Same as receiver option
-                    _buildSameAsReceiverOption(theme),
-                    const SizedBox(height: AppSpacing.lg),
-                    
-                    // Receiver details
-                    _buildSectionTitle(theme, 'Receiver Details'),
-                    const SizedBox(height: AppSpacing.md),
-                    _buildReceiverForm(theme),
-                    const SizedBox(height: AppSpacing.lg),
-                    
-                    // Goods details
-                    _buildSectionTitle(theme, 'Goods Information'),
-                    const SizedBox(height: AppSpacing.md),
-                    _buildGoodsForm(theme),
-                    const SizedBox(height: AppSpacing.lg),
-                    
-                    // Pickup time
-                    _buildSectionTitle(theme, 'Pickup Time'),
-                    const SizedBox(height: AppSpacing.md),
-                    _buildPickupTimeSelector(theme),
-                    const SizedBox(height: AppSpacing.lg),
-                    
-                    // Payment mode
-                    _buildSectionTitle(theme, 'Payment Method'),
-                    const SizedBox(height: AppSpacing.md),
-                    _buildPaymentModeSelector(theme),
-                    
-                    // Bottom padding for fixed button
-                    const SizedBox(height: 100),
-                  ],
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<BookingBloc, BookingState>(
+          listener: (context, state) {
+            if (state is WalletBalanceSufficient) {
+              // Proceed with booking creation
+              _createBooking();
+            } else if (state is WalletBalanceInsufficient) {
+              // Show insufficient balance modal
+              _showInsufficientBalanceModal(context, state);
+            } else if (state is BookingSuccess) {
+              // Navigate to driver search screen
+              _navigateToDriverSearch(state.booking);
+            } else if (state is BookingError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
                 ),
-              ),
+              );
+            }
+          },
+        ),
+        BlocListener<WalletBloc, WalletState>(
+          listener: (context, state) {
+            if (state is AddBalanceSuccess) {
+              // Re-check wallet balance after successful top-up
+              context.read<BookingBloc>().add(
+                CheckWalletBalance(widget.selectedVehicle.estimatedFare)
+              );
+            }
+          },
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        appBar: AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Booking Details',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
-      
-      // Fixed confirm button
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          bottom: MediaQuery.of(context).padding.bottom + AppSpacing.md,
-          top: AppSpacing.md,
+          centerTitle: true,
         ),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Trip summary
+                      _buildTripSummary(theme),
+                      const SizedBox(height: AppSpacing.xl),
+                      
+                      // Sender details
+                      _buildSectionTitle(theme, 'Sender Details'),
+                      const SizedBox(height: AppSpacing.md),
+                      _buildSenderForm(theme),
+                      const SizedBox(height: AppSpacing.lg),
+                      
+                      // Same as receiver option
+                      _buildSameAsReceiverOption(theme),
+                      const SizedBox(height: AppSpacing.lg),
+                      
+                      // Receiver details
+                      _buildSectionTitle(theme, 'Receiver Details'),
+                      const SizedBox(height: AppSpacing.md),
+                      _buildReceiverForm(theme),
+                      const SizedBox(height: AppSpacing.lg),
+                      
+                      // Goods details
+                      _buildSectionTitle(theme, 'Goods Information'),
+                      const SizedBox(height: AppSpacing.md),
+                      _buildGoodsForm(theme),
+                      const SizedBox(height: AppSpacing.lg),
+                      
+                      // Pickup time
+                      _buildSectionTitle(theme, 'Pickup Time'),
+                      const SizedBox(height: AppSpacing.md),
+                      _buildPickupTimeSelector(theme),
+                      const SizedBox(height: AppSpacing.lg),
+                      
+                      // Payment mode
+                      _buildSectionTitle(theme, 'Payment Method'),
+                      const SizedBox(height: AppSpacing.md),
+                      _buildPaymentModeSelector(theme),
+                      
+                      // Bottom padding for fixed button
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),
-        child: SafeArea(
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _submitBooking,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                elevation: 0,
+        bottomNavigationBar: Container(
+          padding: EdgeInsets.only(
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            bottom: MediaQuery.of(context).padding.bottom + AppSpacing.md,
+            top: AppSpacing.md,
+          ),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
               ),
-              child: _isSubmitting
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              theme.colorScheme.onPrimary,
+            ],
+          ),
+          child: SafeArea(
+            child: SizedBox(
+              width: double.infinity,
+              child: BlocBuilder<BookingBloc, BookingState>(
+                builder: (context, state) {
+                  final isLoading = state is BookingLoading || 
+                                   state is WalletBalanceChecking;
+                  
+                  return ElevatedButton(
+                    onPressed: isLoading ? null : _submitBooking,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: isLoading
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    theme.colorScheme.onPrimary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Text(
+                                state is WalletBalanceChecking 
+                                    ? 'Checking Balance...' 
+                                    : 'Creating Booking...',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            'Confirm Booking • ₹${widget.selectedVehicle.estimatedFare.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        const Text(
-                          'Creating Booking...',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Text(
-                      'Confirm Booking • ₹${widget.selectedVehicle.estimatedFare.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),

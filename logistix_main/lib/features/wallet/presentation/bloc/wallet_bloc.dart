@@ -17,11 +17,12 @@ class RefreshWalletData extends WalletEvent {}
 
 class AddBalance extends WalletEvent {
   final double amount;
+  final String? remarks;
 
-  const AddBalance(this.amount);
+  const AddBalance(this.amount, {this.remarks});
 
   @override
-  List<Object?> get props => [amount];
+  List<Object?> get props => [amount, remarks];
 }
 
 // States
@@ -121,11 +122,12 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   Future<void> _onAddBalance(AddBalance event, Emitter<WalletState> emit) async {
     emit(AddBalanceLoading());
     try {
-      // Here you would typically call an API to add balance
-      // For now, we'll just simulate success and refresh data
-      await Future.delayed(const Duration(seconds: 1));
+      final topupResponse = await _walletRepository.topupWallet(
+        amount: event.amount,
+        remarks: event.remarks ?? 'Wallet topup',
+      );
       
-      emit(AddBalanceSuccess('Balance added successfully!'));
+      emit(AddBalanceSuccess(topupResponse.message));
       
       // Refresh the wallet data after adding balance
       add(LoadWalletData());

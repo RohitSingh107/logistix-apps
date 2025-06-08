@@ -25,3 +25,19 @@ Map<String, dynamic> _$WalletTransactionToJson(WalletTransaction instance) =>
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
     };
+
+WalletTopupResponse _$WalletTopupResponseFromJson(Map<String, dynamic> json) =>
+    WalletTopupResponse(
+      message: json['message'] as String,
+      balance: (json['balance'] as num).toDouble(),
+      wallet:
+          WalletTransaction.fromJson(json['wallet'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$WalletTopupResponseToJson(
+        WalletTopupResponse instance) =>
+    <String, dynamic>{
+      'message': instance.message,
+      'balance': instance.balance,
+      'wallet': instance.wallet,
+    };

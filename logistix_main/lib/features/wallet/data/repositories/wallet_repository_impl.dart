@@ -39,4 +39,24 @@ class WalletRepositoryImpl implements WalletRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<WalletTopupResponse> topupWallet({
+    required double amount,
+    String? remarks,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        ApiEndpoints.walletTopup,
+        data: {
+          'amount': amount,
+          if (remarks != null) 'remarks': remarks,
+        },
+      );
+
+      return WalletTopupResponse.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
 } 
