@@ -6,6 +6,7 @@ import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../theme/presentation/bloc/theme_bloc.dart';
 import '../../../theme/presentation/bloc/theme_event.dart';
 import '../../../booking/presentation/screens/booking_screen.dart';
+import '../../../booking/presentation/screens/orders_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -19,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     const HomePage(),
-    const OrdersPage(),
+    const OrdersScreen(),
     const OffersPage(),
     const ProfileScreen(),
   ];
@@ -541,42 +542,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class OrdersPage extends StatelessWidget {
-  const OrdersPage({Key? key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Orders'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.receipt_long,
-              size: 80,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Your Orders',
-              style: theme.textTheme.headlineMedium,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'No orders yet',
-              style: theme.textTheme.bodyMedium,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class OffersPage extends StatelessWidget {
   const OffersPage({Key? key}) : super(key: key);

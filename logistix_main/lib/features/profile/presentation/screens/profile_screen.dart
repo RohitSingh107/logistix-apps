@@ -86,23 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: Theme.of(context).primaryColor.withOpacity(0.1),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Theme.of(context).primaryColor,
-                    backgroundImage: _getProfileImage(user.profilePicture),
-                    onBackgroundImageError: (exception, stackTrace) {
-                      print('Error loading profile image: $exception');
-                    },
-                    child: _getProfileImage(user.profilePicture) == null
-                        ? Text(
-                            user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '',
-                            style: const TextStyle(
-                              fontSize: 30,
-                              color: Colors.white,
-                            ),
-                          )
-                        : null,
-                  ),
+                  _buildProfileAvatar(user),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -419,6 +403,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     
     return null; // Will show default letter avatar
+  }
+
+  Widget _buildProfileAvatar(User user) {
+    final String initial = user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '';
+    final profileImage = _getProfileImage(user.profilePicture);
+    
+    if (profileImage != null) {
+      return Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).primaryColor,
+        ),
+        child: ClipOval(
+          child: Image.network(
+            ImageUtils.getFullProfilePictureUrl(user.profilePicture!) ?? '',
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).primaryColor,
+                ),
+                child: Center(
+                  child: Text(
+                    initial,
+                    style: const TextStyle(
+                      fontSize: 30,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                ),
+                child: Center(
+                  child: SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).primaryColor,
+        ),
+        child: Center(
+          child: Text(
+            initial,
+            style: const TextStyle(
+              fontSize: 30,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildSection(BuildContext context, String title, List<Widget> children) {
