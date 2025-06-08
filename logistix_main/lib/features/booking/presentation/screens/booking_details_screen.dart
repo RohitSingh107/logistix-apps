@@ -1,0 +1,676 @@
+import 'package:flutter/material.dart';
+import '../../../../core/config/app_theme.dart';
+import '../../../../core/services/map_service_interface.dart';
+import '../../../vehicle_estimation/data/models/vehicle_estimate_response.dart';
+import '../../data/models/booking_request.dart';
+import '../../data/services/booking_service.dart';
+import '../../../../core/di/service_locator.dart';
+import 'driver_search_screen.dart';
+
+class BookingDetailsScreen extends StatefulWidget {
+  final MapLatLng pickupLocation;
+  final MapLatLng dropLocation;
+  final String pickupAddress;
+  final String dropAddress;
+  final VehicleEstimateResponse selectedVehicle;
+
+  const BookingDetailsScreen({
+    Key? key,
+    required this.pickupLocation,
+    required this.dropLocation,
+    required this.pickupAddress,
+    required this.dropAddress,
+    required this.selectedVehicle,
+  }) : super(key: key);
+
+  @override
+  State<BookingDetailsScreen> createState() => _BookingDetailsScreenState();
+}
+
+class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _scrollController = ScrollController();
+  
+  // Form controllers
+  final _senderNameController = TextEditingController();
+  final _senderPhoneController = TextEditingController();
+  final _receiverNameController = TextEditingController();
+  final _receiverPhoneController = TextEditingController();
+  final _goodsTypeController = TextEditingController();
+  final _goodsQuantityController = TextEditingController();
+  
+  // Form state
+  bool _sameAsReceiver = false;
+  String _selectedPaymentMode = 'CASH';
+  DateTime _selectedPickupTime = DateTime.now().add(const Duration(minutes: 30));
+  bool _isSubmitting = false;
+  
+  final List<String> _paymentModes = ['CASH', 'WALLET', 'UPI'];
+  final List<String> _goodsTypes = [
+    'Electronics',
+    'Furniture',
+    'Groceries',
+    'Clothes',
+    'Books',
+    'Others'
+  ];
+
+  late final BookingService _bookingService;
+
+  @override
+  void initState() {
+    super.initState();
+    _bookingService = BookingService(serviceLocator());
+  }
+
+  @override
+  void dispose() {
+    _senderNameController.dispose();
+    _senderPhoneController.dispose();
+    _receiverNameController.dispose();
+    _receiverPhoneController.dispose();
+    _goodsTypeController.dispose();
+    _goodsQuantityController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _toggleSameAsReceiver(bool? value) {
+    setState(() {
+      _sameAsReceiver = value ?? false;
+      if (_sameAsReceiver) {
+        _receiverNameController.text = _senderNameController.text;
+        _receiverPhoneController.text = _senderPhoneController.text;
+      } else {
+        _receiverNameController.clear();
+        _receiverPhoneController.clear();
+      }
+    });
+  }
+
+  void _onSenderDetailsChanged() {
+    if (_sameAsReceiver) {
+      _receiverNameController.text = _senderNameController.text;
+      _receiverPhoneController.text = _senderPhoneController.text;
+    }
+  }
+
+  Future<void> _selectPickupTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _selectedPickupTime,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 7)),
+    );
+
+    if (date != null) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_selectedPickupTime),
+      );
+
+      if (time != null) {
+        setState(() {
+          _selectedPickupTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
+        });
+      }
+    }
+  }
+
+  Future<void> _submitBooking() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final bookingRequest = BookingRequest(
+        senderName: _senderNameController.text.trim(),
+        receiverName: _receiverNameController.text.trim(),
+        senderPhone: _senderPhoneController.text.trim(),
+        receiverPhone: _receiverPhoneController.text.trim(),
+        pickupLatitude: widget.pickupLocation.lat,
+        pickupLongitude: widget.pickupLocation.lng,
+        dropoffLatitude: widget.dropLocation.lat,
+        dropoffLongitude: widget.dropLocation.lng,
+        pickupTime: _selectedPickupTime,
+        pickupAddress: widget.pickupAddress,
+        dropoffAddress: widget.dropAddress,
+        vehicleTypeId: widget.selectedVehicle.vehicleType,
+        goodsType: _goodsTypeController.text.trim(),
+        goodsQuantity: _goodsQuantityController.text.trim(),
+        paymentMode: _selectedPaymentMode,
+        estimatedFare: widget.selectedVehicle.estimatedFare,
+      );
+
+      final bookingResponse = await _bookingService.createBooking(bookingRequest);
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DriverSearchScreen(
+              bookingDetails: bookingResponse,
+              selectedVehicle: widget.selectedVehicle,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create booking: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Scaffold(
+      backgroundColor: theme.colorScheme.background,
+      appBar: AppBar(
+        backgroundColor: theme.colorScheme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Booking Details',
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Trip summary
+                    _buildTripSummary(theme),
+                    const SizedBox(height: AppSpacing.xl),
+                    
+                    // Sender details
+                    _buildSectionTitle(theme, 'Sender Details'),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildSenderForm(theme),
+                    const SizedBox(height: AppSpacing.lg),
+                    
+                    // Same as receiver option
+                    _buildSameAsReceiverOption(theme),
+                    const SizedBox(height: AppSpacing.lg),
+                    
+                    // Receiver details
+                    _buildSectionTitle(theme, 'Receiver Details'),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildReceiverForm(theme),
+                    const SizedBox(height: AppSpacing.lg),
+                    
+                    // Goods details
+                    _buildSectionTitle(theme, 'Goods Information'),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildGoodsForm(theme),
+                    const SizedBox(height: AppSpacing.lg),
+                    
+                    // Pickup time
+                    _buildSectionTitle(theme, 'Pickup Time'),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildPickupTimeSelector(theme),
+                    const SizedBox(height: AppSpacing.lg),
+                    
+                    // Payment mode
+                    _buildSectionTitle(theme, 'Payment Method'),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildPaymentModeSelector(theme),
+                    
+                    // Bottom padding for fixed button
+                    const SizedBox(height: 100),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      
+      // Fixed confirm button
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          bottom: MediaQuery.of(context).padding.bottom + AppSpacing.md,
+          top: AppSpacing.md,
+        ),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : _submitBooking,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                elevation: 0,
+              ),
+              child: _isSubmitting
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              theme.colorScheme.onPrimary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        const Text(
+                          'Creating Booking...',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(
+                      'Confirm Booking • ₹${widget.selectedVehicle.estimatedFare.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTripSummary(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: theme.colorScheme.primary.withOpacity(0.3),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                widget.selectedVehicle.vehicleIcon,
+                style: const TextStyle(fontSize: 24),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  widget.selectedVehicle.vehicleTitle,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Text(
+                '₹${widget.selectedVehicle.estimatedFare.toStringAsFixed(0)}',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _buildAddressRow(
+            theme,
+            Icons.trip_origin,
+            Colors.green,
+            'From',
+            widget.pickupAddress,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _buildAddressRow(
+            theme,
+            Icons.location_on,
+            Colors.red,
+            'To',
+            widget.dropAddress,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressRow(
+    ThemeData theme,
+    IconData icon,
+    Color color,
+    String label,
+    String address,
+  ) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: AppSpacing.sm),
+        Text(
+          '$label: ',
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            address,
+            style: theme.textTheme.bodySmall,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(ThemeData theme, String title) {
+    return Text(
+      title,
+      style: theme.textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: theme.colorScheme.primary,
+      ),
+    );
+  }
+
+  Widget _buildSenderForm(ThemeData theme) {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _senderNameController,
+          decoration: const InputDecoration(
+            labelText: 'Sender Name',
+            prefixIcon: Icon(Icons.person),
+            border: OutlineInputBorder(),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter sender name';
+            }
+            return null;
+          },
+          onChanged: (_) => _onSenderDetailsChanged(),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        TextFormField(
+          controller: _senderPhoneController,
+          decoration: const InputDecoration(
+            labelText: 'Sender Phone',
+            prefixIcon: Icon(Icons.phone),
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.phone,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter sender phone number';
+            }
+            if (value.trim().length < 10) {
+              return 'Please enter a valid phone number';
+            }
+            return null;
+          },
+          onChanged: (_) => _onSenderDetailsChanged(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSameAsReceiverOption(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.people,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Sender and Receiver are the same person',
+              style: theme.textTheme.bodyMedium,
+            ),
+          ),
+          Switch(
+            value: _sameAsReceiver,
+            onChanged: _toggleSameAsReceiver,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiverForm(ThemeData theme) {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _receiverNameController,
+          enabled: !_sameAsReceiver,
+          decoration: InputDecoration(
+            labelText: 'Receiver Name',
+            prefixIcon: const Icon(Icons.person_outline),
+            border: const OutlineInputBorder(),
+            filled: _sameAsReceiver,
+            fillColor: _sameAsReceiver 
+                ? theme.colorScheme.onSurface.withOpacity(0.1) 
+                : null,
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter receiver name';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: AppSpacing.md),
+        TextFormField(
+          controller: _receiverPhoneController,
+          enabled: !_sameAsReceiver,
+          decoration: InputDecoration(
+            labelText: 'Receiver Phone',
+            prefixIcon: const Icon(Icons.phone_outlined),
+            border: const OutlineInputBorder(),
+            filled: _sameAsReceiver,
+            fillColor: _sameAsReceiver 
+                ? theme.colorScheme.onSurface.withOpacity(0.1) 
+                : null,
+          ),
+          keyboardType: TextInputType.phone,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter receiver phone number';
+            }
+            if (value.trim().length < 10) {
+              return 'Please enter a valid phone number';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGoodsForm(ThemeData theme) {
+    return Column(
+      children: [
+        DropdownButtonFormField<String>(
+          value: _goodsTypeController.text.isEmpty ? null : _goodsTypeController.text,
+          decoration: const InputDecoration(
+            labelText: 'Goods Type',
+            prefixIcon: Icon(Icons.inventory_2),
+            border: OutlineInputBorder(),
+          ),
+          items: _goodsTypes.map((type) {
+            return DropdownMenuItem(
+              value: type,
+              child: Text(type),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _goodsTypeController.text = value ?? '';
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please select goods type';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: AppSpacing.md),
+        TextFormField(
+          controller: _goodsQuantityController,
+          decoration: const InputDecoration(
+            labelText: 'Goods Quantity/Description',
+            prefixIcon: Icon(Icons.format_list_numbered),
+            border: OutlineInputBorder(),
+            hintText: 'e.g., 2 boxes, 1 sofa, etc.',
+          ),
+          maxLines: 2,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter goods quantity or description';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPickupTimeSelector(ThemeData theme) {
+    return InkWell(
+      onTap: _selectPickupTime,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: theme.colorScheme.outline.withOpacity(0.5),
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.schedule,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pickup Date & Time',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                  Text(
+                    '${_selectedPickupTime.day}/${_selectedPickupTime.month}/${_selectedPickupTime.year} at ${_selectedPickupTime.hour.toString().padLeft(2, '0')}:${_selectedPickupTime.minute.toString().padLeft(2, '0')}',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentModeSelector(ThemeData theme) {
+    return Column(
+      children: _paymentModes.map((mode) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: RadioListTile<String>(
+            title: Text(mode),
+            value: mode,
+            groupValue: _selectedPaymentMode,
+            onChanged: (value) {
+              setState(() {
+                _selectedPaymentMode = value!;
+              });
+            },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+              side: BorderSide(
+                color: theme.colorScheme.outline.withOpacity(0.3),
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+} 

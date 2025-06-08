@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import '../../../../core/models/wallet_model.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
@@ -33,7 +32,7 @@ class WalletRepositoryImpl implements WalletRepository {
         },
       );
 
-      return (response.data as List)
+      return (response.data['transactions'] as List)
           .map((json) => WalletTransaction.fromJson(json))
           .toList();
     } catch (e) {

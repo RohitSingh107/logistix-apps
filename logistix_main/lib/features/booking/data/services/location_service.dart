@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:latlong2/latlong.dart';
-import 'package:geocoding/geocoding.dart';
+import 'dart:math' as math;
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'geocoding_service.dart';
+import '../../../../core/services/map_service_interface.dart';
+import '../../../../core/services/map_service_factory.dart';
 
 class LocationService {
   static const String _recentSearchesKey = 'recent_searches';
@@ -15,6 +15,8 @@ class LocationService {
   factory LocationService() => _instance;
   LocationService._internal();
 
+  final MapServiceInterface _mapService = MapServiceFactory.instance;
+  
   // Cache for search results
   final Map<String, List<PlaceResult>> _searchCache = {};
   
@@ -58,6 +60,16 @@ class LocationService {
     }
   }
 
+  /// Get default location - current location or fallback to Chennai
+  Future<MapLatLng> getDefaultLocation() async {
+    final position = await getCurrentLocation();
+    if (position != null) {
+      return MapLatLng(position.latitude, position.longitude);
+    }
+    // Fallback to Chennai, India
+    return MapLatLng(13.0827, 80.2707);
+  }
+
   Future<void> startLocationUpdates() async {
     const LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
@@ -70,162 +82,104 @@ class LocationService {
     });
   }
 
-  Future<List<PlaceResult>> searchPlaces(String query) async {
+  Future<List<PlaceResult>> searchPlaces(String query, {
+    MapLatLng? userLocation,
+    int radius = 50000, // 50km default radius
+  }) async {
     if (query.isEmpty) return [];
     
+    // Create cache key including location
+    final cacheKey = userLocation != null 
+        ? '${query}_${userLocation.lat}_${userLocation.lng}_$radius'
+        : query;
+    
     // Check cache first
-    if (_searchCache.containsKey(query)) {
-      return _searchCache[query]!;
+    if (_searchCache.containsKey(cacheKey)) {
+      return _searchCache[cacheKey]!;
     }
 
     try {
-      // Use platform-aware geocoding
-      List<Location> locations = await GeocodingService.locationFromAddressSafe(query);
-      
-      List<PlaceResult> results = [];
-      for (int i = 0; i < locations.take(5).length; i++) {
-        final location = locations[i];
-        
-        // Get address details for each location
-        try {
-          // Use platform-aware reverse geocoding
-          List<Placemark> placemarks = await GeocodingService.placemarkFromCoordinatesSafe(
-            location.latitude,
-            location.longitude,
-          );
-          
-          if (placemarks.isNotEmpty) {
-            final place = placemarks[0];
-            
-            // Create a better title
-            String title = '';
-            if (place.name != null && place.name!.isNotEmpty) {
-              title = place.name!;
-            } else if (place.street != null && place.street!.isNotEmpty) {
-              title = place.street!;
-            } else {
-              title = 'Location ${i + 1}';
-            }
-            
-            // Create a descriptive subtitle
-            List<String> subtitleParts = [];
-            
-            // Add street if not already in title
-            if (place.street != null && 
-                place.street!.isNotEmpty && 
-                place.street != title) {
-              subtitleParts.add(place.street!);
-            }
-            
-            // Add locality
-            if (place.locality != null && place.locality!.isNotEmpty) {
-              subtitleParts.add(place.locality!);
-            }
-            
-            // Add administrative area
-            if (place.administrativeArea != null && 
-                place.administrativeArea!.isNotEmpty) {
-              subtitleParts.add(place.administrativeArea!);
-            }
-            
-            // Add postal code if available
-            if (place.postalCode != null && place.postalCode!.isNotEmpty) {
-              subtitleParts.add(place.postalCode!);
-            }
-            
-            String subtitle = subtitleParts.join(', ');
-            
-            // If subtitle is empty, show coordinates
-            if (subtitle.isEmpty) {
-              subtitle = 'Lat: ${location.latitude.toStringAsFixed(4)}, Lng: ${location.longitude.toStringAsFixed(4)}';
-            }
-            
-            results.add(PlaceResult(
-              id: '${location.latitude}_${location.longitude}',
-              title: title,
-              subtitle: subtitle,
-              location: LatLng(location.latitude, location.longitude),
-              placeType: _determinePlaceType(place),
-            ));
-          }
-        } catch (e) {
-          // Fallback if reverse geocoding fails
-          results.add(PlaceResult(
-            id: '${location.latitude}_${location.longitude}',
-            title: 'Location ${i + 1}',
-            subtitle: 'Lat: ${location.latitude.toStringAsFixed(4)}, Lng: ${location.longitude.toStringAsFixed(4)}',
-            location: LatLng(location.latitude, location.longitude),
-            placeType: PlaceType.other,
-          ));
+      // Get current location if not provided
+      MapLatLng? searchLocation = userLocation;
+      if (searchLocation == null) {
+        final position = await getCurrentLocation();
+        if (position != null) {
+          searchLocation = MapLatLng(position.latitude, position.longitude);
         }
       }
       
+      // Use Map Service Places Autocomplete API with location awareness
+      final mapResults = await _mapService.placesAutocomplete(
+        query,
+        lat: searchLocation?.lat,
+        lng: searchLocation?.lng,
+        radius: radius,
+      );
+      
+      List<PlaceResult> results = [];
+      for (final mapResult in mapResults) {
+        results.add(PlaceResult(
+          id: mapResult.placeId,
+          title: mapResult.name ?? mapResult.description,
+          subtitle: mapResult.description,
+          location: mapResult.location ?? MapLatLng(0, 0),
+          placeType: _determinePlaceTypeFromMap(mapResult.types),
+        ));
+      }
+      
       // Cache results
-      _searchCache[query] = results;
+      _searchCache[cacheKey] = results;
       
       return results;
     } catch (e) {
-      print('Error searching places: $e');
+      print('Search places error: $e');
       return [];
     }
   }
 
-  Future<String> getAddressFromLatLng(LatLng location) async {
+  Future<String> getAddressFromLatLng(MapLatLng location) async {
     try {
-      // Use platform-aware reverse geocoding
-      List<Placemark> placemarks = await GeocodingService.placemarkFromCoordinatesSafe(
-        location.latitude,
-        location.longitude,
+      final result = await _mapService.reverseGeocode(
+        location.lat, 
+        location.lng,
       );
       
-      if (placemarks.isNotEmpty) {
-        return _formatAddress(placemarks[0]);
+      if (result != null) {
+        return result.formattedAddress;
       }
+      
+      return 'Unknown location';
     } catch (e) {
-      print('Error getting address: $e');
+      print('Reverse geocoding error: $e');
+      return 'Unknown location';
     }
-    
-    return 'Selected location';
   }
 
-  String _formatAddress(Placemark place) {
-    List<String> parts = [];
-    
-    if (place.name != null && place.name!.isNotEmpty) {
-      parts.add(place.name!);
+  Future<MapLatLng?> getLatLngFromAddress(String address) async {
+    try {
+      final result = await _mapService.geocode(address);
+      return result?.location;
+    } catch (e) {
+      print('Geocoding error: $e');
+      return null;
     }
-    if (place.street != null && place.street!.isNotEmpty && place.street != place.name) {
-      parts.add(place.street!);
-    }
-    if (place.locality != null && place.locality!.isNotEmpty) {
-      parts.add(place.locality!);
-    }
-    if (place.administrativeArea != null && place.administrativeArea!.isNotEmpty) {
-      parts.add(place.administrativeArea!);
-    }
-    if (place.postalCode != null && place.postalCode!.isNotEmpty) {
-      parts.add(place.postalCode!);
-    }
-    
-    return parts.join(', ');
   }
 
-  PlaceType _determinePlaceType(Placemark place) {
-    final name = place.name?.toLowerCase() ?? '';
-    final street = place.street?.toLowerCase() ?? '';
-    
-    if (name.contains('airport') || street.contains('airport')) {
-      return PlaceType.airport;
-    } else if (name.contains('station') || street.contains('station')) {
-      return PlaceType.station;
-    } else if (name.contains('mall') || name.contains('shopping')) {
-      return PlaceType.shopping;
-    } else if (name.contains('hospital') || name.contains('clinic')) {
-      return PlaceType.hospital;
-    } else if (name.contains('school') || name.contains('college') || name.contains('university')) {
-      return PlaceType.education;
+  PlaceType _determinePlaceTypeFromMap(List<String> types) {
+    for (final type in types) {
+      final lowerType = type.toLowerCase();
+      if (lowerType.contains('airport')) {
+        return PlaceType.airport;
+      } else if (lowerType.contains('transit_station') || lowerType.contains('subway_station')) {
+        return PlaceType.station;
+      } else if (lowerType.contains('shopping_mall') || lowerType.contains('store')) {
+        return PlaceType.shopping;
+      } else if (lowerType.contains('hospital') || lowerType.contains('doctor')) {
+        return PlaceType.hospital;
+      } else if (lowerType.contains('school') || lowerType.contains('university')) {
+        return PlaceType.education;
+      }
     }
-    
     return PlaceType.other;
   }
 
@@ -250,7 +204,7 @@ class LocationService {
 
   Future<void> addToRecentSearches(PlaceResult place) async {
     final prefs = await SharedPreferences.getInstance();
-    final recent = await getRecentSearches();
+    List<PlaceResult> recent = await getRecentSearches();
     
     // Remove if already exists
     recent.removeWhere((p) => p.id == place.id);
@@ -258,57 +212,53 @@ class LocationService {
     // Add to beginning
     recent.insert(0, place);
     
-    // Keep only last 10
-    if (recent.length > 10) {
-      recent.removeLast();
+    // Keep only 5 recent searches
+    if (recent.length > 5) {
+      recent = recent.take(5).toList();
     }
     
     final jsonList = recent.map((p) => p.toJson()).toList();
     await prefs.setString(_recentSearchesKey, json.encode(jsonList));
   }
 
-  // Saved places
+  Future<void> clearRecentSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_recentSearchesKey);
+  }
+
+  // Saved places (Home, Work, etc.)
   Future<List<SavedPlace>> getSavedPlaces() async {
     final prefs = await SharedPreferences.getInstance();
     final String? data = prefs.getString(_savedPlacesKey);
     
-    if (data == null) return _getDefaultSavedPlaces();
+    if (data == null) {
+      // Return default saved places structure
+      return [
+        SavedPlace(
+          id: 'home',
+          type: SavedPlaceType.home,
+          name: 'Home',
+          address: '',
+          location: null,
+          icon: 'home',
+        ),
+        SavedPlace(
+          id: 'work',
+          type: SavedPlaceType.work,
+          name: 'Work',
+          address: '',
+          location: null,
+          icon: 'work',
+        ),
+      ];
+    }
     
     try {
       final List<dynamic> jsonList = json.decode(data);
-      final saved = jsonList.map((json) => SavedPlace.fromJson(json)).toList();
-      
-      // Add default places if not present
-      if (!saved.any((p) => p.type == SavedPlaceType.home)) {
-        saved.insert(0, _getDefaultSavedPlaces()[0]);
-      }
-      if (!saved.any((p) => p.type == SavedPlaceType.work)) {
-        saved.insert(1, _getDefaultSavedPlaces()[1]);
-      }
-      
-      return saved;
+      return jsonList.map((json) => SavedPlace.fromJson(json)).toList();
     } catch (e) {
-      return _getDefaultSavedPlaces();
+      return [];
     }
-  }
-
-  List<SavedPlace> _getDefaultSavedPlaces() {
-    return [
-      SavedPlace(
-        id: 'home',
-        type: SavedPlaceType.home,
-        name: 'Home',
-        address: 'Add home location',
-        icon: 'home',
-      ),
-      SavedPlace(
-        id: 'work',
-        type: SavedPlaceType.work,
-        name: 'Work',
-        address: 'Add work location',
-        icon: 'work',
-      ),
-    ];
   }
 
   Future<void> savePlaceLocation(SavedPlaceType type, PlaceResult place) async {
@@ -331,17 +281,51 @@ class LocationService {
     await prefs.setString(_savedPlacesKey, json.encode(jsonList));
   }
 
+  Future<double> calculateDistance(MapLatLng from, MapLatLng to) async {
+    try {
+      final result = await _mapService.getDistanceMatrix(
+        origins: [from],
+        destinations: [to],
+      );
+      
+      if (result != null && result.rows.isNotEmpty && result.rows.first.elements.isNotEmpty) {
+        return result.rows.first.elements.first.distance.value / 1000.0; // Convert to km
+      }
+      
+      // Fallback to Haversine formula
+      return _calculateHaversineDistance(from, to);
+    } catch (e) {
+      return _calculateHaversineDistance(from, to);
+    }
+  }
+
+  double _calculateHaversineDistance(MapLatLng from, MapLatLng to) {
+    const double R = 6371; // Earth's radius in kilometers
+    
+    double lat1Rad = from.lat * (math.pi / 180);
+    double lat2Rad = to.lat * (math.pi / 180);
+    double deltaLatRad = (to.lat - from.lat) * (math.pi / 180);
+    double deltaLngRad = (to.lng - from.lng) * (math.pi / 180);
+
+    double a = math.sin(deltaLatRad / 2) * math.sin(deltaLatRad / 2) +
+        math.cos(lat1Rad) * math.cos(lat2Rad) *
+        math.sin(deltaLngRad / 2) * math.sin(deltaLngRad / 2);
+    double c = 2 * math.asin(math.sqrt(a));
+
+    return R * c;
+  }
+
   void dispose() {
     _locationStreamController.close();
   }
 }
 
-// Models
+// Updated models to work with Map Service abstraction
 class PlaceResult {
   final String id;
   final String title;
   final String subtitle;
-  final LatLng location;
+  final MapLatLng location;
   final PlaceType placeType;
 
   PlaceResult({
@@ -352,25 +336,70 @@ class PlaceResult {
     required this.placeType,
   });
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'subtitle': subtitle,
-    'lat': location.latitude,
-    'lng': location.longitude,
-    'placeType': placeType.index,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'subtitle': subtitle,
+      'location': location.toJson(),
+      'placeType': placeType.index,
+    };
+  }
 
-  factory PlaceResult.fromJson(Map<String, dynamic> json) => PlaceResult(
-    id: json['id'],
-    title: json['title'],
-    subtitle: json['subtitle'],
-    location: LatLng(json['lat'], json['lng']),
-    placeType: PlaceType.values[json['placeType']],
-  );
+  factory PlaceResult.fromJson(Map<String, dynamic> json) {
+    return PlaceResult(
+      id: json['id'],
+      title: json['title'],
+      subtitle: json['subtitle'],
+      location: MapLatLng.fromJson(json['location']),
+      placeType: PlaceType.values[json['placeType']],
+    );
+  }
+}
+
+class SavedPlace {
+  final String id;
+  final SavedPlaceType type;
+  final String name;
+  final String address;
+  final MapLatLng? location;
+  final String icon;
+
+  SavedPlace({
+    required this.id,
+    required this.type,
+    required this.name,
+    required this.address,
+    required this.location,
+    required this.icon,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.index,
+      'name': name,
+      'address': address,
+      'location': location?.toJson(),
+      'icon': icon,
+    };
+  }
+
+  factory SavedPlace.fromJson(Map<String, dynamic> json) {
+    return SavedPlace(
+      id: json['id'],
+      type: SavedPlaceType.values[json['type']],
+      name: json['name'],
+      address: json['address'],
+      location: json['location'] != null ? MapLatLng.fromJson(json['location']) : null,
+      icon: json['icon'],
+    );
+  }
 }
 
 enum PlaceType {
+  home,
+  work,
   airport,
   station,
   shopping,
@@ -379,47 +408,7 @@ enum PlaceType {
   other,
 }
 
-class SavedPlace {
-  final String id;
-  final SavedPlaceType type;
-  final String name;
-  final String address;
-  final LatLng? location;
-  final String icon;
-
-  SavedPlace({
-    required this.id,
-    required this.type,
-    required this.name,
-    required this.address,
-    this.location,
-    required this.icon,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'type': type.index,
-    'name': name,
-    'address': address,
-    'lat': location?.latitude,
-    'lng': location?.longitude,
-    'icon': icon,
-  };
-
-  factory SavedPlace.fromJson(Map<String, dynamic> json) => SavedPlace(
-    id: json['id'],
-    type: SavedPlaceType.values[json['type']],
-    name: json['name'],
-    address: json['address'],
-    location: json['lat'] != null && json['lng'] != null
-      ? LatLng(json['lat'], json['lng'])
-      : null,
-    icon: json['icon'],
-  );
-}
-
 enum SavedPlaceType {
   home,
   work,
-  other,
 } 

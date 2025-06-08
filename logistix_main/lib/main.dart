@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:dio/dio.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
-import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/signup_screen.dart';
@@ -12,16 +10,17 @@ import 'features/profile/presentation/bloc/user_bloc.dart';
 import 'features/theme/presentation/bloc/theme_bloc.dart';
 import 'features/theme/presentation/bloc/theme_event.dart';
 import 'features/theme/presentation/bloc/theme_state.dart';
-import 'core/network/api_client.dart';
 import 'core/services/auth_service.dart';
 import 'core/config/app_config.dart';
 import 'core/config/app_theme.dart';
 import 'core/repositories/user_repository.dart';
-import 'core/repositories/user_repository_impl.dart';
 import 'core/di/service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'features/profile/presentation/screens/create_profile_screen.dart';
 import 'features/settings/presentation/screens/settings_screen.dart';
+import 'features/booking/presentation/screens/map_test_screen.dart';
+import 'features/wallet/presentation/screens/wallet_screen.dart';
+import 'core/services/test_map_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +59,14 @@ API_KEY=development_key
     final AuthRepository authRepository = serviceLocator<AuthRepository>();
     final UserRepository userRepository = serviceLocator<UserRepository>();
     print("Repositories created successfully");
+    
+    // Test map service configuration
+    print("Testing map service configuration...");
+    try {
+      await MapServiceTester.testConfiguration();
+    } catch (e) {
+      print("Map service test failed: $e");
+    }
     
     print("Starting app...");
     runApp(MyApp(
@@ -148,6 +155,8 @@ class MyApp extends StatelessWidget {
                 );
               },
               '/settings': (context) => const SettingsScreen(),
+              '/map-test': (context) => const MapTestScreen(),
+              '/wallet': (context) => const WalletScreen(),
             },
           );
         },
