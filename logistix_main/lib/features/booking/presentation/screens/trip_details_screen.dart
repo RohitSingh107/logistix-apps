@@ -189,6 +189,95 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
     return null; // Will show default letter avatar
   }
 
+  Widget _buildDriverProfileImage(ThemeData theme, Driver driver) {
+    final String initial = driver.user.firstName.isNotEmpty 
+        ? driver.user.firstName[0].toUpperCase()
+        : 'D';
+    
+    final profileImage = _getProfileImage(driver.user.profilePicture);
+    
+    if (profileImage != null) {
+      return Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: theme.colorScheme.primary.withOpacity(0.1),
+        ),
+        child: ClipOval(
+          child: Image.network(
+            ImageUtils.getFullProfilePictureUrl(driver.user.profilePicture!) ?? '',
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.colorScheme.primary.withOpacity(0.1),
+                ),
+                child: Center(
+                  child: Text(
+                    initial,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.colorScheme.primary.withOpacity(0.1),
+                ),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: theme.colorScheme.primary.withOpacity(0.1),
+        ),
+        child: Center(
+          child: Text(
+            initial,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   List<Map<String, dynamic>> _getStatusSteps() {
     return [
       {
@@ -550,26 +639,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
                     width: 2,
                   ),
                 ),
-                child: CircleAvatar(
-                  radius: 28,
-                  backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                  backgroundImage: _getProfileImage(driver.user.profilePicture),
-                  onBackgroundImageError: (exception, stackTrace) {
-                    print('Error loading profile image: $exception');
-                  },
-                  child: _getProfileImage(driver.user.profilePicture) == null
-                      ? Text(
-                          driver.user.firstName.isNotEmpty 
-                              ? driver.user.firstName[0].toUpperCase()
-                              : 'D',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
-                          ),
-                        )
-                      : null,
-                ),
+                child: _buildDriverProfileImage(theme, driver),
               ),
               
               const SizedBox(width: AppSpacing.md),

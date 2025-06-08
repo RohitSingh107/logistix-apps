@@ -170,6 +170,91 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
     return null; // Will show default letter avatar
   }
 
+  Widget _buildDriverAvatar(Driver driver) {
+    final String initial = driver.user.firstName[0].toUpperCase();
+    final profileImage = _getProfileImage(driver.user.profilePicture);
+    
+    if (profileImage != null) {
+      return Container(
+        width: 80,
+        height: 80,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+        ),
+        child: ClipOval(
+          child: Image.network(
+            ImageUtils.getFullProfilePictureUrl(driver.user.profilePicture!) ?? '',
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                child: Center(
+                  child: Text(
+                    initial,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                ),
+                child: Center(
+                  child: SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        child: Center(
+          child: Text(
+            initial,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   String _getHeaderTitle() {
     if (_currentBooking != null) {
       switch (_currentBooking!.status) {
@@ -483,22 +568,7 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
                 // Driver photo and basic info
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage: _getProfileImage(driver.user.profilePicture),
-                      onBackgroundImageError: (exception, stackTrace) {
-                        print('Error loading profile image: $exception');
-                      },
-                      child: _getProfileImage(driver.user.profilePicture) == null
-                          ? Text(
-                              driver.user.firstName[0].toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          : null,
-                    ),
+                    _buildDriverAvatar(driver),
                     const SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: Column(

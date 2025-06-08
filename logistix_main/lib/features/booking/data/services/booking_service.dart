@@ -2,6 +2,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
 import '../models/booking_request.dart';
 import '../models/trip_detail.dart';
+import '../models/booking_list_response.dart';
 
 class BookingService {
   final ApiClient _apiClient;
@@ -132,5 +133,38 @@ class BookingService {
       }
     }
     return 'Loading...';
+    }
+
+  Future<BookingListResponse> getBookingList() async {
+    try {
+      print('Getting booking list');
+      
+      final response = await _apiClient.get(
+        ApiEndpoints.bookingList,
+      );
+
+      return BookingListResponse.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      print('Error getting booking list: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<TripDetail>> getTripList() async {
+    try {
+      print('Getting trip list');
+      
+      final response = await _apiClient.get(
+        ApiEndpoints.tripList,
+      );
+
+      final tripsData = response.data['trips'] as List;
+      return tripsData
+          .map((tripData) => TripDetail.fromJson(tripData as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error getting trip list: $e');
+      rethrow;
+    }
   }
 } 
