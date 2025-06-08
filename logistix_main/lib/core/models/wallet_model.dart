@@ -31,4 +31,25 @@ class WalletTransaction extends BaseModel {
 
   @override
   List<Object?> get props => [id, amount, typeTx, remarks, createdAt, updatedAt];
+}
+
+@JsonSerializable()
+class WalletTopupResponse extends BaseModel {
+  final String message;
+  final double balance;
+  final WalletTransaction wallet;
+
+  const WalletTopupResponse({
+    required this.message,
+    required this.balance,
+    required this.wallet,
+  });
+
+  factory WalletTopupResponse.fromJson(Map<String, dynamic> json) => _$WalletTopupResponseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$WalletTopupResponseToJson(this);
+
+  @override
+  List<Object?> get props => [message, balance, wallet];
 } 

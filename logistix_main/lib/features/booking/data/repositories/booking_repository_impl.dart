@@ -50,7 +50,9 @@ class BookingRepositoryImpl implements BookingRepository {
         },
       );
 
-      return BookingRequest.fromJson(response.data);
+      // Extract the booking_request data from the nested response
+      final bookingData = response.data['booking_request'] as Map<String, dynamic>;
+      return BookingRequest.fromJson(bookingData);
     } catch (e) {
       rethrow;
     }

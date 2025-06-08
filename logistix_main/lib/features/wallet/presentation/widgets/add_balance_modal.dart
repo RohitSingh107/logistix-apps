@@ -5,7 +5,9 @@ import '../../../../core/config/app_theme.dart';
 import '../bloc/wallet_bloc.dart';
 
 class AddBalanceModal extends StatefulWidget {
-  const AddBalanceModal({super.key});
+  final double? suggestedAmount;
+  
+  const AddBalanceModal({super.key, this.suggestedAmount});
 
   @override
   State<AddBalanceModal> createState() => _AddBalanceModalState();
@@ -14,13 +16,25 @@ class AddBalanceModal extends StatefulWidget {
 class _AddBalanceModalState extends State<AddBalanceModal> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  final _remarksController = TextEditingController();
   
   final List<int> _quickAmounts = [100, 200, 500, 1000, 2000, 5000];
   int? _selectedQuickAmount;
 
   @override
+  void initState() {
+    super.initState();
+    // Pre-fill the suggested amount if provided
+    if (widget.suggestedAmount != null) {
+      final roundedAmount = (widget.suggestedAmount! + 50).ceil(); // Round up with buffer
+      _amountController.text = roundedAmount.toString();
+    }
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
+    _remarksController.dispose();
     super.dispose();
   }
 
@@ -91,6 +105,41 @@ class _AddBalanceModalState extends State<AddBalanceModal> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
+                  
+                  // Show suggested amount info if available
+                  if (widget.suggestedAmount != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.lightbulb_outline,
+                            color: theme.colorScheme.primary,
+                            size: 16,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              'You need at least ₹${widget.suggestedAmount!.toStringAsFixed(0)} to complete your booking',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  
                   TextFormField(
                     controller: _amountController,
                     keyboardType: TextInputType.number,
@@ -191,6 +240,36 @@ class _AddBalanceModalState extends State<AddBalanceModal> {
               }).toList(),
             ),
             
+            const SizedBox(height: AppSpacing.lg),
+            
+            // Remarks (optional)
+            Text(
+              'Remarks (Optional)',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextFormField(
+              controller: _remarksController,
+              decoration: InputDecoration(
+                hintText: 'Add a note for this transaction',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.all(AppSpacing.md),
+              ),
+              maxLines: 2,
+              maxLength: 100,
+            ),
+            
             const SizedBox(height: AppSpacing.xl),
             
             // Payment Method Info
@@ -273,7 +352,10 @@ class _AddBalanceModalState extends State<AddBalanceModal> {
     if (_formKey.currentState?.validate() ?? false) {
       final amount = double.tryParse(_amountController.text);
       if (amount != null) {
-        context.read<WalletBloc>().add(AddBalance(amount));
+        final remarks = _remarksController.text.trim().isEmpty 
+            ? null 
+            : _remarksController.text.trim();
+        context.read<WalletBloc>().add(AddBalance(amount, remarks: remarks));
       }
     }
   }

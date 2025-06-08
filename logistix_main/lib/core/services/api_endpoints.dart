@@ -23,6 +23,7 @@ class ApiEndpoints {
   // Payment endpoints
   static const String walletBalance = '/api/payments/wallet/balance/';
   static const String walletTransactions = '/api/payments/wallet/transactions/';
+  static const String walletTopup = '/api/payments/wallet/topup/';
 
   // Vehicle estimation endpoints
   static const String vehicleEstimates = '/api/strategy/vehicle-estimates/';
