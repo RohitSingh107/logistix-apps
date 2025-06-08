@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'simple_location_selection_screen.dart';
+import 'booking_details_screen.dart';
 import '../widgets/map_widget.dart';
 import '../widgets/ola_map_widget.dart';
 import '../../../../core/config/app_theme.dart';
@@ -125,11 +126,17 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    // TODO: Implement actual booking logic here
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Booking ${_selectedVehicle!.vehicleTitle} for ₹${_selectedVehicle!.estimatedFare.toStringAsFixed(0)}'),
-        behavior: SnackBarBehavior.floating,
+    // Navigate to booking details screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookingDetailsScreen(
+          pickupLocation: _pickupLocation!,
+          dropLocation: _dropLocation!,
+          pickupAddress: _pickupAddress,
+          dropAddress: _dropAddress,
+          selectedVehicle: _selectedVehicle!,
+        ),
       ),
     );
   }
