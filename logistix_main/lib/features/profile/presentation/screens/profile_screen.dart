@@ -148,6 +148,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               [
                 _buildLinkItem(
                   context,
+                  Icons.account_balance_wallet,
+                  'My Wallet',
+                  () {
+                    Navigator.pushNamed(context, '/wallet');
+                  },
+                ),
+                _buildLinkItem(
+                  context,
                   Icons.settings,
                   'Settings',
                   () {

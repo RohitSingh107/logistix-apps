@@ -7,6 +7,7 @@ part 'wallet_model.g.dart';
 class WalletTransaction extends BaseModel {
   final int id;
   final double amount;
+  @JsonKey(name: 'type_tx')
   final String typeTx;
   final String? remarks;
   @JsonKey(name: 'created_at')

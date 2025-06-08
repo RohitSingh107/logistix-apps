@@ -11,6 +11,7 @@ import '../../features/trip/data/repositories/trip_repository_impl.dart';
 import '../../features/trip/domain/repositories/trip_repository.dart';
 import '../../features/wallet/data/repositories/wallet_repository_impl.dart';
 import '../../features/wallet/domain/repositories/wallet_repository.dart';
+import '../../features/wallet/presentation/bloc/wallet_bloc.dart';
 import '../../features/driver/data/repositories/driver_repository_impl.dart';
 import '../../features/driver/domain/repositories/driver_repository.dart';
 import '../../features/vehicle_estimation/data/repositories/vehicle_estimation_repository.dart';
@@ -84,4 +85,5 @@ Future<void> setupServiceLocator() async {
 
   // Blocs
   serviceLocator.registerFactory(() => AuthBloc(serviceLocator(), serviceLocator()));
+  serviceLocator.registerFactory(() => WalletBloc(serviceLocator()));
 } 
