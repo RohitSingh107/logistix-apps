@@ -1,3 +1,23 @@
+/**
+ * profile_screen.dart - User Profile Management Interface
+ * 
+ * Purpose:
+ * - Displays user profile information and account details
+ * - Provides access to profile editing and account settings
+ * - Manages user data display and navigation to related features
+ * 
+ * Key Logic:
+ * - Loads user profile data through UserBloc integration
+ * - Displays profile header with avatar, name, and contact information
+ * - Provides profile editing functionality through dialog interface
+ * - Organizes account settings and support options in sections
+ * - Handles profile picture display with fallback mechanisms
+ * - Implements pull-to-refresh for updated profile data
+ * - Navigation to related screens (wallet, settings, support)
+ * - Error handling with retry functionality for failed profile loads
+ * - Logout functionality with confirmation dialog
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/models/user_model.dart';

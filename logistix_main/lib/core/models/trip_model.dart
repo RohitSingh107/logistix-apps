@@ -1,3 +1,23 @@
+/**
+ * trip_model.dart - Trip and Journey Data Models
+ * 
+ * Purpose:
+ * - Defines data models for trip management and tracking
+ * - Handles trip lifecycle states and driver assignment
+ * - Manages trip update requests and paginated responses
+ * 
+ * Key Logic:
+ * - TripStatus enum: Tracks trip progression from accepted to completed
+ * - Trip: Core trip entity linking driver, booking, and status information
+ * - TripUpdateRequest: Payload for updating trip status and details
+ * - PaginatedTripList: Handles paginated trip list responses
+ * - Includes timing data for loading/unloading phases
+ * - Manages payment status and final fare calculation
+ * - Extends BaseModel for consistent behavior
+ * - Provides helper methods for data conversion (distanceAsDouble)
+ * - Uses JSON serialization with comprehensive field mapping
+ */
+
 import 'base_model.dart';
 import 'booking_model.dart';
 import 'package:json_annotation/json_annotation.dart';

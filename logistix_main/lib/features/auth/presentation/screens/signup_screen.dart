@@ -1,3 +1,23 @@
+/**
+ * signup_screen.dart - User Registration Interface
+ * 
+ * Purpose:
+ * - Provides user interface for new user registration
+ * - Handles phone number input and validation for signup flow
+ * - Manages signup-specific user interactions and error handling
+ * 
+ * Key Logic:
+ * - Implements phone number input validation using PhoneInput widget
+ * - Triggers OTP request through AuthBloc for registration flow
+ * - Handles different error scenarios (phone already registered, validation errors)
+ * - Shows context-specific error messages via SnackBar and dialogs
+ * - Navigates to OTP verification screen upon successful request
+ * - Provides login redirection for users with existing accounts
+ * - Manages loading states during OTP request process
+ * - Implements form validation with real-time error feedback
+ * - Handles phone already exists scenario with helpful dialog
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';

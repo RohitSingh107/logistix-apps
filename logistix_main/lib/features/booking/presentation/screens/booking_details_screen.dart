@@ -1,3 +1,22 @@
+/**
+ * booking_details_screen.dart - Booking Details Display
+ * 
+ * Purpose:
+ * - Displays detailed information about booking requests and confirmations
+ * - Provides booking management and modification capabilities
+ * - Handles booking status updates and user actions
+ * 
+ * Key Logic:
+ * - Comprehensive booking information display (locations, timing, pricing)
+ * - Booking status tracking (pending, confirmed, assigned, completed)
+ * - Driver assignment information and contact details
+ * - Vehicle details and estimated arrival times
+ * - Booking modification options (reschedule, cancel, update details)
+ * - Payment information and transaction history
+ * - Integration with booking repository for data retrieval
+ * - Real-time updates via WebSocket or polling mechanisms
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/config/app_theme.dart';

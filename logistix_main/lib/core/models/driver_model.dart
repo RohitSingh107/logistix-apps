@@ -1,3 +1,22 @@
+/**
+ * driver_model.dart - Driver Entity Data Models
+ * 
+ * Purpose:
+ * - Defines data models for driver entities and related operations
+ * - Handles driver profile information and availability status
+ * - Manages driver license and rating information
+ * 
+ * Key Logic:
+ * - Driver: Core driver entity linked to User with additional driver-specific data
+ * - DriverRequest: Payload for creating or updating driver profiles
+ * - Includes license verification and availability management
+ * - Tracks driver ratings, earnings, and performance metrics
+ * - Uses JSON serialization with snake_case field mapping
+ * - Provides helper method for rating conversion (string to double)
+ * - Integrates with User model for complete driver profile
+ * - Handles driver availability toggle for ride assignment
+ */
+
 import 'package:json_annotation/json_annotation.dart';
 import 'user_model.dart';
 

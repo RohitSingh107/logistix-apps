@@ -1,3 +1,23 @@
+/**
+ * booking_service.dart - Booking Operations Service
+ * 
+ * Purpose:
+ * - Handles all booking-related API operations and business logic
+ * - Manages booking creation, status polling, and trip tracking
+ * - Provides real-time updates through streaming interfaces
+ * 
+ * Key Logic:
+ * - Creates new bookings via API with comprehensive error handling
+ * - Retrieves booking details and trip information from endpoints
+ * - Implements intelligent polling system that transitions from booking to trip status
+ * - Provides streaming interfaces for real-time status updates
+ * - Handles booking lifecycle: REQUESTED → SEARCHING → ACCEPTED → TRIP
+ * - Supports trip status polling once driver is assigned
+ * - Manages booking and trip list retrieval with pagination support
+ * - Provides user-friendly status messages based on current state
+ * - Handles various response formats (paginated, legacy, direct list)
+ */
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
 import '../models/booking_request.dart';

@@ -1,3 +1,23 @@
+/**
+ * api_endpoints.dart - API Endpoint Constants
+ * 
+ * Purpose:
+ * - Centralized management of all API endpoint URLs
+ * - Provides consistent endpoint naming and organization
+ * - Enables easy maintenance and updates of API routes
+ * 
+ * Key Logic:
+ * - Static constants for all API endpoints organized by feature
+ * - Auth endpoints: login, OTP verification, token refresh
+ * - User endpoints: profile management, driver operations
+ * - Booking endpoints: creation, acceptance, listing, details
+ * - Trip endpoints: listing, details, status updates
+ * - Payment endpoints: wallet operations and transactions
+ * - Vehicle estimation endpoints: fare calculation
+ * - Parameterized methods for dynamic endpoints (bookingDetail, tripDetail)
+ * - Follows RESTful API conventions for URL structure
+ */
+
 class ApiEndpoints {
   // Auth endpoints
   static const String login = '/api/users/login/';

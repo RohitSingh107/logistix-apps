@@ -1,3 +1,23 @@
+/**
+ * driver_search_screen.dart - Driver Assignment and Search Interface
+ * 
+ * Purpose:
+ * - Displays real-time driver search and assignment process
+ * - Provides animated feedback during booking acceptance and driver assignment
+ * - Manages transition from booking request to active trip
+ * 
+ * Key Logic:
+ * - Polls booking status using BookingService for real-time updates
+ * - Displays animated search indicators with pulse and rotation effects
+ * - Shows booking details including vehicle selection and fare information
+ * - Transitions through booking states: REQUESTED → SEARCHING → ACCEPTED
+ * - Navigates to trip details screen once driver is assigned
+ * - Provides cancel booking functionality during search phase
+ * - Implements comprehensive animation controllers for visual feedback
+ * - Handles error states and retry mechanisms for failed bookings
+ * - Shows estimated wait times and search progress
+ */
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../../../core/config/app_theme.dart';

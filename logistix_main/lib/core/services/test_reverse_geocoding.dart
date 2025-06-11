@@ -1,3 +1,22 @@
+/**
+ * test_reverse_geocoding.dart - Reverse Geocoding Test Service
+ * 
+ * Purpose:
+ * - Provides mock reverse geocoding functionality for testing
+ * - Converts coordinates to addresses without external API calls
+ * - Enables testing of location-to-address conversion workflows
+ * 
+ * Key Logic:
+ * - Mock implementation of coordinate-to-address conversion
+ * - Predefined mapping of coordinates to formatted addresses
+ * - Simulated processing delays for realistic testing behavior
+ * - Error simulation for testing error handling scenarios
+ * - Integration with test location services and map widgets
+ * - Supports various address formats (street, city, country)
+ * - Configurable responses for different coordinate ranges
+ * - Deterministic outputs for predictable test results
+ */
+
 import 'package:flutter/foundation.dart';
 import 'map_service_interface.dart';
 import 'map_service_factory.dart';

@@ -1,3 +1,22 @@
+/**
+ * auth_service.dart - Authentication Service Layer
+ * 
+ * Purpose:
+ * - Manages authentication tokens and user session data
+ * - Provides secure token storage using SharedPreferences
+ * - Handles JWT token validation and automatic refresh
+ * 
+ * Key Logic:
+ * - Stores access and refresh tokens securely in local storage
+ * - Automatically refreshes tokens when they're close to expiration
+ * - Validates JWT token expiration using jwt_decoder
+ * - Manages user data persistence across app sessions
+ * - Provides authentication status checking
+ * - Handles token cleanup on logout
+ * - Implements proactive token refresh (5 minutes before expiry)
+ * - Uses separate Dio instance for token refresh to avoid interceptor loops
+ */
+
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';

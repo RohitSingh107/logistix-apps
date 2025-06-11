@@ -1,3 +1,23 @@
+/**
+ * settings_screen.dart - Application Settings Interface
+ * 
+ * Purpose:
+ * - Provides comprehensive application settings management
+ * - Handles theme switching and appearance customization
+ * - Manages notification preferences and app configurations
+ * 
+ * Key Logic:
+ * - Integrates with ThemeBloc for dynamic theme switching
+ * - Organizes settings into logical sections (Appearance, Notifications)
+ * - Provides theme selection with light, dark, and custom options
+ * - Handles notification settings and preferences
+ * - Implements clean section-based UI layout
+ * - Shows current theme selection with visual feedback
+ * - Persists user preferences through BLoC state management
+ * - Provides immediate visual feedback for theme changes
+ * - Includes expandable sections for organized settings presentation
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/config/app_theme.dart';

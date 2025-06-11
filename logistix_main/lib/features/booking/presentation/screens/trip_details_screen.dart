@@ -1,3 +1,22 @@
+/**
+ * trip_details_screen.dart - Trip Details Display
+ * 
+ * Purpose:
+ * - Displays comprehensive information about active or completed trips
+ * - Provides real-time trip tracking and status updates
+ * - Handles trip-related actions and user interactions
+ * 
+ * Key Logic:
+ * - Real-time trip status monitoring and updates
+ * - Live driver location tracking with map visualization
+ * - Trip timeline with pickup, transit, and delivery phases
+ * - Driver information display with contact options
+ * - Trip route visualization on interactive map
+ * - Status-specific action buttons (cancel, contact, rate)
+ * - Integration with trip repository for live data updates
+ * - Push notification handling for trip status changes
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';

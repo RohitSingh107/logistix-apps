@@ -1,3 +1,23 @@
+/**
+ * api_client.dart - HTTP Client and API Communication Manager
+ * 
+ * Purpose:
+ * - Provides centralized HTTP client for API communication
+ * - Handles authentication token management and injection
+ * - Implements automatic token refresh functionality
+ * 
+ * Key Logic:
+ * - Uses Dio HTTP client with interceptors for request/response handling
+ * - Automatically adds Bearer tokens to authenticated endpoints
+ * - Excludes authentication for login/OTP endpoints
+ * - Implements automatic token refresh on 401 errors
+ * - Provides comprehensive request/response logging
+ * - Handles base URL configuration from AppConfig
+ * - Supports GET, POST, PUT HTTP methods with authentication
+ * - Manages token storage through AuthService integration
+ * - Includes error handling and retry logic for failed requests
+ */
+
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/app_config.dart';

@@ -1,3 +1,22 @@
+/**
+ * simple_location_selection_screen.dart - Simplified Location Selection
+ * 
+ * Purpose:
+ * - Provides streamlined location selection without complex map interface
+ * - Offers text-based address input with search suggestions
+ * - Simplifies location selection for users preferring form-based input
+ * 
+ * Key Logic:
+ * - Text input fields for pickup and dropoff addresses
+ * - Autocomplete suggestions powered by map service APIs
+ * - Address validation and coordinate resolution
+ * - Saved locations and recent addresses for quick selection
+ * - Current location detection with one-tap selection
+ * - Fallback interface for users with limited map interaction
+ * - Integration with location services for address suggestions
+ * - Seamless handoff to booking confirmation workflow
+ */
+
 import 'package:flutter/material.dart';
 import '../../data/services/location_service.dart';
 import '../widgets/map_widget.dart';

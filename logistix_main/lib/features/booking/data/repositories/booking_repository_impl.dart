@@ -1,3 +1,21 @@
+/**
+ * booking_repository_impl.dart - Booking Repository Implementation
+ * 
+ * Purpose:
+ * - Implements the BookingRepository interface for booking operations
+ * - Provides concrete API communication for booking-related requests
+ * - Handles data transformation between API responses and domain models
+ * 
+ * Key Logic:
+ * - createBooking: Creates new booking requests with comprehensive validation
+ * - getBookingById: Retrieves specific booking details by ID
+ * - updateBookingStatus: Updates booking status (confirm, cancel, etc.)
+ * - getAllBookings: Fetches paginated booking history for users
+ * - Transforms API responses into domain models using fromJson/toJson
+ * - Handles errors and exceptions from network layer
+ * - Maps between API data structures and local booking models
+ */
+
 import '../../../../core/models/booking_model.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';

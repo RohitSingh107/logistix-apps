@@ -1,3 +1,22 @@
+/**
+ * image_utils.dart - Image URL and Validation Utilities
+ * 
+ * Purpose:
+ * - Provides utility functions for handling profile picture URLs
+ * - Manages URL construction and validation for image assets
+ * - Handles both relative and absolute URL formats
+ * 
+ * Key Logic:
+ * - Constructs full URLs from relative profile picture paths
+ * - Handles both absolute URLs (http/https) and relative paths
+ * - Properly combines base URL with relative paths for API images
+ * - Validates profile picture URL format and accessibility
+ * - Cleans URL paths by removing extra slashes for consistency
+ * - Provides null safety for missing or invalid image URLs
+ * - Uses URI parsing for robust URL validation
+ * - Integrates with AppConfig for base URL configuration
+ */
+
 import '../config/app_config.dart';
 
 class ImageUtils {

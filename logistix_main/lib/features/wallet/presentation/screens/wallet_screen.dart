@@ -1,3 +1,23 @@
+/**
+ * wallet_screen.dart - Wallet Management Interface
+ * 
+ * Purpose:
+ * - Provides comprehensive wallet management interface
+ * - Displays wallet balance, transaction history, and balance addition functionality
+ * - Manages wallet BLoC integration and real-time data updates
+ * 
+ * Key Logic:
+ * - Creates WalletBloc instance with dependency injection
+ * - Displays wallet balance in attractive gradient card design
+ * - Implements infinite scrolling for transaction history
+ * - Provides pull-to-refresh functionality for data updates
+ * - Shows add balance floating action button with modal dialog
+ * - Handles loading states, error states, and success feedback
+ * - Implements scroll-based pagination for transaction loading
+ * - Provides comprehensive error handling with retry functionality
+ * - Uses responsive design with proper theme integration
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
