@@ -1,3 +1,23 @@
+/**
+ * booking_screen.dart - Main Booking Creation Interface
+ * 
+ * Purpose:
+ * - Provides comprehensive interface for creating new bookings
+ * - Handles pickup and dropoff location selection
+ * - Manages vehicle estimation and selection process
+ * 
+ * Key Logic:
+ * - Location selection for pickup and dropoff points using LocationSelectionScreen
+ * - Vehicle estimation fetching through GetVehicleEstimates use case
+ * - Real-time fare calculation based on selected locations
+ * - Vehicle type selection with pricing display
+ * - Booking validation before proceeding to details screen
+ * - Error handling for estimation failures with fallback data
+ * - Map integration for visual location representation
+ * - Progress states for loading and estimation processes
+ * - Navigation to BookingDetailsScreen upon confirmation
+ */
+
 import 'package:flutter/material.dart';
 import 'simple_location_selection_screen.dart';
 import 'booking_details_screen.dart';

@@ -1,3 +1,22 @@
+/**
+ * ola_map_widget.dart - Ola Maps Specific Widget Component
+ * 
+ * Purpose:
+ * - Provides Ola Maps-specific implementation of map functionality
+ * - Handles Ola Maps SDK integration and native map rendering
+ * - Implements location services optimized for Ola Maps API
+ * 
+ * Key Logic:
+ * - Native Ola Maps SDK integration with Flutter platform channels
+ * - Ola-specific marker styling and custom map themes
+ * - Optimized location tracking using Ola's location services
+ * - Route calculation and visualization using Ola Maps routing API
+ * - Custom map controls and UI elements matching Ola's design
+ * - Performance optimizations for smooth map interactions
+ * - Integration with Ola's geocoding and reverse geocoding services
+ * - Error handling specific to Ola Maps service limitations
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';

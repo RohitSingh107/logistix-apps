@@ -1,3 +1,22 @@
+/**
+ * auth_repository.dart - Authentication Repository Interface
+ * 
+ * Purpose:
+ * - Defines the contract for authentication operations
+ * - Provides abstraction layer for auth-related data operations
+ * - Ensures consistent authentication patterns across the application
+ * 
+ * Key Logic:
+ * - Abstract repository interface following domain-driven design
+ * - OTP-based authentication flow (request OTP, verify OTP)
+ * - Token management operations (save, refresh, logout)
+ * - Returns structured data for login/registration flow
+ * - Handles both new user registration and existing user login
+ * - Provides token refresh capability for session management
+ * - Clear method signatures with detailed documentation
+ * - Follows async/await pattern for all operations
+ */
+
 abstract class AuthRepository {
   /// Request OTP for login/registration
   /// 

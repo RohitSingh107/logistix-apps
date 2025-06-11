@@ -1,3 +1,22 @@
+/**
+ * map_provider_config.dart - Map Service Provider Configuration
+ * 
+ * Purpose:
+ * - Manages configuration for multiple map service providers
+ * - Provides centralized API key and URL management for map services
+ * - Handles rate limiting and request throttling for map APIs
+ * 
+ * Key Logic:
+ * - Supports multiple providers: Ola Maps, Google Maps, Mapbox, OpenStreetMap
+ * - Dynamically switches between providers based on configuration
+ * - Manages API keys and base URLs for each provider
+ * - Implements rate limiting to prevent API quota exhaustion
+ * - Provides timeout and retry configuration for stability
+ * - Includes tile caching settings for performance optimization
+ * - Validates provider configuration before use
+ * - Implements request throttling with configurable delays
+ */
+
 /// Configuration for different map providers
 enum MapProvider {
   olaMaps,
