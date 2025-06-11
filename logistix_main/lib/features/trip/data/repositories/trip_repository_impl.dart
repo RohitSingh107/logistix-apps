@@ -19,6 +19,29 @@ class TripRepositoryImpl implements TripRepository {
   }
 
   @override
+  Future<PaginatedTripList> getTripList({
+    bool? forDriver,
+    int? page,
+    int? pageSize,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (forDriver != null) queryParams['for_driver'] = forDriver;
+      if (page != null) queryParams['page'] = page;
+      if (pageSize != null) queryParams['page_size'] = pageSize;
+
+      final response = await _apiClient.get(
+        ApiEndpoints.tripList,
+        queryParameters: queryParams,
+      );
+
+      return PaginatedTripList.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
   Future<Trip> updateTrip({
     required int tripId,
     required TripStatus status,
@@ -29,7 +52,7 @@ class TripRepositoryImpl implements TripRepository {
     DateTime? unloadingEndTime,
     DateTime? paymentTime,
     int? finalDuration,
-    double? finalDistance,
+    String? finalDistance,
     bool? isPaymentDone,
   }) async {
     try {

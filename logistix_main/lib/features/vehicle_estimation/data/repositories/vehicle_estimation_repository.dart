@@ -1,7 +1,6 @@
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
-import '../models/vehicle_estimate_request.dart';
-import '../models/vehicle_estimate_response.dart';
+import '../../../../core/models/vehicle_estimation_model.dart';
 import '../../domain/repositories/vehicle_estimation_repository_interface.dart';
 import 'dart:math' as math;
 
@@ -10,19 +9,20 @@ class VehicleEstimationRepository implements VehicleEstimationRepositoryInterfac
 
   VehicleEstimationRepository(this._apiClient);
 
-  Future<List<VehicleEstimateResponse>> getVehicleEstimates({
+  @override
+  Future<VehicleEstimationResponse> getVehicleEstimates({
     required double pickupLatitude,
     required double pickupLongitude,
     required double dropoffLatitude,
     required double dropoffLongitude,
   }) async {
     try {
-      final request = VehicleEstimateRequest(
-        pickupLocation: LocationData(
+      final request = VehicleEstimationRequest(
+        pickupLocation: Location(
           latitude: pickupLatitude,
           longitude: pickupLongitude,
         ),
-        dropoffLocation: LocationData(
+        dropoffLocation: Location(
           latitude: dropoffLatitude,
           longitude: dropoffLongitude,
         ),
@@ -40,32 +40,12 @@ class VehicleEstimationRepository implements VehicleEstimationRepositoryInterfac
         return _getFallbackEstimates(pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude);
       }
 
-      final List<dynamic> responseData = response.data as List<dynamic>;
-      
-      if (responseData.isEmpty) {
-        print('API returned empty data, using fallback estimates');
+      try {
+        return VehicleEstimationResponse.fromJson(response.data);
+      } catch (e) {
+        print('Error parsing vehicle estimation response: $e');
         return _getFallbackEstimates(pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude);
       }
-
-      final estimates = responseData
-          .map((json) {
-            try {
-              return VehicleEstimateResponse.fromJson(json as Map<String, dynamic>);
-            } catch (e) {
-              print('Error parsing vehicle estimate: $e');
-              return null;
-            }
-          })
-          .where((estimate) => estimate != null)
-          .cast<VehicleEstimateResponse>()
-          .toList();
-
-      if (estimates.isEmpty) {
-        print('No valid estimates parsed, using fallback estimates');
-        return _getFallbackEstimates(pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude);
-      }
-
-      return estimates;
     } catch (e) {
       print('Error getting vehicle estimates: $e');
       print('Using fallback estimates due to API error');
@@ -75,7 +55,7 @@ class VehicleEstimationRepository implements VehicleEstimationRepositoryInterfac
     }
   }
 
-  List<VehicleEstimateResponse> _getFallbackEstimates(
+  VehicleEstimationResponse _getFallbackEstimates(
     double pickupLat,
     double pickupLng,
     double dropoffLat,
@@ -84,41 +64,34 @@ class VehicleEstimationRepository implements VehicleEstimationRepositoryInterfac
     // Calculate distance for pricing
     final distance = _calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng);
     
-    return [
-      VehicleEstimateResponse(
+    final estimates = [
+      VehicleEstimate(
+        vehicleType: 'Two Wheeler',
+        vehicleTypeId: 1,
         estimatedFare: _calculateFare(distance, 40, 12), // Base 40, per km 12
         pickupReachTime: _calculatePickupTime(distance),
-        vehicleType: 1,
-        vehicleTitle: 'Two Wheeler',
-        vehicleBaseFare: 40,
-        vehicleBaseDistance: 5.0,
-        vehicleDimensionHeight: 1.2,
-        vehicleDimensionWeight: 150,
-        vehicleDimensionDepth: 2.1,
+        estimatedDuration: _calculateDuration(distance),
+        estimatedDistance: distance,
       ),
-      VehicleEstimateResponse(
+      VehicleEstimate(
+        vehicleType: 'Three Wheeler (Auto)',
+        vehicleTypeId: 2,
         estimatedFare: _calculateFare(distance, 60, 18), // Base 60, per km 18
         pickupReachTime: _calculatePickupTime(distance),
-        vehicleType: 2,
-        vehicleTitle: 'Three Wheeler (Auto)',
-        vehicleBaseFare: 60,
-        vehicleBaseDistance: 3.0,
-        vehicleDimensionHeight: 1.8,
-        vehicleDimensionWeight: 400,
-        vehicleDimensionDepth: 2.8,
+        estimatedDuration: _calculateDuration(distance),
+        estimatedDistance: distance,
       ),
-      VehicleEstimateResponse(
+      VehicleEstimate(
+        vehicleType: 'Four Wheeler (Mini Truck)',
+        vehicleTypeId: 3,
         estimatedFare: _calculateFare(distance, 100, 25), // Base 100, per km 25
         pickupReachTime: _calculatePickupTime(distance),
-        vehicleType: 3,
-        vehicleTitle: 'Four Wheeler (Mini Truck)',
-        vehicleBaseFare: 100,
-        vehicleBaseDistance: 2.0,
-        vehicleDimensionHeight: 2.2,
-        vehicleDimensionWeight: 1000,
-        vehicleDimensionDepth: 4.5,
+        estimatedDuration: _calculateDuration(distance),
+        estimatedDistance: distance,
       ),
     ];
+
+    return VehicleEstimationResponse(estimates: estimates);
   }
 
   double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
@@ -150,5 +123,12 @@ class VehicleEstimationRepository implements VehicleEstimationRepositoryInterfac
     final timeInHours = distance / 30;
     final timeInMinutes = (timeInHours * 60).round();
     return math.max(5, math.min(timeInMinutes, 45)); // Between 5-45 minutes
+  }
+
+  int _calculateDuration(double distance) {
+    // Estimate trip duration based on distance (assuming 25 km/h average speed for delivery)
+    final timeInHours = distance / 25;
+    final timeInMinutes = (timeInHours * 60).round();
+    return math.max(10, timeInMinutes); // Minimum 10 minutes
   }
 } 

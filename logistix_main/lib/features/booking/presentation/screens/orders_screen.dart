@@ -20,82 +20,260 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
   late final BookingService _bookingService;
   late final TabController _tabController;
   
-  List<BookingListItem> _bookings = [];
-  List<TripDetail> _trips = [];
-  bool _isLoading = true;
+  // Pagination constants
+  static const int _pageSize = 10;
+  
+  // Data lists
+  List<BookingListItem> _allBookings = [];
+  List<TripDetail> _allTrips = [];
+  
+  // Loading states
+  bool _isInitialLoading = true;
+  bool _isLoadingMore = false;
   String? _error;
+  
+  // Pagination state for each tab
+  Map<OrderType, int> _currentPages = {
+    OrderType.ongoing: 1,
+    OrderType.completed: 1,
+    OrderType.cancelled: 1,
+  };
+  
+  Map<OrderType, bool> _hasMoreData = {
+    OrderType.ongoing: true,
+    OrderType.completed: true,
+    OrderType.cancelled: true,
+  };
+  
+  Map<OrderType, List<dynamic>> _paginatedOrders = {
+    OrderType.ongoing: [],
+    OrderType.completed: [],
+    OrderType.cancelled: [],
+  };
 
-  // Filtered lists for each tab
-  List<BookingListItem> get _ongoingOrders {
-    final ongoingBookings = _bookings.where((booking) => 
-      booking.status == 'REQUESTED' || 
-      booking.status == 'SEARCHING' || 
-      booking.status == 'ACCEPTED'
-    ).toList();
-    
-    return ongoingBookings;
-  }
-
-  List<dynamic> get _completedOrders {
-    final completedBookings = _bookings.where((booking) => 
-      booking.status == 'COMPLETED' || 
-      (booking.isAccepted && booking.tripId != null)
-    ).toList();
-    
-    final completedTrips = _trips.where((trip) => 
-      trip.status == 'COMPLETED' && trip.isPaymentDone
-    ).toList();
-    
-    return [...completedBookings, ...completedTrips];
-  }
-
-  List<dynamic> get _cancelledOrders {
-    final cancelledBookings = _bookings.where((booking) => 
-      booking.status == 'CANCELLED'
-    ).toList();
-    
-    final cancelledTrips = _trips.where((trip) => 
-      trip.status == 'CANCELLED'
-    ).toList();
-    
-    return [...cancelledBookings, ...cancelledTrips];
-  }
+  // Scroll controllers for each tab
+  late ScrollController _ongoingScrollController;
+  late ScrollController _completedScrollController;
+  late ScrollController _cancelledScrollController;
 
   @override
   void initState() {
     super.initState();
     _bookingService = BookingService(serviceLocator());
     _tabController = TabController(length: 3, vsync: this);
-    _loadData();
+    
+    // Initialize scroll controllers
+    _ongoingScrollController = ScrollController();
+    _completedScrollController = ScrollController();
+    _cancelledScrollController = ScrollController();
+    
+    // Add scroll listeners
+    _ongoingScrollController.addListener(() => _onScroll(OrderType.ongoing));
+    _completedScrollController.addListener(() => _onScroll(OrderType.completed));
+    _cancelledScrollController.addListener(() => _onScroll(OrderType.cancelled));
+    
+    _loadInitialData();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _ongoingScrollController.dispose();
+    _completedScrollController.dispose();
+    _cancelledScrollController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadData() async {
+  void _onScroll(OrderType orderType) {
+    ScrollController controller;
+    switch (orderType) {
+      case OrderType.ongoing:
+        controller = _ongoingScrollController;
+        break;
+      case OrderType.completed:
+        controller = _completedScrollController;
+        break;
+      case OrderType.cancelled:
+        controller = _cancelledScrollController;
+        break;
+    }
+
+    if (controller.position.pixels >= controller.position.maxScrollExtent * 0.9) {
+      _loadMoreData(orderType);
+    }
+  }
+
+  Future<void> _loadInitialData() async {
     setState(() {
-      _isLoading = true;
+      _isInitialLoading = true;
       _error = null;
     });
 
     try {
+      // Load initial data from API
       final bookingListResponse = await _bookingService.getBookingList();
       final tripList = await _bookingService.getTripList();
       
       setState(() {
-        _bookings = bookingListResponse.bookingRequests;
-        _trips = tripList;
-        _isLoading = false;
+        _allBookings = bookingListResponse.bookingRequests;
+        _allTrips = tripList;
+        _isInitialLoading = false;
       });
+
+      // Populate initial pages for each tab
+      _populateInitialPages();
+      
     } catch (e) {
       setState(() {
         _error = e.toString();
-        _isLoading = false;
+        _isInitialLoading = false;
       });
     }
+  }
+
+  void _populateInitialPages() {
+    // Get all orders for each category
+    final ongoingOrders = _getOngoingOrders();
+    final completedOrders = _getCompletedOrders();
+    final cancelledOrders = _getCancelledOrders();
+
+    setState(() {
+      // Load first page for each tab
+      _paginatedOrders[OrderType.ongoing] = ongoingOrders.take(_pageSize).toList();
+      _paginatedOrders[OrderType.completed] = completedOrders.take(_pageSize).toList();
+      _paginatedOrders[OrderType.cancelled] = cancelledOrders.take(_pageSize).toList();
+
+      // Update hasMore flags
+      _hasMoreData[OrderType.ongoing] = ongoingOrders.length > _pageSize;
+      _hasMoreData[OrderType.completed] = completedOrders.length > _pageSize;
+      _hasMoreData[OrderType.cancelled] = cancelledOrders.length > _pageSize;
+    });
+  }
+
+  Future<void> _loadMoreData(OrderType orderType) async {
+    if (_isLoadingMore || !_hasMoreData[orderType]!) return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    try {
+      // Simulate network delay for better UX
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      List<dynamic> allOrdersForType;
+      switch (orderType) {
+        case OrderType.ongoing:
+          allOrdersForType = _getOngoingOrders();
+          break;
+        case OrderType.completed:
+          allOrdersForType = _getCompletedOrders();
+          break;
+        case OrderType.cancelled:
+          allOrdersForType = _getCancelledOrders();
+          break;
+      }
+
+      final currentPage = _currentPages[orderType]!;
+      final startIndex = currentPage * _pageSize;
+      final endIndex = (startIndex + _pageSize).clamp(0, allOrdersForType.length);
+      
+      if (startIndex < allOrdersForType.length) {
+        final newItems = allOrdersForType.sublist(startIndex, endIndex);
+        
+        setState(() {
+          _paginatedOrders[orderType]!.addAll(newItems);
+          _currentPages[orderType] = currentPage + 1;
+          _hasMoreData[orderType] = endIndex < allOrdersForType.length;
+          _isLoadingMore = false;
+        });
+      } else {
+        setState(() {
+          _hasMoreData[orderType] = false;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  List<dynamic> _getOngoingOrders() {
+    final ongoingBookings = _allBookings.where((booking) => 
+      booking.status == 'REQUESTED' || 
+      booking.status == 'SEARCHING' || 
+      booking.status == 'ACCEPTED'
+    ).toList();
+    
+    // Sort by creation date (newest first)
+    ongoingBookings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return ongoingBookings;
+  }
+
+  List<dynamic> _getCompletedOrders() {
+    final completedBookings = _allBookings.where((booking) => 
+      booking.status == 'COMPLETED' || 
+      (booking.isAccepted && booking.tripId != null)
+    ).toList();
+    
+    final completedTrips = _allTrips.where((trip) => 
+      trip.status == 'COMPLETED' && trip.isPaymentDone
+    ).toList();
+    
+    final allCompleted = [...completedBookings, ...completedTrips];
+    // Sort by creation date (newest first)
+    allCompleted.sort((a, b) {
+      final aDate = a is BookingListItem ? a.createdAt : (a as TripDetail).createdAt;
+      final bDate = b is BookingListItem ? b.createdAt : (b as TripDetail).createdAt;
+      return bDate.compareTo(aDate);
+    });
+    
+    return allCompleted;
+  }
+
+  List<dynamic> _getCancelledOrders() {
+    final cancelledBookings = _allBookings.where((booking) => 
+      booking.status == 'CANCELLED'
+    ).toList();
+    
+    final cancelledTrips = _allTrips.where((trip) => 
+      trip.status == 'CANCELLED'
+    ).toList();
+    
+    final allCancelled = [...cancelledBookings, ...cancelledTrips];
+    // Sort by creation date (newest first)
+    allCancelled.sort((a, b) {
+      final aDate = a is BookingListItem ? a.createdAt : (a as TripDetail).createdAt;
+      final bDate = b is BookingListItem ? b.createdAt : (b as TripDetail).createdAt;
+      return bDate.compareTo(aDate);
+    });
+    
+    return allCancelled;
+  }
+
+  Future<void> _refreshData() async {
+    // Reset pagination state
+    setState(() {
+      _currentPages = {
+        OrderType.ongoing: 1,
+        OrderType.completed: 1,
+        OrderType.cancelled: 1,
+      };
+      _hasMoreData = {
+        OrderType.ongoing: true,
+        OrderType.completed: true,
+        OrderType.cancelled: true,
+      };
+      _paginatedOrders = {
+        OrderType.ongoing: [],
+        OrderType.completed: [],
+        OrderType.cancelled: [],
+      };
+    });
+    
+    await _loadInitialData();
   }
 
   @override
@@ -121,7 +299,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
               Icons.refresh_rounded,
               color: theme.colorScheme.primary,
             ),
-            onPressed: _loadData,
+            onPressed: _refreshData,
             tooltip: 'Refresh',
           ),
         ],
@@ -159,7 +337,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (_ongoingOrders.isNotEmpty) ...[
+                      if (_paginatedOrders[OrderType.ongoing]!.isNotEmpty) ...[
                         const SizedBox(width: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -171,7 +349,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${_ongoingOrders.length}',
+                            '${_getOngoingOrders().length}',
                             style: TextStyle(
                               color: theme.colorScheme.onPrimary,
                               fontSize: 9,
@@ -195,7 +373,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (_completedOrders.isNotEmpty) ...[
+                      if (_paginatedOrders[OrderType.completed]!.isNotEmpty) ...[
                         const SizedBox(width: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -207,7 +385,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${_completedOrders.length}',
+                            '${_getCompletedOrders().length}',
                             style: TextStyle(
                               color: theme.colorScheme.onSecondary,
                               fontSize: 9,
@@ -231,7 +409,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (_cancelledOrders.isNotEmpty) ...[
+                      if (_paginatedOrders[OrderType.cancelled]!.isNotEmpty) ...[
                         const SizedBox(width: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -243,7 +421,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${_cancelledOrders.length}',
+                            '${_getCancelledOrders().length}',
                             style: TextStyle(
                               color: theme.colorScheme.onError,
                               fontSize: 9,
@@ -260,18 +438,79 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
           ),
         ),
       ),
-      body: _isLoading
+      body: _isInitialLoading
           ? _buildLoadingState(theme)
           : _error != null
               ? _buildErrorState(theme)
               : TabBarView(
                   controller: _tabController,
                   children: [
-                    _buildOngoingOrdersTab(theme),
-                    _buildCompletedOrdersTab(theme),
-                    _buildCancelledOrdersTab(theme),
+                    _buildOrdersTab(theme, OrderType.ongoing, _ongoingScrollController),
+                    _buildOrdersTab(theme, OrderType.completed, _completedScrollController),
+                    _buildOrdersTab(theme, OrderType.cancelled, _cancelledScrollController),
                   ],
                 ),
+    );
+  }
+
+  Widget _buildOrdersTab(ThemeData theme, OrderType orderType, ScrollController scrollController) {
+    final orders = _paginatedOrders[orderType]!;
+    final hasMore = _hasMoreData[orderType]!;
+    
+    if (orders.isEmpty && !_isInitialLoading) {
+      return _buildEmptyState(theme, orderType);
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: ListView.builder(
+        controller: scrollController,
+        padding: const EdgeInsets.all(AppSpacing.md),
+        itemCount: orders.length + (hasMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == orders.length) {
+            // Loading indicator at the bottom
+            return _buildLoadingMoreIndicator(theme);
+          }
+          
+          final order = orders[index];
+          return _buildOrderCard(theme, order, orderType);
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoadingMoreIndicator(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      alignment: Alignment.center,
+      child: _isLoadingMore
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Loading more orders...',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            )
+          : Text(
+              'Scroll to load more',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+              ),
+            ),
     );
   }
 
@@ -332,7 +571,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
             ),
             const SizedBox(height: AppSpacing.xl),
             ElevatedButton.icon(
-              onPressed: _loadData,
+              onPressed: _refreshData,
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
@@ -348,87 +587,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
     );
   }
 
-  Widget _buildOngoingOrdersTab(ThemeData theme) {
-    if (_ongoingOrders.isEmpty) {
-      return _buildEmptyState(
-        theme,
-        icon: Icons.hourglass_empty_rounded,
-        title: 'No Ongoing Orders',
-        message: 'You don\'t have any active orders at the moment.\nNew bookings will appear here.',
-        actionLabel: 'Book Now',
-        onActionTap: () {
-          // Navigate to booking screen
-          Navigator.pop(context);
-        },
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        itemCount: _ongoingOrders.length,
-        itemBuilder: (context, index) {
-          final order = _ongoingOrders[index];
-          return _buildOrderCard(theme, order, OrderType.ongoing);
-        },
-      ),
-    );
-  }
-
-  Widget _buildCompletedOrdersTab(ThemeData theme) {
-    if (_completedOrders.isEmpty) {
-      return _buildEmptyState(
-        theme,
-        icon: Icons.check_circle_outline_rounded,
-        title: 'No Completed Orders',
-        message: 'Your completed deliveries will appear here.\nKeep track of your order history.',
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        itemCount: _completedOrders.length,
-        itemBuilder: (context, index) {
-          final order = _completedOrders[index];
-          return _buildOrderCard(theme, order, OrderType.completed);
-        },
-      ),
-    );
-  }
-
-  Widget _buildCancelledOrdersTab(ThemeData theme) {
-    if (_cancelledOrders.isEmpty) {
-      return _buildEmptyState(
-        theme,
-        icon: Icons.cancel_outlined,
-        title: 'No Cancelled Orders',
-        message: 'You haven\'t cancelled any orders.\nCancelled orders will be shown here.',
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        itemCount: _cancelledOrders.length,
-        itemBuilder: (context, index) {
-          final order = _cancelledOrders[index];
-          return _buildOrderCard(theme, order, OrderType.cancelled);
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(ThemeData theme, {
-    required IconData icon,
-    required String title,
-    required String message,
-    String? actionLabel,
-    VoidCallback? onActionTap,
-  }) {
+  Widget _buildEmptyState(ThemeData theme, OrderType orderType) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -442,14 +601,14 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                icon,
+                _getOrderTypeIcon(orderType),
                 size: 64,
                 color: theme.colorScheme.primary.withOpacity(0.7),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              title,
+              _getOrderTypeTitle(orderType),
               style: theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -457,26 +616,13 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              message,
+              _getOrderTypeMessage(orderType),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.7),
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
             ),
-            if (actionLabel != null && onActionTap != null) ...[
-              const SizedBox(height: AppSpacing.xl),
-              ElevatedButton(
-                onPressed: onActionTap,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xl,
-                    vertical: AppSpacing.md,
-                  ),
-                ),
-                child: Text(actionLabel),
-              ),
-            ],
           ],
         ),
       ),
@@ -1002,6 +1148,39 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
         return 'Cancelled';
       default:
         return status;
+    }
+  }
+
+  IconData _getOrderTypeIcon(OrderType type) {
+    switch (type) {
+      case OrderType.ongoing:
+        return Icons.hourglass_empty_rounded;
+      case OrderType.completed:
+        return Icons.check_circle_outline_rounded;
+      case OrderType.cancelled:
+        return Icons.cancel_outlined;
+    }
+  }
+
+  String _getOrderTypeTitle(OrderType type) {
+    switch (type) {
+      case OrderType.ongoing:
+        return 'Ongoing Orders';
+      case OrderType.completed:
+        return 'Completed Orders';
+      case OrderType.cancelled:
+        return 'Cancelled Orders';
+    }
+  }
+
+  String _getOrderTypeMessage(OrderType type) {
+    switch (type) {
+      case OrderType.ongoing:
+        return 'You don\'t have any active orders at the moment.\nNew bookings will appear here.';
+      case OrderType.completed:
+        return 'Your completed deliveries will appear here.\nKeep track of your order history.';
+      case OrderType.cancelled:
+        return 'You haven\'t cancelled any orders.\nCancelled orders will be shown here.';
     }
   }
 } 

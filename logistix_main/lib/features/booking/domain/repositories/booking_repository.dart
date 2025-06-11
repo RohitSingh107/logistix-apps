@@ -21,6 +21,12 @@ abstract class BookingRepository {
     required double estimatedFare,
   });
 
-  /// Accept a booking request
-  Future<void> acceptBooking(int bookingRequestId);
+  /// Accept a booking request and return the trip details
+  Future<BookingAcceptResponse> acceptBooking(int bookingRequestId);
+
+  /// Get details of a specific booking request
+  Future<BookingRequest> getBookingDetail(int bookingRequestId);
+
+  /// Get list of booking requests
+  Future<List<BookingRequest>> getBookingList();
 } 

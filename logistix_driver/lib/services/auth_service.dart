@@ -4,8 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
-  // static const String baseUrl = 'https://02d7-43-225-75-202.ngrok-free.app/api';
+  // static const String baseUrl = 'http://10.0.2.2:8000/api';
+  static const String baseUrl = 'https://c9a2-14-143-254-194.ngrok-free.app/api';
   
   Future<bool> sendOTP(String phone) async {
     try {

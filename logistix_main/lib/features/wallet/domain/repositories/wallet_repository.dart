@@ -4,10 +4,13 @@ abstract class WalletRepository {
   /// Get the current balance of the authenticated user's wallet
   Future<double> getWalletBalance();
   
-  /// Get all transactions for the authenticated user's wallet
-  Future<List<WalletTransaction>> getWalletTransactions({
+  /// Get paginated transactions for the authenticated user's wallet
+  Future<PaginatedWalletTransactionList> getWalletTransactions({
     String? transactionType,
-    int? limit,
+    DateTime? startTime,
+    DateTime? endTime,
+    int? page,
+    int? pageSize,
   });
   
   /// Add money to the wallet

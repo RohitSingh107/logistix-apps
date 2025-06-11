@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
+import 'trip_model.dart';
 
 part 'booking_model.g.dart';
 
@@ -24,6 +25,8 @@ enum PaymentMode {
 @JsonSerializable()
 class BookingRequest extends BaseModel {
   final int id;
+  @JsonKey(name: 'trip_id')
+  final int? tripId;
   @JsonKey(name: 'sender_name')
   final String senderName;
   @JsonKey(name: 'receiver_name')
@@ -32,6 +35,10 @@ class BookingRequest extends BaseModel {
   final String senderPhone;
   @JsonKey(name: 'receiver_phone')
   final String receiverPhone;
+  @JsonKey(name: 'pickup_location')
+  final String pickupLocation;
+  @JsonKey(name: 'dropoff_location')
+  final String dropoffLocation;
   @JsonKey(name: 'pickup_time')
   final DateTime pickupTime;
   @JsonKey(name: 'pickup_address')
@@ -54,10 +61,13 @@ class BookingRequest extends BaseModel {
 
   const BookingRequest({
     required this.id,
+    this.tripId,
     required this.senderName,
     required this.receiverName,
     required this.senderPhone,
     required this.receiverPhone,
+    required this.pickupLocation,
+    required this.dropoffLocation,
     required this.pickupTime,
     required this.pickupAddress,
     required this.dropoffAddress,
@@ -78,10 +88,13 @@ class BookingRequest extends BaseModel {
   @override
   List<Object?> get props => [
         id,
+        tripId,
         senderName,
         receiverName,
         senderPhone,
         receiverPhone,
+        pickupLocation,
+        dropoffLocation,
         pickupTime,
         pickupAddress,
         dropoffAddress,
@@ -96,6 +109,64 @@ class BookingRequest extends BaseModel {
 }
 
 @JsonSerializable()
+class BookingRequestRequest {
+  @JsonKey(name: 'sender_name')
+  final String senderName;
+  @JsonKey(name: 'receiver_name')
+  final String receiverName;
+  @JsonKey(name: 'sender_phone')
+  final String senderPhone;
+  @JsonKey(name: 'receiver_phone')
+  final String receiverPhone;
+  @JsonKey(name: 'pickup_latitude')
+  final double pickupLatitude;
+  @JsonKey(name: 'pickup_longitude')
+  final double pickupLongitude;
+  @JsonKey(name: 'dropoff_latitude')
+  final double dropoffLatitude;
+  @JsonKey(name: 'dropoff_longitude')
+  final double dropoffLongitude;
+  @JsonKey(name: 'pickup_time')
+  final DateTime pickupTime;
+  @JsonKey(name: 'pickup_address')
+  final String pickupAddress;
+  @JsonKey(name: 'dropoff_address')
+  final String dropoffAddress;
+  @JsonKey(name: 'vehicle_type_id')
+  final int vehicleTypeId;
+  @JsonKey(name: 'goods_type')
+  final String goodsType;
+  @JsonKey(name: 'goods_quantity')
+  final String goodsQuantity;
+  @JsonKey(name: 'payment_mode')
+  final PaymentMode paymentMode;
+  @JsonKey(name: 'estimated_fare')
+  final double estimatedFare;
+
+  BookingRequestRequest({
+    required this.senderName,
+    required this.receiverName,
+    required this.senderPhone,
+    required this.receiverPhone,
+    required this.pickupLatitude,
+    required this.pickupLongitude,
+    required this.dropoffLatitude,
+    required this.dropoffLongitude,
+    required this.pickupTime,
+    required this.pickupAddress,
+    required this.dropoffAddress,
+    required this.vehicleTypeId,
+    required this.goodsType,
+    required this.goodsQuantity,
+    required this.paymentMode,
+    required this.estimatedFare,
+  });
+
+  factory BookingRequestRequest.fromJson(Map<String, dynamic> json) => _$BookingRequestRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$BookingRequestRequestToJson(this);
+}
+
+@JsonSerializable()
 class BookingAcceptRequest {
   @JsonKey(name: 'booking_request_id')
   final int bookingRequestId;
@@ -106,4 +177,18 @@ class BookingAcceptRequest {
 
   factory BookingAcceptRequest.fromJson(Map<String, dynamic> json) => _$BookingAcceptRequestFromJson(json);
   Map<String, dynamic> toJson() => _$BookingAcceptRequestToJson(this);
+}
+
+@JsonSerializable()
+class BookingAcceptResponse {
+  final String message;
+  final Trip trip;
+
+  BookingAcceptResponse({
+    required this.message,
+    required this.trip,
+  });
+
+  factory BookingAcceptResponse.fromJson(Map<String, dynamic> json) => _$BookingAcceptResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$BookingAcceptResponseToJson(this);
 } 

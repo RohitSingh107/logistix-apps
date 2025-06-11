@@ -1,7 +1,7 @@
-import '../../data/models/vehicle_estimate_response.dart';
+import '../../../../core/models/vehicle_estimation_model.dart';
 
 abstract class VehicleEstimationRepositoryInterface {
-  Future<List<VehicleEstimateResponse>> getVehicleEstimates({
+  Future<VehicleEstimationResponse> getVehicleEstimates({
     required double pickupLatitude,
     required double pickupLongitude,
     required double dropoffLatitude,

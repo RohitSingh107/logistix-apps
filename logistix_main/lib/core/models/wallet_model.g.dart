@@ -41,3 +41,49 @@ Map<String, dynamic> _$WalletTopupResponseToJson(
       'balance': instance.balance,
       'wallet': instance.wallet,
     };
+
+WalletTopupRequest _$WalletTopupRequestFromJson(Map<String, dynamic> json) =>
+    WalletTopupRequest(
+      amount: (json['amount'] as num).toDouble(),
+      remarks: json['remarks'] as String?,
+    );
+
+Map<String, dynamic> _$WalletTopupRequestToJson(WalletTopupRequest instance) =>
+    <String, dynamic>{
+      'amount': instance.amount,
+      'remarks': instance.remarks,
+    };
+
+PaginatedWalletTransactionList _$PaginatedWalletTransactionListFromJson(
+        Map<String, dynamic> json) =>
+    PaginatedWalletTransactionList(
+      count: (json['count'] as num).toInt(),
+      next: json['next'] as String?,
+      previous: json['previous'] as String?,
+      results: (json['results'] as List<dynamic>?)
+              ?.map(
+                  (e) => WalletTransaction.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+
+Map<String, dynamic> _$PaginatedWalletTransactionListToJson(
+        PaginatedWalletTransactionList instance) =>
+    <String, dynamic>{
+      'count': instance.count,
+      'next': instance.next,
+      'previous': instance.previous,
+      'results': instance.results,
+    };
+
+WalletBalanceResponse _$WalletBalanceResponseFromJson(
+        Map<String, dynamic> json) =>
+    WalletBalanceResponse(
+      balance: (json['balance'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$WalletBalanceResponseToJson(
+        WalletBalanceResponse instance) =>
+    <String, dynamic>{
+      'balance': instance.balance,
+    };
