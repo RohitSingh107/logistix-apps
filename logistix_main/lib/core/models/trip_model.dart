@@ -1,7 +1,5 @@
-import 'package:equatable/equatable.dart';
 import 'base_model.dart';
 import 'booking_model.dart';
-import 'user_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'driver_model.dart';
 
@@ -10,8 +8,8 @@ part 'trip_model.g.dart';
 enum TripStatus {
   @JsonValue('ACCEPTED')
   accepted,
-  @JsonValue('LOADING_PENDING')
-  loadingPending,
+  @JsonValue('TRIP_STARTED')
+  tripStarted,
   @JsonValue('LOADING_STARTED')
   loadingStarted,
   @JsonValue('LOADING_DONE')
@@ -50,7 +48,7 @@ class Trip extends BaseModel {
   @JsonKey(name: 'final_duration')
   final int? finalDuration;
   @JsonKey(name: 'final_distance')
-  final double? finalDistance;
+  final String? finalDistance;
   @JsonKey(name: 'is_payment_done')
   final bool isPaymentDone;
   @JsonKey(name: 'created_at')
@@ -98,6 +96,16 @@ class Trip extends BaseModel {
         createdAt,
         updatedAt,
       ];
+
+  // Helper method to convert string distance to double
+  double? get distanceAsDouble {
+    if (finalDistance == null) return null;
+    try {
+      return double.parse(finalDistance!);
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 @JsonSerializable()
@@ -118,7 +126,7 @@ class TripUpdateRequest {
   @JsonKey(name: 'final_duration')
   final int? finalDuration;
   @JsonKey(name: 'final_distance')
-  final double? finalDistance;
+  final String? finalDistance;
   @JsonKey(name: 'is_payment_done')
   final bool? isPaymentDone;
 
@@ -137,4 +145,23 @@ class TripUpdateRequest {
 
   factory TripUpdateRequest.fromJson(Map<String, dynamic> json) => _$TripUpdateRequestFromJson(json);
   Map<String, dynamic> toJson() => _$TripUpdateRequestToJson(this);
+}
+
+@JsonSerializable()
+class PaginatedTripList {
+  final int count;
+  final String? next;
+  final String? previous;
+  @JsonKey(defaultValue: [])
+  final List<Trip> results;
+
+  PaginatedTripList({
+    required this.count,
+    this.next,
+    this.previous,
+    List<Trip>? results,
+  }) : results = results ?? [];
+
+  factory PaginatedTripList.fromJson(Map<String, dynamic> json) => _$PaginatedTripListFromJson(json);
+  Map<String, dynamic> toJson() => _$PaginatedTripListToJson(this);
 }

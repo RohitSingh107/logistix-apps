@@ -52,4 +52,49 @@ class WalletTopupResponse extends BaseModel {
 
   @override
   List<Object?> get props => [message, balance, wallet];
+}
+
+@JsonSerializable()
+class WalletTopupRequest {
+  final double amount;
+  final String? remarks;
+
+  WalletTopupRequest({
+    required this.amount,
+    this.remarks,
+  });
+
+  factory WalletTopupRequest.fromJson(Map<String, dynamic> json) => _$WalletTopupRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$WalletTopupRequestToJson(this);
+}
+
+@JsonSerializable()
+class PaginatedWalletTransactionList {
+  final int count;
+  final String? next;
+  final String? previous;
+  @JsonKey(defaultValue: [])
+  final List<WalletTransaction> results;
+
+  PaginatedWalletTransactionList({
+    required this.count,
+    this.next,
+    this.previous,
+    List<WalletTransaction>? results,
+  }) : results = results ?? [];
+
+  factory PaginatedWalletTransactionList.fromJson(Map<String, dynamic> json) => _$PaginatedWalletTransactionListFromJson(json);
+  Map<String, dynamic> toJson() => _$PaginatedWalletTransactionListToJson(this);
+}
+
+@JsonSerializable()
+class WalletBalanceResponse {
+  final double balance;
+
+  WalletBalanceResponse({
+    required this.balance,
+  });
+
+  factory WalletBalanceResponse.fromJson(Map<String, dynamic> json) => _$WalletBalanceResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$WalletBalanceResponseToJson(this);
 } 

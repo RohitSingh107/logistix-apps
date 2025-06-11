@@ -15,6 +15,30 @@ class LoadWalletData extends WalletEvent {}
 
 class RefreshWalletData extends WalletEvent {}
 
+class LoadMoreTransactions extends WalletEvent {
+  final int page;
+
+  const LoadMoreTransactions(this.page);
+
+  @override
+  List<Object?> get props => [page];
+}
+
+class FilterTransactions extends WalletEvent {
+  final String? transactionType;
+  final DateTime? startTime;
+  final DateTime? endTime;
+
+  const FilterTransactions({
+    this.transactionType,
+    this.startTime,
+    this.endTime,
+  });
+
+  @override
+  List<Object?> get props => [transactionType, startTime, endTime];
+}
+
 class AddBalance extends WalletEvent {
   final double amount;
   final String? remarks;
@@ -40,24 +64,51 @@ class WalletLoading extends WalletState {}
 class WalletLoaded extends WalletState {
   final double balance;
   final List<WalletTransaction> transactions;
+  final bool hasMoreTransactions;
+  final int currentPage;
+  final int totalCount;
 
   const WalletLoaded({
     required this.balance,
     required this.transactions,
+    this.hasMoreTransactions = false,
+    this.currentPage = 1,
+    this.totalCount = 0,
   });
 
   @override
-  List<Object?> get props => [balance, transactions];
+  List<Object?> get props => [balance, transactions, hasMoreTransactions, currentPage, totalCount];
 
   WalletLoaded copyWith({
     double? balance,
     List<WalletTransaction>? transactions,
+    bool? hasMoreTransactions,
+    int? currentPage,
+    int? totalCount,
   }) {
     return WalletLoaded(
       balance: balance ?? this.balance,
       transactions: transactions ?? this.transactions,
+      hasMoreTransactions: hasMoreTransactions ?? this.hasMoreTransactions,
+      currentPage: currentPage ?? this.currentPage,
+      totalCount: totalCount ?? this.totalCount,
     );
   }
+}
+
+class WalletLoadingMore extends WalletState {
+  final double balance;
+  final List<WalletTransaction> transactions;
+  final int currentPage;
+
+  const WalletLoadingMore({
+    required this.balance,
+    required this.transactions,
+    required this.currentPage,
+  });
+
+  @override
+  List<Object?> get props => [balance, transactions, currentPage];
 }
 
 class WalletError extends WalletState {
@@ -87,6 +138,8 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   WalletBloc(this._walletRepository) : super(WalletInitial()) {
     on<LoadWalletData>(_onLoadWalletData);
     on<RefreshWalletData>(_onRefreshWalletData);
+    on<LoadMoreTransactions>(_onLoadMoreTransactions);
+    on<FilterTransactions>(_onFilterTransactions);
     on<AddBalance>(_onAddBalance);
   }
 
@@ -94,11 +147,17 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     emit(WalletLoading());
     try {
       final balance = await _walletRepository.getWalletBalance();
-      final transactions = await _walletRepository.getWalletTransactions();
+      final transactionsResponse = await _walletRepository.getWalletTransactions(
+        page: 1,
+        pageSize: 20,
+      );
 
       emit(WalletLoaded(
         balance: balance,
-        transactions: transactions,
+        transactions: transactionsResponse.results,
+        hasMoreTransactions: transactionsResponse.next != null,
+        currentPage: 1,
+        totalCount: transactionsResponse.count,
       ));
     } catch (e) {
       emit(WalletError(e.toString()));
@@ -108,11 +167,78 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   Future<void> _onRefreshWalletData(RefreshWalletData event, Emitter<WalletState> emit) async {
     try {
       final balance = await _walletRepository.getWalletBalance();
-      final transactions = await _walletRepository.getWalletTransactions();
+      final transactionsResponse = await _walletRepository.getWalletTransactions(
+        page: 1,
+        pageSize: 20,
+      );
 
       emit(WalletLoaded(
         balance: balance,
-        transactions: transactions,
+        transactions: transactionsResponse.results,
+        hasMoreTransactions: transactionsResponse.next != null,
+        currentPage: 1,
+        totalCount: transactionsResponse.count,
+      ));
+    } catch (e) {
+      emit(WalletError(e.toString()));
+    }
+  }
+
+  Future<void> _onLoadMoreTransactions(LoadMoreTransactions event, Emitter<WalletState> emit) async {
+    final currentState = state;
+    if (currentState is WalletLoaded && currentState.hasMoreTransactions) {
+      emit(WalletLoadingMore(
+        balance: currentState.balance,
+        transactions: currentState.transactions,
+        currentPage: currentState.currentPage,
+      ));
+
+      try {
+        final transactionsResponse = await _walletRepository.getWalletTransactions(
+          page: event.page,
+          pageSize: 20,
+        );
+
+        final allTransactions = [...currentState.transactions, ...transactionsResponse.results];
+
+        emit(WalletLoaded(
+          balance: currentState.balance,
+          transactions: allTransactions,
+          hasMoreTransactions: transactionsResponse.next != null,
+          currentPage: event.page,
+          totalCount: transactionsResponse.count,
+        ));
+      } catch (e) {
+        emit(WalletLoaded(
+          balance: currentState.balance,
+          transactions: currentState.transactions,
+          hasMoreTransactions: currentState.hasMoreTransactions,
+          currentPage: currentState.currentPage,
+          totalCount: currentState.totalCount,
+        ));
+        // Could emit a separate error state for loading more failures
+      }
+    }
+  }
+
+  Future<void> _onFilterTransactions(FilterTransactions event, Emitter<WalletState> emit) async {
+    emit(WalletLoading());
+    try {
+      final balance = await _walletRepository.getWalletBalance();
+      final transactionsResponse = await _walletRepository.getWalletTransactions(
+        transactionType: event.transactionType,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        page: 1,
+        pageSize: 20,
+      );
+
+      emit(WalletLoaded(
+        balance: balance,
+        transactions: transactionsResponse.results,
+        hasMoreTransactions: transactionsResponse.next != null,
+        currentPage: 1,
+        totalCount: transactionsResponse.count,
       ));
     } catch (e) {
       emit(WalletError(e.toString()));

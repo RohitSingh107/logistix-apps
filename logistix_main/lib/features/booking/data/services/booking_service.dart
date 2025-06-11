@@ -150,15 +150,39 @@ class BookingService {
     }
   }
 
-  Future<List<TripDetail>> getTripList() async {
+  Future<List<TripDetail>> getTripList({
+    bool? forDriver,
+    int? page,
+    int? pageSize,
+  }) async {
     try {
-      print('Getting trip list');
+      print('Getting trip list with pagination: page=$page, pageSize=$pageSize');
+      
+      final queryParams = <String, dynamic>{};
+      if (forDriver != null) queryParams['for_driver'] = forDriver;
+      if (page != null) queryParams['page'] = page;
+      if (pageSize != null) queryParams['page_size'] = pageSize;
       
       final response = await _apiClient.get(
         ApiEndpoints.tripList,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
 
-      final tripsData = response.data['trips'] as List;
+      // Handle paginated response structure
+      List<dynamic> tripsData;
+      if (response.data is Map && response.data.containsKey('results')) {
+        // New paginated format
+        tripsData = response.data['results'] as List? ?? [];
+      } else if (response.data is Map && response.data.containsKey('trips')) {
+        // Legacy format
+        tripsData = response.data['trips'] as List? ?? [];
+      } else if (response.data is List) {
+        // Direct list format
+        tripsData = response.data as List;
+      } else {
+        tripsData = [];
+      }
+
       return tripsData
           .map((tripData) => TripDetail.fromJson(tripData as Map<String, dynamic>))
           .toList();

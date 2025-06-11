@@ -29,7 +29,7 @@ Trip _$TripFromJson(Map<String, dynamic> json) => Trip(
           : DateTime.parse(json['payment_time'] as String),
       finalFare: (json['final_fare'] as num).toDouble(),
       finalDuration: (json['final_duration'] as num?)?.toInt(),
-      finalDistance: (json['final_distance'] as num?)?.toDouble(),
+      finalDistance: json['final_distance'] as String?,
       isPaymentDone: json['is_payment_done'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -55,7 +55,7 @@ Map<String, dynamic> _$TripToJson(Trip instance) => <String, dynamic>{
 
 const _$TripStatusEnumMap = {
   TripStatus.accepted: 'ACCEPTED',
-  TripStatus.loadingPending: 'LOADING_PENDING',
+  TripStatus.tripStarted: 'TRIP_STARTED',
   TripStatus.loadingStarted: 'LOADING_STARTED',
   TripStatus.loadingDone: 'LOADING_DONE',
   TripStatus.reachedDestination: 'REACHED_DESTINATION',
@@ -85,7 +85,7 @@ TripUpdateRequest _$TripUpdateRequestFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['payment_time'] as String),
       finalFare: (json['final_fare'] as num).toDouble(),
       finalDuration: (json['final_duration'] as num?)?.toInt(),
-      finalDistance: (json['final_distance'] as num?)?.toDouble(),
+      finalDistance: json['final_distance'] as String?,
       isPaymentDone: json['is_payment_done'] as bool?,
     );
 
@@ -101,4 +101,23 @@ Map<String, dynamic> _$TripUpdateRequestToJson(TripUpdateRequest instance) =>
       'final_duration': instance.finalDuration,
       'final_distance': instance.finalDistance,
       'is_payment_done': instance.isPaymentDone,
+    };
+
+PaginatedTripList _$PaginatedTripListFromJson(Map<String, dynamic> json) =>
+    PaginatedTripList(
+      count: (json['count'] as num).toInt(),
+      next: json['next'] as String?,
+      previous: json['previous'] as String?,
+      results: (json['results'] as List<dynamic>?)
+              ?.map((e) => Trip.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+
+Map<String, dynamic> _$PaginatedTripListToJson(PaginatedTripList instance) =>
+    <String, dynamic>{
+      'count': instance.count,
+      'next': instance.next,
+      'previous': instance.previous,
+      'results': instance.results,
     };

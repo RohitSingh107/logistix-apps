@@ -1,0 +1,1354 @@
+openapi: 3.0.3
+info:
+  title: Logistix API
+  version: 1.0.0
+  description: API documentation for Logistix
+paths:
+  /api/booking/accept/:
+    post:
+      operationId: booking_accept_create
+      description: |-
+        API endpoint for drivers to accept a booking request.
+        example Response:
+        {
+          "message": "Booking accepted successfully",
+          "trip": {
+            "id": 4,
+            "driver": {
+              "id": 2,
+              "user": {
+                "id": 3,
+                "phone": 9876543210,
+                "first_name": "Rohit",
+                "last_name": "Singh",
+                "profile_picture": "https://www.cnss.gov.lb/dino-imagem/Dinosaurs-Wallpapers-Wallpaper-Cave-14640281/"
+              },
+              "license_number": "fdkcnsxsx",
+              "is_available": false,
+              "average_rating": "5.00",
+              "total_earnings": 0
+            },
+            "booking_request": {
+              "id": 20,
+              "sender_name": "Sender Name",
+              "receiver_name": "Receiver Name",
+              "sender_phone": "1234567890",
+              "receiver_phone": "1234567890",
+              "pickup_time": "2025-06-07T16:52:24.633000Z",
+              "pickup_address": "Burari, Delhi",
+              "dropoff_address": "Gurugram, Delhi",
+              "goods_type": "Boxes",
+              "goods_quantity": "20",
+              "payment_mode": "CASH",
+              "estimated_fare": 789,
+              "status": "ACCEPTED",
+              "created_at": "2025-06-07T17:02:13.652300Z",
+              "updated_at": "2025-06-07T17:18:39.567662Z"
+            },
+            "status": "ACCEPTED",
+            "loading_start_time": null,
+            "loading_end_time": null,
+            "unloading_start_time": null,
+            "unloading_end_time": null,
+            "payment_time": null,
+            "final_fare": 789,
+            "final_duration": null,
+            "final_distance": null,
+            "is_payment_done": false,
+            "created_at": "2025-06-07T17:18:39.569873Z",
+            "updated_at": "2025-06-07T17:18:39.569882Z"
+          }
+        }
+      tags:
+      - booking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingAcceptRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingAcceptRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingAcceptRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingAccept'
+          description: ''
+  /api/booking/create/:
+    post:
+      operationId: booking_create_create
+      description: API endpoint to create a new booking request.
+      tags:
+      - booking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingRequest'
+          description: ''
+  /api/booking/detail/{booking_request_id}/:
+    get:
+      operationId: booking_detail_retrieve
+      description: API endpoint to retrieve a booking request.
+      parameters:
+      - in: path
+        name: booking_request_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - booking
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingRequest'
+          description: ''
+  /api/booking/list/:
+    get:
+      operationId: booking_list_retrieve
+      description: API endpoint to retrieve a list of booking requests.
+      tags:
+      - booking
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingRequest'
+          description: ''
+  /api/payments/wallet/balance/:
+    get:
+      operationId: payments_wallet_balance_retrieve
+      description: Get the current balance of the authenticated user's wallet.
+      summary: Get wallet balance
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: number
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                description: Internal server error
+          description: ''
+  /api/payments/wallet/topup/:
+    post:
+      operationId: payments_wallet_topup_create
+      description: Add funds to the authenticated user's wallet.
+      summary: Topup wallet
+      tags:
+      - payments
+      requestBody:
+        content:
+          type:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          properties:
+            schema:
+              amount:
+                type: number
+                description: Amount to add to wallet
+              remarks:
+                type: string
+                description: Optional remarks for the transaction
+          required:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  balance:
+                    type: number
+                  wallet:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      amount:
+                        type: number
+                      type_tx:
+                        type: string
+                      remarks:
+                        type: string
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                description: Internal server error
+          description: ''
+  /api/payments/wallet/transactions/:
+    get:
+      operationId: payments_wallet_transactions_list
+      description: Get paginated list of wallet transactions for the authenticated
+        user with optional filtering by transaction type and time range.
+      summary: Get wallet transactions
+      parameters:
+      - in: query
+        name: end_time
+        schema:
+          type: string
+          format: date-time
+        description: 'End time for filtering transactions (ISO format: 2023-12-31T23:59:59Z).
+          If not provided, current time is used when start_time is specified.'
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: 'Page number for pagination (default: 1)'
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 'Number of transactions per page (default: 20, max: 100)'
+      - in: query
+        name: start_time
+        schema:
+          type: string
+          format: date-time
+        description: 'Start time for filtering transactions (ISO format: 2023-01-01T00:00:00Z)'
+      - in: query
+        name: transaction_type
+        schema:
+          type: string
+        description: Filter transactions by type (e.g., CREDIT, DEBIT, TRIP_PAYMENT,
+          etc.)
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWalletTransactionList'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad request - invalid parameters or time period > 1 year
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                description: Internal server error
+          description: ''
+  /api/strategy/vehicle-estimates/:
+    post:
+      operationId: strategy_vehicle_estimates_create
+      description: |-
+        Get vehicle estimation quotes for the given pickup and dropoff locations.
+
+        Request body:
+        {
+            "pickup_location": {
+                "latitude": 12.9716,
+                "longitude": 77.5946
+            },
+            "dropoff_location": {
+                "latitude": 13.0827,
+                "longitude": 77.5877
+            }
+        }
+
+        Returns:
+            List of vehicle estimation quotes with estimated fare and pickup reach time.
+      tags:
+      - strategy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleEstimationRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VehicleEstimationRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VehicleEstimationRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleEstimationRequest'
+          description: ''
+  /api/trip/detail/{trip_id}/:
+    get:
+      operationId: trip_detail_retrieve
+      description: Retrieve details of a specific trip
+      summary: Get trip details
+      parameters:
+      - in: path
+        name: trip_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - trip
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Trip not found
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                description: Permission denied
+          description: ''
+  /api/trip/list/:
+    get:
+      operationId: trip_list_list
+      description: Get paginated list of trips for the authenticated user. Use 'for_driver=true'
+        to get trips where user is the driver, otherwise returns trips where user
+        is the booking requester.
+      summary: List user trips
+      parameters:
+      - in: query
+        name: for_driver
+        schema:
+          type: boolean
+        description: If true, return trips where user is the driver. If false/not
+          provided, return trips where user is the booking requester.
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number for pagination
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Number of items per page (max 100)
+      tags:
+      - trip
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTripList'
+          description: ''
+  /api/trip/update/{trip_id}/:
+    post:
+      operationId: trip_update_create
+      description: Update a trip's status and details (driver only)
+      summary: Update trip
+      parameters:
+      - in: path
+        name: trip_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - trip
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TripUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TripUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad request - validation error
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                description: Permission denied
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Trip not found
+          description: ''
+  /api/users/driver/:
+    post:
+      operationId: users_driver_create
+      description: API view for creating a new driver profile.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+          description: ''
+  /api/users/driver/profile/:
+    get:
+      operationId: users_driver_profile_retrieve
+      description: API view for retrieving and updating driver profile.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+          description: ''
+    put:
+      operationId: users_driver_profile_update
+      description: API view for retrieving and updating driver profile.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+          description: ''
+    patch:
+      operationId: users_driver_profile_partial_update
+      description: API view for retrieving and updating driver profile.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDriverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDriverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDriverRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+          description: ''
+  /api/users/login/:
+    post:
+      operationId: users_login_create
+      description: API view for requesting OTP for login.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPRequest'
+          description: ''
+  /api/users/profile/:
+    get:
+      operationId: users_profile_retrieve
+      description: API view for retrieving and updating user profile.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: users_profile_update
+      description: API view for retrieving and updating user profile.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: users_profile_partial_update
+      description: API view for retrieving and updating user profile.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/token/refresh/:
+    post:
+      operationId: users_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/users/verify-otp/:
+    post:
+      operationId: users_verify_otp_create
+      description: API view for verifying OTP and handling login or registration.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPVerificationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPVerificationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPVerificationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPVerification'
+          description: ''
+components:
+  schemas:
+    BookingAccept:
+      type: object
+      description: Serializer for accepting a booking request.
+      properties:
+        booking_request_id:
+          type: integer
+      required:
+      - booking_request_id
+    BookingAcceptRequest:
+      type: object
+      description: Serializer for accepting a booking request.
+      properties:
+        booking_request_id:
+          type: integer
+      required:
+      - booking_request_id
+    BookingRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        trip_id:
+          type: integer
+          readOnly: true
+          nullable: true
+        sender_name:
+          type: string
+          maxLength: 100
+        receiver_name:
+          type: string
+          maxLength: 100
+        sender_phone:
+          type: string
+          maxLength: 100
+        receiver_phone:
+          type: string
+          maxLength: 100
+        pickup_location:
+          type: string
+          readOnly: true
+        dropoff_location:
+          type: string
+          readOnly: true
+        pickup_time:
+          type: string
+          format: date-time
+        pickup_address:
+          type: string
+        dropoff_address:
+          type: string
+        goods_type:
+          type: string
+          maxLength: 100
+        goods_quantity:
+          type: string
+          maxLength: 100
+        payment_mode:
+          $ref: '#/components/schemas/PaymentModeEnum'
+        estimated_fare:
+          type: number
+          format: double
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BookingStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - dropoff_address
+      - dropoff_location
+      - estimated_fare
+      - goods_quantity
+      - goods_type
+      - id
+      - pickup_address
+      - pickup_location
+      - pickup_time
+      - receiver_name
+      - receiver_phone
+      - sender_name
+      - sender_phone
+      - status
+      - trip_id
+      - updated_at
+    BookingRequestRequest:
+      type: object
+      properties:
+        sender_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        receiver_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        sender_phone:
+          type: string
+          minLength: 1
+          maxLength: 100
+        receiver_phone:
+          type: string
+          minLength: 1
+          maxLength: 100
+        pickup_latitude:
+          type: number
+          format: double
+          writeOnly: true
+        pickup_longitude:
+          type: number
+          format: double
+          writeOnly: true
+        dropoff_latitude:
+          type: number
+          format: double
+          writeOnly: true
+        dropoff_longitude:
+          type: number
+          format: double
+          writeOnly: true
+        pickup_time:
+          type: string
+          format: date-time
+        pickup_address:
+          type: string
+          minLength: 1
+        dropoff_address:
+          type: string
+          minLength: 1
+        vehicle_type_id:
+          type: integer
+          writeOnly: true
+        goods_type:
+          type: string
+          minLength: 1
+          maxLength: 100
+        goods_quantity:
+          type: string
+          minLength: 1
+          maxLength: 100
+        payment_mode:
+          $ref: '#/components/schemas/PaymentModeEnum'
+        estimated_fare:
+          type: number
+          format: double
+      required:
+      - dropoff_address
+      - dropoff_latitude
+      - dropoff_longitude
+      - estimated_fare
+      - goods_quantity
+      - goods_type
+      - pickup_address
+      - pickup_latitude
+      - pickup_longitude
+      - pickup_time
+      - receiver_name
+      - receiver_phone
+      - sender_name
+      - sender_phone
+      - vehicle_type_id
+    BookingStatusEnum:
+      enum:
+      - REQUESTED
+      - SEARCHING
+      - ACCEPTED
+      - CANCELLED
+      type: string
+      description: |-
+        * `REQUESTED` - Requested
+        * `SEARCHING` - Searching for Driver
+        * `ACCEPTED` - Accepted by Driver
+        * `CANCELLED` - Cancelled
+    Driver:
+      type: object
+      description: Serializer for the Driver model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        license_number:
+          type: string
+          maxLength: 20
+        is_available:
+          type: boolean
+        average_rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+          readOnly: true
+        total_earnings:
+          type: number
+          format: double
+          readOnly: true
+      required:
+      - average_rating
+      - id
+      - license_number
+      - total_earnings
+      - user
+    DriverRequest:
+      type: object
+      description: Serializer for the Driver model
+      properties:
+        license_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        is_available:
+          type: boolean
+      required:
+      - license_number
+    Location:
+      type: object
+      description: Serializer for location data
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+      required:
+      - latitude
+      - longitude
+    LocationRequest:
+      type: object
+      description: Serializer for location data
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+      required:
+      - latitude
+      - longitude
+    OTPRequest:
+      type: object
+      description: Serializer for requesting OTP
+      properties:
+        phone:
+          type: string
+          maxLength: 15
+      required:
+      - phone
+    OTPRequestRequest:
+      type: object
+      description: Serializer for requesting OTP
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 15
+      required:
+      - phone
+    OTPVerification:
+      type: object
+      description: Serializer for verifying OTP
+      properties:
+        phone:
+          type: string
+          maxLength: 15
+        otp:
+          type: string
+          maxLength: 6
+      required:
+      - otp
+      - phone
+    OTPVerificationRequest:
+      type: object
+      description: Serializer for verifying OTP
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 15
+        otp:
+          type: string
+          minLength: 1
+          maxLength: 6
+      required:
+      - otp
+      - phone
+    PaginatedTripList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Trip'
+    PaginatedWalletTransactionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletTransaction'
+    PatchedDriverRequest:
+      type: object
+      description: Serializer for the Driver model
+      properties:
+        license_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        is_available:
+          type: boolean
+    PatchedUserRequest:
+      type: object
+      description: Serializer for the User model
+      properties:
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        fcm_token:
+          type: string
+          nullable: true
+          maxLength: 255
+    PaymentModeEnum:
+      enum:
+      - CASH
+      - WALLET
+      type: string
+      description: "* `CASH` - \n* `WALLET` - Wallet"
+    Status20dEnum:
+      enum:
+      - ACCEPTED
+      - TRIP_STARTED
+      - LOADING_STARTED
+      - LOADING_DONE
+      - REACHED_DESTINATION
+      - UNLOADING_STARTED
+      - UNLOADING_DONE
+      - COMPLETED
+      - CANCELLED
+      type: string
+      description: |-
+        * `ACCEPTED` - Accepted by Driver
+        * `TRIP_STARTED` - Trip Started
+        * `LOADING_STARTED` - Loading Started
+        * `LOADING_DONE` - Loading Done
+        * `REACHED_DESTINATION` - Driver Reached Destination
+        * `UNLOADING_STARTED` - Unloading Started
+        * `UNLOADING_DONE` - Unloading Complete
+        * `COMPLETED` - Trip Completed
+        * `CANCELLED` - Trip Cancelled
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+      required:
+      - access
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - refresh
+    Trip:
+      type: object
+      description: Serializer for the Trip model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        driver:
+          allOf:
+          - $ref: '#/components/schemas/Driver'
+          readOnly: true
+        booking_request:
+          allOf:
+          - $ref: '#/components/schemas/BookingRequest'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status20dEnum'
+          readOnly: true
+        loading_start_time:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        loading_end_time:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        unloading_start_time:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        unloading_end_time:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        payment_time:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        final_fare:
+          type: number
+          format: double
+          readOnly: true
+        final_duration:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: duration in minutes
+        final_distance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          readOnly: true
+          nullable: true
+          description: distance in kilometers
+        is_payment_done:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - booking_request
+      - created_at
+      - driver
+      - final_distance
+      - final_duration
+      - final_fare
+      - id
+      - is_payment_done
+      - loading_end_time
+      - loading_start_time
+      - payment_time
+      - status
+      - unloading_end_time
+      - unloading_start_time
+      - updated_at
+    TripUpdateRequest:
+      type: object
+      description: Serializer for updating Trip model.
+      properties:
+        status:
+          $ref: '#/components/schemas/Status20dEnum'
+        loading_start_time:
+          type: string
+          format: date-time
+          nullable: true
+        loading_end_time:
+          type: string
+          format: date-time
+          nullable: true
+        unloading_start_time:
+          type: string
+          format: date-time
+          nullable: true
+        unloading_end_time:
+          type: string
+          format: date-time
+          nullable: true
+        payment_time:
+          type: string
+          format: date-time
+          nullable: true
+        final_fare:
+          type: number
+          format: double
+        final_duration:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          description: duration in minutes
+        final_distance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          nullable: true
+          description: distance in kilometers
+        is_payment_done:
+          type: boolean
+      required:
+      - final_fare
+      - status
+    User:
+      type: object
+      description: Serializer for the User model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        fcm_token:
+          type: string
+          nullable: true
+          maxLength: 255
+      required:
+      - id
+      - phone
+    UserRequest:
+      type: object
+      description: Serializer for the User model
+      properties:
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        fcm_token:
+          type: string
+          nullable: true
+          maxLength: 255
+    VehicleEstimationRequest:
+      type: object
+      description: Serializer for vehicle estimation request
+      properties:
+        pickup_location:
+          $ref: '#/components/schemas/Location'
+        dropoff_location:
+          $ref: '#/components/schemas/Location'
+      required:
+      - dropoff_location
+      - pickup_location
+    VehicleEstimationRequestRequest:
+      type: object
+      description: Serializer for vehicle estimation request
+      properties:
+        pickup_location:
+          $ref: '#/components/schemas/LocationRequest'
+        dropoff_location:
+          $ref: '#/components/schemas/LocationRequest'
+      required:
+      - dropoff_location
+      - pickup_location
+    WalletTransaction:
+      type: object
+      description: Serializer for WalletTransaction model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: number
+          format: double
+        type_tx:
+          type: string
+          maxLength: 25
+        remarks:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - type_tx
+      - updated_at
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

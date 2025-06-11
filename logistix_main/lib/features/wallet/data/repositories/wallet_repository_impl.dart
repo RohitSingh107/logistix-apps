@@ -12,29 +12,38 @@ class WalletRepositoryImpl implements WalletRepository {
   Future<double> getWalletBalance() async {
     try {
       final response = await _apiClient.get(ApiEndpoints.walletBalance);
-      return response.data['balance'].toDouble();
+      final balance = response.data['balance'];
+      if (balance == null) {
+        return 0.0;
+      }
+      return (balance as num).toDouble();
     } catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<List<WalletTransaction>> getWalletTransactions({
+  Future<PaginatedWalletTransactionList> getWalletTransactions({
     String? transactionType,
-    int? limit,
+    DateTime? startTime,
+    DateTime? endTime,
+    int? page,
+    int? pageSize,
   }) async {
     try {
+      final queryParams = <String, dynamic>{};
+      if (transactionType != null) queryParams['transaction_type'] = transactionType;
+      if (startTime != null) queryParams['start_time'] = startTime.toIso8601String();
+      if (endTime != null) queryParams['end_time'] = endTime.toIso8601String();
+      if (page != null) queryParams['page'] = page;
+      if (pageSize != null) queryParams['page_size'] = pageSize;
+
       final response = await _apiClient.get(
         ApiEndpoints.walletTransactions,
-        queryParameters: {
-          if (transactionType != null) 'transaction_type': transactionType,
-          if (limit != null) 'limit': limit,
-        },
+        queryParameters: queryParams,
       );
 
-      return (response.data['transactions'] as List)
-          .map((json) => WalletTransaction.fromJson(json))
-          .toList();
+      return PaginatedWalletTransactionList.fromJson(response.data);
     } catch (e) {
       rethrow;
     }
@@ -46,12 +55,14 @@ class WalletRepositoryImpl implements WalletRepository {
     String? remarks,
   }) async {
     try {
+      final request = WalletTopupRequest(
+        amount: amount,
+        remarks: remarks,
+      );
+
       final response = await _apiClient.post(
         ApiEndpoints.walletTopup,
-        data: {
-          'amount': amount,
-          if (remarks != null) 'remarks': remarks,
-        },
+        data: request.toJson(),
       );
 
       return WalletTopupResponse.fromJson(response.data);
