@@ -12,12 +12,17 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../repositories/user_repository.dart';
+import '../services/auth_service.dart';
 
 class PushNotificationService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   
   /// Initialize push notifications
-  static Future<void> initialize() async {
+  static Future<void> initialize({
+    UserRepository? userRepository,
+    AuthService? authService,
+  }) async {
     try {
       print("🔥 Initializing Push Notification Service...");
       
@@ -25,7 +30,14 @@ class PushNotificationService {
       await _requestPermissions();
       
       // Get and print FCM token
-      await _getFCMToken();
+      final fcmToken = await _getFCMToken();
+      
+      // Update FCM token on server if user is authenticated
+      if (fcmToken != null && 
+          userRepository != null && 
+          authService != null) {
+        await _updateFcmTokenOnServer(fcmToken, userRepository, authService);
+      }
       
       // Configure message handlers
       _configureMessageHandlers();
@@ -86,6 +98,7 @@ class PushNotificationService {
         // Listen for token refresh
         _firebaseMessaging.onTokenRefresh.listen((String newToken) {
           print("🔄 FCM Token refreshed: $newToken");
+          // TODO: Update token on server when it refreshes
         });
         
         return token;
@@ -176,6 +189,47 @@ class PushNotificationService {
       print("✅ Unsubscribed from topic: $topic");
     } catch (e) {
       print("❌ Error unsubscribing from topic '$topic': $e");
+    }
+  }
+  
+  /// Update FCM token on server when user logs in
+  static Future<void> updateTokenOnLogin(
+    UserRepository userRepository,
+    AuthService authService,
+  ) async {
+    try {
+      print("🔑 Updating FCM token after login...");
+      final fcmToken = await getCurrentToken();
+      if (fcmToken != null) {
+        await _updateFcmTokenOnServer(fcmToken, userRepository, authService);
+      } else {
+        print("❌ No FCM token available to update");
+      }
+    } catch (e) {
+      print("❌ Failed to update FCM token after login: $e");
+    }
+  }
+  
+  /// Update FCM token on server if user is authenticated
+  static Future<void> _updateFcmTokenOnServer(
+    String fcmToken,
+    UserRepository userRepository,
+    AuthService authService,
+  ) async {
+    try {
+      // Check if user is authenticated
+      final accessToken = await authService.getAccessToken();
+      if (accessToken == null) {
+        print("📱 User not authenticated, skipping FCM token update");
+        return;
+      }
+      
+      print("🔄 Updating FCM token on server...");
+      await userRepository.updateFcmToken(fcmToken);
+      print("✅ FCM token successfully updated on server");
+    } catch (e) {
+      print("❌ Failed to update FCM token on server: $e");
+      // Don't throw error as this shouldn't prevent app initialization
     }
   }
 }

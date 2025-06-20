@@ -21,6 +21,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/push_notification_service.dart';
+import '../../../../core/repositories/user_repository.dart';
+import '../../../../core/di/service_locator.dart';
 
 // Events
 abstract class AuthEvent extends Equatable {
@@ -190,6 +193,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _authService.saveUserData(response['user']);
       }
 
+      // Update FCM token on server after successful authentication
+      try {
+        final userRepository = serviceLocator<UserRepository>();
+        await PushNotificationService.updateTokenOnLogin(
+          userRepository,
+          _authService,
+        );
+      } catch (e) {
+        print("Warning: Failed to update FCM token after login: $e");
+        // Don't fail the authentication process if FCM token update fails
+      }
+
       emit(AuthSuccess(
         isNewUser: response['is_new_user'] ?? false,
         userData: response,
@@ -205,6 +220,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (isAuthenticated) {
         final userData = await _authService.getCurrentUser();
         if (userData != null) {
+          // Update FCM token on server for already authenticated user
+          try {
+            final userRepository = serviceLocator<UserRepository>();
+            await PushNotificationService.updateTokenOnLogin(
+              userRepository,
+              _authService,
+            );
+          } catch (e) {
+            print("Warning: Failed to update FCM token for authenticated user: $e");
+            // Don't fail the authentication check if FCM token update fails
+          }
+          
           emit(AuthSuccess(
             isNewUser: false,
             userData: {'user': userData},

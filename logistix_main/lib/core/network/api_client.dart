@@ -220,6 +220,30 @@ class ApiClient {
     }
   }
 
+  Future<Response> patch(String path, {dynamic data}) async {
+    try {
+      print('DEBUG: PATCH request to $path');
+      _dio.options.baseUrl = AppConfig.baseUrl;
+      
+      // Manual verification that JWT is present for auth-required endpoints
+      if (!_isAuthExcluded(path)) {
+        final token = _authService.accessToken;
+        if (token != null) {
+          print('DEBUG: Manual set of Authorization header: Bearer ${token.substring(0, math.min(token.length, 10))}...');
+          _dio.options.headers['Authorization'] = 'Bearer $token';
+        } else {
+          print('DEBUG: No token available for PATCH request to $path');
+        }
+      }
+      
+      final response = await _dio.patch(path, data: data);
+      return response;
+    } catch (e) {
+      print('DEBUG: Error in PATCH request to $path: $e');
+      rethrow;
+    }
+  }
+
   Future<Response> delete(String path) async {
     try {
       print('DEBUG: DELETE request to $path');
