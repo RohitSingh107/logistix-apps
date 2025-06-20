@@ -21,6 +21,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart';
+import 'core/services/push_notification_service.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
@@ -47,6 +51,16 @@ void main() async {
 
   try {
     print("Starting app initialization...");
+    
+    // Initialize Firebase
+    print("🔥 Initializing Firebase...");
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print("✅ Firebase initialized successfully");
+    
+    // Set up Firebase Messaging background handler
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     
     // Create placeholder .env file content if not exists
     try {
@@ -79,6 +93,14 @@ API_KEY=development_key
     final AuthRepository authRepository = serviceLocator<AuthRepository>();
     final UserRepository userRepository = serviceLocator<UserRepository>();
     print("Repositories created successfully");
+    
+    // Initialize Push Notifications
+    print("🔔 Initializing Push Notifications...");
+    try {
+      await PushNotificationService.initialize();
+    } catch (e) {
+      print("Push notification initialization failed: $e");
+    }
     
     // Test map service configuration
     print("Testing map service configuration...");
