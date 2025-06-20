@@ -127,4 +127,23 @@ class UserRepositoryImpl implements UserRepository {
       throw Exception(_getErrorMessage(e));
     }
   }
+
+  @override
+  Future<User> updateFcmToken(String fcmToken) async {
+    try {
+      // Ensure we have a valid token before making this request
+      await _apiClient.ensureValidToken();
+      
+      final response = await _apiClient.patch(
+        ApiEndpoints.userProfile,
+        data: {'fcm_token': fcmToken},
+      );
+      
+      print('✅ FCM token updated successfully on server');
+      return User.fromJson(response.data);
+    } catch (e) {
+      print('❌ Failed to update FCM token on server: ${_getErrorMessage(e)}');
+      throw Exception(_getErrorMessage(e));
+    }
+  }
 } 

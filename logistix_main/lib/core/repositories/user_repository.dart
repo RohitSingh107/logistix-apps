@@ -28,4 +28,7 @@ abstract class UserRepository {
     String? lastName,
     String? profilePicture,
   });
+  
+  /// Update FCM token for push notifications
+  Future<User> updateFcmToken(String fcmToken);
 } 

@@ -97,7 +97,10 @@ API_KEY=development_key
     // Initialize Push Notifications
     print("🔔 Initializing Push Notifications...");
     try {
-      await PushNotificationService.initialize();
+      await PushNotificationService.initialize(
+        userRepository: userRepository,
+        authService: serviceLocator<AuthService>(),
+      );
     } catch (e) {
       print("Push notification initialization failed: $e");
     }
