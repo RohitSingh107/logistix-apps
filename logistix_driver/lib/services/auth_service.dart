@@ -5,7 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AuthService {
   // static const String baseUrl = 'http://10.0.2.2:8000/api';
-  static const String baseUrl = 'https://c9a2-14-143-254-194.ngrok-free.app/api';
+  static const String baseUrl = 'https://02c0-103-44-54-46.ngrok-free.app/api';
   
   Future<bool> sendOTP(String phone) async {
     try {
@@ -127,16 +127,19 @@ class AuthService {
     }
   }
 
-  Future<bool> updateFCMToken() async {
+  Future<Map<String, dynamic>?> updateFCMToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('access_token');
       final fcmToken = await FirebaseMessaging.instance.getToken();
-      
-      if (fcmToken == null) return false;
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/users/update-fcm-token/'),
+      if (accessToken == null || fcmToken == null) {
+        print('Access token or FCM token not available. Cannot update FCM token.');
+        return null;
+      }
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/users/driver/profile/'),
         headers: {
           'Content-Type': 'application/json',
           'accept': 'application/json',
@@ -144,11 +147,17 @@ class AuthService {
         },
         body: jsonEncode({'fcm_token': fcmToken}),
       );
+      
+      print('Update FCM Token Response: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
-      return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
     } catch (e) {
       print('Error updating FCM token: $e');
-      return false;
+      return null;
     }
   }
 

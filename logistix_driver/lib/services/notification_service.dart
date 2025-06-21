@@ -4,6 +4,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:logistix_driver/models/notification_model.dart';
 import 'package:logistix_driver/screens/home_screen.dart';
+import 'package:logistix_driver/services/auth_service.dart';
 
 class NotificationService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -87,6 +88,9 @@ class NotificationService {
       print('==========================================');
       print('FCM Token Refreshed: $token');
       print('==========================================');
+      
+      // Update FCM token on the server
+      await AuthService().updateFCMToken();
       
       // Log token refresh event
       await _analytics.logEvent(
