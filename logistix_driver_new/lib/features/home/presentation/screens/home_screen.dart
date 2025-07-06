@@ -183,19 +183,58 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
-    
+    final theme = Theme.of(context);
+    final profile = _driverProfile;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Logistix Driver'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _screens[_currentIndex],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {
+              setState(() {
+                _currentIndex = 0;
+              });
+            },
+            tooltip: 'Alerts',
           ),
-          // Availability Toggle Section (shown on all tabs)
-          if (_currentIndex == 0) _buildAvailabilityToggle(),
+          IconButton(
+            icon: const Icon(Icons.headset_mic),
+            onPressed: () {
+              // TODO: Implement support/help action
+            },
+            tooltip: 'Support',
+          ),
         ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Top Card: Profile, Earnings, Ledger
+                if (profile != null) _buildTopCard(theme, profile),
+                const SizedBox(height: 16),
+                // Performance Card
+                _buildPerformanceCard(theme, profile),
+                const SizedBox(height: 16),
+                // Availability Toggle
+                _buildAvailabilityToggle(),
+                const SizedBox(height: 16),
+                // Go Offline/Done for Day Button
+                _buildGoOfflineButton(theme),
+                const SizedBox(height: 16),
+                // Main content (current tab)
+                SizedBox(
+                  height: 400, // Adjust as needed
+                  child: _screens[_currentIndex],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -205,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _currentIndex = index;
           });
         },
-        selectedItemColor: Theme.of(context).primaryColor,
+        selectedItemColor: theme.colorScheme.primary,
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
@@ -226,6 +265,242 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTopCard(ThemeData theme, Map<String, dynamic> profile) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundImage: profile['user']['profile_picture'] != null
+                      ? NetworkImage(profile['user']['profile_picture'])
+                      : null,
+                  child: profile['user']['profile_picture'] == null
+                      ? const Icon(Icons.person, size: 32)
+                      : null,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${profile['user']['first_name']} ${profile['user']['last_name']}',
+                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        profile['vehicle_number'] != null
+                            ? 'Vehicle: ${profile['vehicle_number']}'
+                            : 'No vehicle info',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.star, color: Colors.amber, size: 18),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${profile['average_rating'] ?? '-'}',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Today\'s Earnings', style: theme.textTheme.bodySmall),
+                      Text(
+                        '₹${profile['today_earnings'] ?? profile['total_earnings'] ?? '0'}',
+                        style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Ledger Balance', style: theme.textTheme.bodySmall),
+                      Row(
+                        children: [
+                          Icon(Icons.account_balance_wallet, color: (profile['ledger_balance'] ?? 0) < 0 ? Colors.red : theme.colorScheme.primary, size: 18),
+                          const SizedBox(width: 4),
+                          Text(
+                            '₹${profile['ledger_balance'] ?? '0'}',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: (profile['ledger_balance'] ?? 0) < 0 ? Colors.red : theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if ((profile['ledger_balance'] ?? 0) < 0)
+                        TextButton(
+                          onPressed: () {
+                            // TODO: Implement clear dues action
+                          },
+                          child: const Text('Clear Dues'),
+                          style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPerformanceCard(ThemeData theme, Map<String, dynamic>? profile) {
+    // Placeholder values, replace with real data if available
+    final completion = profile?['completion_score'] ?? 16;
+    final loginHours = profile?['login_hours'] ?? 5;
+    final cancelRate = profile?['cancellation_rate'] ?? 3;
+    final isPrime = profile?['is_prime'] ?? false;
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('Performance', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(width: 8),
+                if (!isPrime)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.thumb_down, color: Colors.orange, size: 16),
+                        const SizedBox(width: 4),
+                        Text('Not Prime', style: theme.textTheme.bodySmall?.copyWith(color: Colors.orange)),
+                      ],
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.thumb_up, color: Colors.green, size: 16),
+                        const SizedBox(width: 4),
+                        Text('Prime', style: theme.textTheme.bodySmall?.copyWith(color: Colors.green)),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Completion', style: theme.textTheme.bodySmall),
+                      LinearProgressIndicator(
+                        value: completion / 100,
+                        color: theme.colorScheme.primary,
+                        backgroundColor: theme.colorScheme.surface,
+                        minHeight: 8,
+                      ),
+                      const SizedBox(height: 4),
+                      Text('$completion%', style: theme.textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Login Hours', style: theme.textTheme.bodySmall),
+                      Text('$loginHours hrs', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Cancel Rate', style: theme.textTheme.bodySmall),
+                      Text('$cancelRate%', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGoOfflineButton(ThemeData theme) {
+    final isOnline = _isAvailable;
+    return ElevatedButton(
+      onPressed: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(isOnline ? 'Done for the day?' : 'Ready to go online?'),
+            content: Text(isOnline
+                ? 'Are you sure you want to go offline?'
+                : 'Are you sure you want to go online and start accepting bookings?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(isOnline ? 'Go Offline' : 'Go Online'),
+              ),
+            ],
+          ),
+        );
+        if (confirm == true) {
+          await _toggleAvailability();
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isOnline ? theme.colorScheme.error : Colors.green,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Text(isOnline ? 'GO OFFLINE' : 'GO ONLINE'),
     );
   }
 
