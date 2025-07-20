@@ -100,7 +100,7 @@ class BookingResponse {
     
     return BookingResponse(
       id: bookingData['id'] as int,
-      tripId: bookingData['trip_id'] as int?, // Optional field
+      tripId: bookingData['trip_id'] != null ? bookingData['trip_id'] as int : null,
       senderName: bookingData['sender_name'] as String,
       receiverName: bookingData['receiver_name'] as String,
       senderPhone: bookingData['sender_phone'] as String,

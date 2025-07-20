@@ -17,11 +17,11 @@
  * - Follows async/await pattern for all data operations
  */
 
-import '../../../../core/models/booking_model.dart';
+import '../../../../core/models/booking_model.dart' as core;
 
 abstract class BookingRepository {
   /// Create a new booking request
-  Future<BookingRequest> createBooking({
+  Future<core.BookingRequest> createBooking({
     required String senderName,
     required String receiverName,
     required String senderPhone,
@@ -36,16 +36,16 @@ abstract class BookingRepository {
     required int vehicleTypeId,
     required String goodsType,
     required String goodsQuantity,
-    required PaymentMode paymentMode,
-    required double estimatedFare,
+    required core.PaymentMode paymentMode,
+    required String instructions,
   });
 
   /// Accept a booking request and return the trip details
-  Future<BookingAcceptResponse> acceptBooking(int bookingRequestId);
+  Future<core.BookingAcceptResponse> acceptBooking(int bookingRequestId);
 
   /// Get details of a specific booking request
-  Future<BookingRequest> getBookingDetail(int bookingRequestId);
+  Future<core.BookingRequest> getBookingDetail(int bookingRequestId);
 
   /// Get list of booking requests
-  Future<List<BookingRequest>> getBookingList();
+  Future<List<core.BookingRequest>> getBookingList();
 } 

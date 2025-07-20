@@ -48,7 +48,6 @@ class User {
 
 @JsonSerializable()
 class UserRequest {
-  final String phone;
   @JsonKey(name: 'first_name')
   final String? firstName;
   @JsonKey(name: 'last_name')
@@ -59,7 +58,6 @@ class UserRequest {
   final String? fcmToken;
 
   UserRequest({
-    required this.phone,
     this.firstName,
     this.lastName,
     this.profilePicture,
