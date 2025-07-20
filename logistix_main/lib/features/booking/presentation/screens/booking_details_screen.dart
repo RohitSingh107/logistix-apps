@@ -21,7 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/config/app_theme.dart';
 import '../../../../core/services/map_service_interface.dart';
-import '../../../../core/models/booking_model.dart';
+import '../../../../core/models/booking_model.dart' as core;
 import '../../../vehicle_estimation/data/models/vehicle_estimate_response.dart';
 import '../../../wallet/domain/repositories/wallet_repository.dart';
 import '../../../wallet/presentation/bloc/wallet_bloc.dart';
@@ -105,6 +105,7 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
   final _receiverPhoneController = TextEditingController();
   final _goodsTypeController = TextEditingController();
   final _goodsQuantityController = TextEditingController();
+  final _instructionsController = TextEditingController();
   
   // Form state
   bool _sameAsReceiver = false;
@@ -137,6 +138,7 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
     _receiverPhoneController.dispose();
     _goodsTypeController.dispose();
     _goodsQuantityController.dispose();
+    _instructionsController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -210,8 +212,8 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
 
   void _createBooking() {
     final paymentMode = _selectedPaymentMode == 'WALLET' 
-        ? PaymentMode.wallet 
-        : PaymentMode.cash;
+        ? core.PaymentMode.wallet 
+        : core.PaymentMode.cash;
 
     context.read<BookingBloc>().add(
       CreateBookingEvent(
@@ -230,7 +232,7 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
         goodsType: _goodsTypeController.text.trim(),
         goodsQuantity: _goodsQuantityController.text.trim(),
         paymentMode: paymentMode,
-        estimatedFare: widget.selectedVehicle.estimatedFare,
+        instructions: _instructionsController.text.trim().isEmpty ? "No special instructions" : _instructionsController.text.trim(),
       ),
     );
   }
@@ -280,7 +282,7 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
     );
   }
 
-  void _navigateToDriverSearch(BookingRequest booking) {
+  void _navigateToDriverSearch(core.BookingRequest booking) {
     // Create the booking request for the service
     final bookingRequest = data_models.BookingRequest(
       senderName: booking.senderName,

@@ -30,6 +30,8 @@ class Driver {
   final String licenseNumber;
   @JsonKey(name: 'is_available')
   final bool isAvailable;
+  @JsonKey(name: 'fcm_token')
+  final String? fcmToken;
   @JsonKey(name: 'average_rating')
   final String averageRating;
   @JsonKey(name: 'total_earnings')
@@ -40,6 +42,7 @@ class Driver {
     required this.user,
     required this.licenseNumber,
     required this.isAvailable,
+    this.fcmToken,
     required this.averageRating,
     required this.totalEarnings,
   });
@@ -63,10 +66,13 @@ class DriverRequest {
   final String licenseNumber;
   @JsonKey(name: 'is_available')
   final bool isAvailable;
+  @JsonKey(name: 'fcm_token')
+  final String? fcmToken;
 
   DriverRequest({
     required this.licenseNumber,
     this.isAvailable = true,
+    this.fcmToken,
   });
 
   factory DriverRequest.fromJson(Map<String, dynamic> json) => _$DriverRequestFromJson(json);

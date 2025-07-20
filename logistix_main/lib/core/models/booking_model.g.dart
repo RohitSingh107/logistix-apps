@@ -24,6 +24,7 @@ BookingRequest _$BookingRequestFromJson(Map<String, dynamic> json) =>
       paymentMode: $enumDecode(_$PaymentModeEnumMap, json['payment_mode']),
       estimatedFare: (json['estimated_fare'] as num).toDouble(),
       status: $enumDecode(_$BookingStatusEnumMap, json['status']),
+      instructions: json['instructions'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -46,6 +47,7 @@ Map<String, dynamic> _$BookingRequestToJson(BookingRequest instance) =>
       'payment_mode': _$PaymentModeEnumMap[instance.paymentMode]!,
       'estimated_fare': instance.estimatedFare,
       'status': _$BookingStatusEnumMap[instance.status]!,
+      'instructions': instance.instructions,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
     };
@@ -60,6 +62,7 @@ const _$BookingStatusEnumMap = {
   BookingStatus.searching: 'SEARCHING',
   BookingStatus.accepted: 'ACCEPTED',
   BookingStatus.cancelled: 'CANCELLED',
+  BookingStatus.driversNotFound: 'DRIVERS_NOT_FOUND',
 };
 
 BookingRequestRequest _$BookingRequestRequestFromJson(
@@ -80,7 +83,7 @@ BookingRequestRequest _$BookingRequestRequestFromJson(
       goodsType: json['goods_type'] as String,
       goodsQuantity: json['goods_quantity'] as String,
       paymentMode: $enumDecode(_$PaymentModeEnumMap, json['payment_mode']),
-      estimatedFare: (json['estimated_fare'] as num).toDouble(),
+      instructions: json['instructions'] as String,
     );
 
 Map<String, dynamic> _$BookingRequestRequestToJson(
@@ -101,7 +104,7 @@ Map<String, dynamic> _$BookingRequestRequestToJson(
       'goods_type': instance.goodsType,
       'goods_quantity': instance.goodsQuantity,
       'payment_mode': _$PaymentModeEnumMap[instance.paymentMode]!,
-      'estimated_fare': instance.estimatedFare,
+      'instructions': instance.instructions,
     };
 
 BookingAcceptRequest _$BookingAcceptRequestFromJson(
@@ -128,4 +131,14 @@ Map<String, dynamic> _$BookingAcceptResponseToJson(
     <String, dynamic>{
       'message': instance.message,
       'trip': instance.trip,
+    };
+
+BookingAccept _$BookingAcceptFromJson(Map<String, dynamic> json) =>
+    BookingAccept(
+      bookingRequestId: (json['booking_request_id'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$BookingAcceptToJson(BookingAccept instance) =>
+    <String, dynamic>{
+      'booking_request_id': instance.bookingRequestId,
     };

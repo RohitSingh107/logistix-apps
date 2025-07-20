@@ -19,7 +19,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../core/models/booking_model.dart';
+import '../../../../core/models/booking_model.dart' as core;
 import '../../../wallet/domain/repositories/wallet_repository.dart';
 import '../../domain/repositories/booking_repository.dart';
 
@@ -55,8 +55,8 @@ class CreateBookingEvent extends BookingEvent {
   final int vehicleTypeId;
   final String goodsType;
   final String goodsQuantity;
-  final PaymentMode paymentMode;
-  final double estimatedFare;
+  final core.PaymentMode paymentMode;
+  final String instructions;
 
   const CreateBookingEvent({
     required this.senderName,
@@ -74,7 +74,7 @@ class CreateBookingEvent extends BookingEvent {
     required this.goodsType,
     required this.goodsQuantity,
     required this.paymentMode,
-    required this.estimatedFare,
+    required this.instructions,
   });
 
   @override
@@ -94,7 +94,7 @@ class CreateBookingEvent extends BookingEvent {
         goodsType,
         goodsQuantity,
         paymentMode,
-        estimatedFare,
+        instructions,
       ];
 }
 
@@ -143,7 +143,7 @@ class WalletBalanceInsufficient extends BookingState {
 }
 
 class BookingSuccess extends BookingState {
-  final BookingRequest booking;
+  final core.BookingRequest booking;
 
   const BookingSuccess(this.booking);
 
@@ -226,7 +226,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         goodsType: event.goodsType,
         goodsQuantity: event.goodsQuantity,
         paymentMode: event.paymentMode,
-        estimatedFare: event.estimatedFare,
+        instructions: event.instructions,
       );
       
       emit(BookingSuccess(booking));

@@ -16,10 +16,11 @@
  * - Maps between API data structures and local booking models
  */
 
-import '../../../../core/models/booking_model.dart';
+import '../../../../core/models/booking_model.dart' as core;
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
 import '../../domain/repositories/booking_repository.dart';
+import '../models/booking_request.dart';
 
 class BookingRepositoryImpl implements BookingRepository {
   final ApiClient _apiClient;
@@ -27,7 +28,7 @@ class BookingRepositoryImpl implements BookingRepository {
   BookingRepositoryImpl(this._apiClient);
 
   @override
-  Future<BookingRequest> createBooking({
+  Future<core.BookingRequest> createBooking({
     required String senderName,
     required String receiverName,
     required String senderPhone,
@@ -42,11 +43,11 @@ class BookingRepositoryImpl implements BookingRepository {
     required int vehicleTypeId,
     required String goodsType,
     required String goodsQuantity,
-    required PaymentMode paymentMode,
-    required double estimatedFare,
+    required core.PaymentMode paymentMode,
+    required String instructions,
   }) async {
     try {
-      final request = BookingRequestRequest(
+      final request = core.BookingRequestRequest(
         senderName: senderName,
         receiverName: receiverName,
         senderPhone: senderPhone,
@@ -62,7 +63,7 @@ class BookingRepositoryImpl implements BookingRepository {
         goodsType: goodsType,
         goodsQuantity: goodsQuantity,
         paymentMode: paymentMode,
-        estimatedFare: estimatedFare,
+        instructions: instructions,
       );
 
       final response = await _apiClient.post(
@@ -70,42 +71,70 @@ class BookingRepositoryImpl implements BookingRepository {
         data: request.toJson(),
       );
 
-      return BookingRequest.fromJson(response.data);
+      // Parse the response using BookingResponse since the API returns nested structure
+      final bookingResponse = BookingResponse.fromJson(response.data);
+      
+      // Convert to core.BookingRequest
+      return core.BookingRequest(
+        id: bookingResponse.id,
+        tripId: bookingResponse.tripId,
+        senderName: bookingResponse.senderName,
+        receiverName: bookingResponse.receiverName,
+        senderPhone: bookingResponse.senderPhone,
+        receiverPhone: bookingResponse.receiverPhone,
+        pickupLocation: '', // This field is not in BookingResponse
+        dropoffLocation: '', // This field is not in BookingResponse
+        pickupTime: bookingResponse.pickupTime,
+        pickupAddress: bookingResponse.pickupAddress,
+        dropoffAddress: bookingResponse.dropoffAddress,
+        goodsType: bookingResponse.goodsType,
+        goodsQuantity: bookingResponse.goodsQuantity,
+        paymentMode: core.PaymentMode.values.firstWhere(
+          (e) => e.toString().split('.').last.toUpperCase() == bookingResponse.paymentMode,
+        ),
+        estimatedFare: bookingResponse.estimatedFare,
+        status: core.BookingStatus.values.firstWhere(
+          (e) => e.toString().split('.').last.toUpperCase() == bookingResponse.status,
+        ),
+        instructions: null, // This field is not in BookingResponse
+        createdAt: bookingResponse.createdAt,
+        updatedAt: bookingResponse.updatedAt,
+      );
     } catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<BookingAcceptResponse> acceptBooking(int bookingRequestId) async {
+  Future<core.BookingAcceptResponse> acceptBooking(int bookingRequestId) async {
     try {
-      final request = BookingAcceptRequest(bookingRequestId: bookingRequestId);
+      final request = core.BookingAcceptRequest(bookingRequestId: bookingRequestId);
       final response = await _apiClient.post(
         ApiEndpoints.acceptBooking,
         data: request.toJson(),
       );
 
-      return BookingAcceptResponse.fromJson(response.data);
+      return core.BookingAcceptResponse.fromJson(response.data);
     } catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<BookingRequest> getBookingDetail(int bookingRequestId) async {
+  Future<core.BookingRequest> getBookingDetail(int bookingRequestId) async {
     try {
       final response = await _apiClient.get(
         ApiEndpoints.bookingDetail(bookingRequestId),
       );
 
-      return BookingRequest.fromJson(response.data);
+      return core.BookingRequest.fromJson(response.data);
     } catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<List<BookingRequest>> getBookingList() async {
+  Future<List<core.BookingRequest>> getBookingList() async {
     try {
       final response = await _apiClient.get(
         ApiEndpoints.bookingList,
@@ -113,7 +142,7 @@ class BookingRepositoryImpl implements BookingRepository {
 
       final bookingsData = response.data as List;
       return bookingsData
-          .map((bookingData) => BookingRequest.fromJson(bookingData as Map<String, dynamic>))
+          .map((bookingData) => core.BookingRequest.fromJson(bookingData as Map<String, dynamic>))
           .toList();
     } catch (e) {
       rethrow;
