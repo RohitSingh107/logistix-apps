@@ -32,6 +32,8 @@ enum BookingStatus {
   accepted,
   @JsonValue('CANCELLED')
   cancelled,
+  @JsonValue('DRIVERS_NOT_FOUND')
+  driversNotFound,
 }
 
 enum PaymentMode {
@@ -73,6 +75,7 @@ class BookingRequest extends BaseModel {
   @JsonKey(name: 'estimated_fare')
   final double estimatedFare;
   final BookingStatus status;
+  final String? instructions;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @JsonKey(name: 'updated_at')
@@ -95,6 +98,7 @@ class BookingRequest extends BaseModel {
     required this.paymentMode,
     required this.estimatedFare,
     required this.status,
+    this.instructions,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -122,6 +126,7 @@ class BookingRequest extends BaseModel {
         paymentMode,
         estimatedFare,
         status,
+        instructions,
         createdAt,
         updatedAt,
       ];
@@ -159,8 +164,7 @@ class BookingRequestRequest {
   final String goodsQuantity;
   @JsonKey(name: 'payment_mode')
   final PaymentMode paymentMode;
-  @JsonKey(name: 'estimated_fare')
-  final double estimatedFare;
+  final String? instructions;
 
   BookingRequestRequest({
     required this.senderName,
@@ -178,7 +182,7 @@ class BookingRequestRequest {
     required this.goodsType,
     required this.goodsQuantity,
     required this.paymentMode,
-    required this.estimatedFare,
+    this.instructions,
   });
 
   factory BookingRequestRequest.fromJson(Map<String, dynamic> json) => _$BookingRequestRequestFromJson(json);

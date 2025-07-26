@@ -25,7 +25,7 @@ abstract class DriverRepository {
 
   /// Update the current driver's profile
   Future<Driver> updateDriverProfile({
-    required String licenseNumber,
+    String? licenseNumber,
     bool? isAvailable,
     String? fcmToken,
   });

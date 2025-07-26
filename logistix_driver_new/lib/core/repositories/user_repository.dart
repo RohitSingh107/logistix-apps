@@ -23,7 +23,6 @@ abstract class UserRepository {
   
   /// Update user profile
   Future<User> updateUserProfile({
-    String? phone,
     String? firstName,
     String? lastName,
     String? profilePicture,

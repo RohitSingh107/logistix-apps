@@ -9,8 +9,8 @@ part of 'user_model.dart';
 User _$UserFromJson(Map<String, dynamic> json) => User(
       id: (json['id'] as num).toInt(),
       phone: json['phone'] as String,
-      firstName: json['first_name'] as String,
-      lastName: json['last_name'] as String,
+      firstName: json['first_name'] as String?,
+      lastName: json['last_name'] as String?,
       profilePicture: json['profile_picture'] as String?,
       fcmToken: json['fcm_token'] as String?,
     );
@@ -25,7 +25,6 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
     };
 
 UserRequest _$UserRequestFromJson(Map<String, dynamic> json) => UserRequest(
-      phone: json['phone'] as String,
       firstName: json['first_name'] as String?,
       lastName: json['last_name'] as String?,
       profilePicture: json['profile_picture'] as String?,
@@ -34,7 +33,22 @@ UserRequest _$UserRequestFromJson(Map<String, dynamic> json) => UserRequest(
 
 Map<String, dynamic> _$UserRequestToJson(UserRequest instance) =>
     <String, dynamic>{
-      'phone': instance.phone,
+      'first_name': instance.firstName,
+      'last_name': instance.lastName,
+      'profile_picture': instance.profilePicture,
+      'fcm_token': instance.fcmToken,
+    };
+
+PatchedUserRequest _$PatchedUserRequestFromJson(Map<String, dynamic> json) =>
+    PatchedUserRequest(
+      firstName: json['first_name'] as String?,
+      lastName: json['last_name'] as String?,
+      profilePicture: json['profile_picture'] as String?,
+      fcmToken: json['fcm_token'] as String?,
+    );
+
+Map<String, dynamic> _$PatchedUserRequestToJson(PatchedUserRequest instance) =>
+    <String, dynamic>{
       'first_name': instance.firstName,
       'last_name': instance.lastName,
       'profile_picture': instance.profilePicture,
