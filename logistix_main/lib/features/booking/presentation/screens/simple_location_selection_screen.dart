@@ -18,9 +18,10 @@
  */
 
 import 'package:flutter/material.dart';
-import '../../data/services/location_service.dart';
 import '../widgets/map_widget.dart';
+import '../widgets/search_results_widget.dart';
 import '../../../../core/services/map_service_interface.dart';
+import '../../data/services/location_service.dart';
 import 'dart:async';
 
 class SimpleLocationSelectionScreen extends StatefulWidget {
@@ -92,10 +93,11 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
     });
 
     _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
-      final results = await _locationService.searchPlaces(
+      // Use the new unified search method for better results
+      final results = await _locationService.unifiedSearch(
         query,
         userLocation: _userLocation,
-        radius: 50000, // 50km radius
+        radius: 25000, // Reduced radius for better results
       );
       
       if (mounted) {
@@ -143,13 +145,18 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
     }
   }
 
-  void _selectLocation(PlaceResult place) async {
-    await _locationService.addToRecentSearches(place);
-    
-    if (mounted) {
+  void _selectLocation(PlaceResult result) {
+    Navigator.pop(context, {
+      'location': result.location,
+      'address': result.subtitle,
+    });
+  }
+
+  void _selectSavedPlace(SavedPlace place) {
+    if (place.location != null) {
       Navigator.pop(context, {
         'location': place.location,
-        'address': '${place.title}, ${place.subtitle}',
+        'address': place.address,
       });
     }
   }
@@ -305,18 +312,38 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
                 : ListView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     children: [
-                      // Search Results
-                      if (_searchResults.isNotEmpty) ...[
-                        _buildSectionHeader('Search Results'),
-                        ..._searchResults.map((place) => _buildPlaceItem(place)),
-                        const SizedBox(height: 16),
-                      ],
-                      
-                      // Recent Searches
-                      if (_recentSearches.isNotEmpty && _searchResults.isEmpty) ...[
-                        _buildSectionHeader('Recent'),
-                        ..._recentSearches.map((place) => _buildPlaceItem(place)),
-                      ],
+                        // Search Results
+                        if (_searchResults.isNotEmpty) ...[
+                          SearchResultsWidget(
+                            searchResults: _searchResults,
+                            recentSearches: _recentSearches,
+                            savedPlaces: [],
+                            isLoading: _isLoading,
+                            searchQuery: _searchController.text,
+                            onResultSelected: _selectLocation,
+                            onSavedPlaceSelected: (place) {}, // No saved places in this screen
+                            onClearRecent: () async {
+                              setState(() => _recentSearches.clear());
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        
+                        // Recent Searches
+                        if (_recentSearches.isNotEmpty && _searchResults.isEmpty && _searchController.text.isEmpty) ...[
+                          SearchResultsWidget(
+                            searchResults: [],
+                            recentSearches: _recentSearches,
+                            savedPlaces: [],
+                            isLoading: false,
+                            searchQuery: '',
+                            onResultSelected: _selectLocation,
+                            onSavedPlaceSelected: (place) {}, // No saved places in this screen
+                            onClearRecent: () async {
+                              setState(() => _recentSearches.clear());
+                            },
+                          ),
+                        ],
                     ],
                   ),
           ),
@@ -346,9 +373,10 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
       ),
       body: Stack(
         children: [
-          // Map
+          // Enhanced Map with Uber-style features
           MapWidget(
             initialPosition: _selectedLocation ?? MapLatLng(13.0827, 80.2707),
+            initialZoom: 17.0, // Optimal zoom for street detail without rate limiting
             markers: const [],
             onTap: (location) async {
               final address = await _locationService.getAddressFromLatLng(location);
@@ -357,7 +385,21 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
                 _selectedAddress = address;
               });
             },
+            onCameraMove: (location) async {
+              // Update address as user moves the map
+              final address = await _locationService.getAddressFromLatLng(location);
+              setState(() {
+                _selectedLocation = location;
+                _selectedAddress = address;
+              });
+            },
             showUserLocation: true,
+            showCenterMarker: true,
+            enableSearch: true,
+            onSearchQuery: (query) {
+              debugPrint('Search query: $query');
+              // Search functionality is handled internally by the map widget
+            },
           ),
           
           // Center pin overlay
@@ -429,80 +471,6 @@ class _SimpleLocationSelectionScreenState extends State<SimpleLocationSelectionS
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Colors.grey[600],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceItem(PlaceResult place) {
-    IconData icon = Icons.location_on;
-    Color iconColor = Colors.grey[600]!;
-    
-    switch (place.placeType) {
-      case PlaceType.airport:
-        icon = Icons.flight;
-        iconColor = Colors.blue;
-        break;
-      case PlaceType.station:
-        icon = Icons.train;
-        iconColor = Colors.orange;
-        break;
-      case PlaceType.shopping:
-        icon = Icons.shopping_bag;
-        iconColor = Colors.purple;
-        break;
-      case PlaceType.hospital:
-        icon = Icons.local_hospital;
-        iconColor = Colors.red;
-        break;
-      case PlaceType.education:
-        icon = Icons.school;
-        iconColor = Colors.green;
-        break;
-      default:
-        break;
-    }
-    
-    return ListTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: iconColor.withOpacity(0.1),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: iconColor, size: 20),
-      ),
-      title: Text(
-        place.title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text(
-        place.subtitle,
-        style: TextStyle(
-          fontSize: 14,
-          color: Colors.grey[600],
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      onTap: () => _selectLocation(place),
     );
   }
 } 
