@@ -32,6 +32,8 @@ import '../../features/wallet/domain/repositories/wallet_repository.dart';
 import '../../features/wallet/presentation/bloc/wallet_bloc.dart';
 import '../../features/driver/data/repositories/driver_repository_impl.dart';
 import '../../features/driver/domain/repositories/driver_repository.dart';
+import '../../features/booking/data/repositories/booking_repository_impl.dart';
+import '../../features/booking/domain/repositories/booking_repository.dart';
 import 'package:dio/dio.dart';
 import '../repositories/user_repository_impl.dart';
 import '../repositories/user_repository.dart';
@@ -79,6 +81,10 @@ Future<void> setupServiceLocator() async {
 
   serviceLocator.registerLazySingleton<DriverRepository>(
     () => DriverRepositoryImpl(serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton<BookingRepository>(
+    () => BookingRepositoryImpl(serviceLocator()),
   );
 
   // Use Cases

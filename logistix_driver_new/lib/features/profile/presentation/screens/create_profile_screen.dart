@@ -62,7 +62,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     }
 
     context.read<UserBloc>().add(UpdateUserProfile(
-      phone: widget.phone,
       firstName: _firstNameController.text,
       lastName: _lastNameController.text,
     ));

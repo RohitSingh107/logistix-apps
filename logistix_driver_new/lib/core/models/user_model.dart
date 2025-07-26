@@ -25,9 +25,9 @@ class User {
   final int id;
   final String phone;
   @JsonKey(name: 'first_name')
-  final String firstName;
+  final String? firstName;
   @JsonKey(name: 'last_name')
-  final String lastName;
+  final String? lastName;
   @JsonKey(name: 'profile_picture')
   final String? profilePicture;
   @JsonKey(name: 'fcm_token')
@@ -36,8 +36,8 @@ class User {
   User({
     required this.id,
     required this.phone,
-    required this.firstName,
-    required this.lastName,
+    this.firstName,
+    this.lastName,
     this.profilePicture,
     this.fcmToken,
   });
@@ -48,7 +48,6 @@ class User {
 
 @JsonSerializable()
 class UserRequest {
-  final String phone;
   @JsonKey(name: 'first_name')
   final String? firstName;
   @JsonKey(name: 'last_name')
@@ -59,7 +58,6 @@ class UserRequest {
   final String? fcmToken;
 
   UserRequest({
-    required this.phone,
     this.firstName,
     this.lastName,
     this.profilePicture,
@@ -68,6 +66,28 @@ class UserRequest {
 
   factory UserRequest.fromJson(Map<String, dynamic> json) => _$UserRequestFromJson(json);
   Map<String, dynamic> toJson() => _$UserRequestToJson(this);
+}
+
+@JsonSerializable()
+class PatchedUserRequest {
+  @JsonKey(name: 'first_name')
+  final String? firstName;
+  @JsonKey(name: 'last_name')
+  final String? lastName;
+  @JsonKey(name: 'profile_picture')
+  final String? profilePicture;
+  @JsonKey(name: 'fcm_token')
+  final String? fcmToken;
+
+  PatchedUserRequest({
+    this.firstName,
+    this.lastName,
+    this.profilePicture,
+    this.fcmToken,
+  });
+
+  factory PatchedUserRequest.fromJson(Map<String, dynamic> json) => _$PatchedUserRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$PatchedUserRequestToJson(this);
 }
 
 @JsonSerializable()

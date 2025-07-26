@@ -11,7 +11,7 @@
  * - UpdateUserProfile: Handles profile updates with optional parameters
  * - Manages user state transitions (loading, loaded, error)
  * - Provides comprehensive error handling for profile operations
- * - Supports partial profile updates (phone, name, profile picture)
+ * - Supports partial profile updates (name, profile picture)
  * - Integrates with UserRepository for data persistence
  * - Emits appropriate states for UI consumption
  * - Follows BLoC pattern for reactive state management
@@ -33,13 +33,11 @@ abstract class UserEvent extends Equatable {
 class LoadUserProfile extends UserEvent {}
 
 class UpdateUserProfile extends UserEvent {
-  final String? phone;
   final String? firstName;
   final String? lastName;
   final String? profilePicture;
 
   const UpdateUserProfile({
-    this.phone,
     this.firstName,
     this.lastName,
     this.profilePicture,
@@ -102,7 +100,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     try {
       emit(UserLoading());
       final user = await _userRepository.updateUserProfile(
-        phone: event.phone,
         firstName: event.firstName,
         lastName: event.lastName,
         profilePicture: event.profilePicture,

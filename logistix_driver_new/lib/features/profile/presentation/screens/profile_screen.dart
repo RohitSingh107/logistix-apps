@@ -364,9 +364,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             TextButton(
               onPressed: () {
-                // Update profile with current phone number
+                // Update profile
                 context.read<UserBloc>().add(UpdateUserProfile(
-                  phone: user.phone,
                   firstName: firstNameController.text,
                   lastName: lastNameController.text,
                 ));
@@ -434,7 +433,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileAvatar(User user) {
-    final String initial = user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '';
+    final String initial = (user.firstName?.isNotEmpty == true) ? user.firstName![0].toUpperCase() : '';
     final profileImage = _getProfileImage(user.profilePicture);
     
     if (profileImage != null) {

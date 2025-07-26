@@ -1,20 +1,18 @@
 /**
- * driver_model.dart - Driver Entity Data Models
+ * driver_model.dart - Driver Data Models and Serialization
  * 
  * Purpose:
- * - Defines data models for driver entities and related operations
- * - Handles driver profile information and availability status
- * - Manages driver license and rating information
+ * - Defines data models for driver-related entities
+ * - Provides JSON serialization/deserialization for API communication
+ * - Handles driver profile management and availability status
  * 
  * Key Logic:
- * - Driver: Core driver entity linked to User with additional driver-specific data
- * - DriverRequest: Payload for creating or updating driver profiles
- * - Includes license verification and availability management
- * - Tracks driver ratings, earnings, and performance metrics
- * - Uses JSON serialization with snake_case field mapping
- * - Provides helper method for rating conversion (string to double)
- * - Integrates with User model for complete driver profile
- * - Handles driver availability toggle for ride assignment
+ * - Driver model: Core driver entity with profile and rating information
+ * - DriverRequest model: Driver creation/update request payload
+ * - PatchedDriverRequest model: Partial update request payload
+ * - Uses json_annotation for automatic JSON serialization
+ * - Maps API field names to Dart property names using JsonKey
+ * - Includes driver-specific fields like license number and availability
  */
 
 import 'package:json_annotation/json_annotation.dart';
@@ -49,15 +47,6 @@ class Driver {
 
   factory Driver.fromJson(Map<String, dynamic> json) => _$DriverFromJson(json);
   Map<String, dynamic> toJson() => _$DriverToJson(this);
-
-  // Helper method to convert string rating to double
-  double get rating {
-    try {
-      return double.parse(averageRating);
-    } catch (e) {
-      return 0.0;
-    }
-  }
 }
 
 @JsonSerializable()
@@ -71,10 +60,29 @@ class DriverRequest {
 
   DriverRequest({
     required this.licenseNumber,
-    this.isAvailable = true,
+    required this.isAvailable,
     this.fcmToken,
   });
 
   factory DriverRequest.fromJson(Map<String, dynamic> json) => _$DriverRequestFromJson(json);
   Map<String, dynamic> toJson() => _$DriverRequestToJson(this);
+}
+
+@JsonSerializable()
+class PatchedDriverRequest {
+  @JsonKey(name: 'license_number')
+  final String? licenseNumber;
+  @JsonKey(name: 'is_available')
+  final bool? isAvailable;
+  @JsonKey(name: 'fcm_token')
+  final String? fcmToken;
+
+  PatchedDriverRequest({
+    this.licenseNumber,
+    this.isAvailable,
+    this.fcmToken,
+  });
+
+  factory PatchedDriverRequest.fromJson(Map<String, dynamic> json) => _$PatchedDriverRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$PatchedDriverRequestToJson(this);
 } 

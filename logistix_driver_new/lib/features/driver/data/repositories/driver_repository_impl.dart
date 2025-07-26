@@ -38,18 +38,18 @@ class DriverRepositoryImpl implements DriverRepository {
 
   @override
   Future<Driver> updateDriverProfile({
-    required String licenseNumber,
+    String? licenseNumber,
     bool? isAvailable,
     String? fcmToken,
   }) async {
     try {
-      final request = DriverRequest(
+      final request = PatchedDriverRequest(
         licenseNumber: licenseNumber,
-        isAvailable: isAvailable ?? true,
+        isAvailable: isAvailable,
         fcmToken: fcmToken,
       );
 
-      final response = await _apiClient.put(
+      final response = await _apiClient.patch(
         ApiEndpoints.driverProfile,
         data: request.toJson(),
       );
