@@ -32,11 +32,13 @@ class MapWidget extends StatefulWidget {
   final bool showCenterMarker;
   final Widget? floatingActionButton;
   final Function()? onMapReady;
+  final bool enableSearch;
+  final Function(String)? onSearchQuery;
 
   const MapWidget({
     Key? key,
     required this.initialPosition,
-    this.initialZoom = 15.0,
+    this.initialZoom = 17.0, // Optimal zoom for street detail without rate limiting
     this.onTap,
     this.onCameraMove,
     this.markers,
@@ -44,6 +46,8 @@ class MapWidget extends StatefulWidget {
     this.showCenterMarker = false,
     this.floatingActionButton,
     this.onMapReady,
+    this.enableSearch = false,
+    this.onSearchQuery,
   }) : super(key: key);
 
   @override
@@ -112,6 +116,8 @@ class _MapWidgetState extends State<MapWidget> with TickerProviderStateMixin {
       showCenterMarker: widget.showCenterMarker,
       floatingActionButton: widget.floatingActionButton,
       onMapReady: widget.onMapReady,
+      enableSearch: widget.enableSearch,
+      onSearchQuery: widget.onSearchQuery,
     );
   }
 

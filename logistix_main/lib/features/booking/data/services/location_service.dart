@@ -26,6 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../../../../core/services/map_service_interface.dart';
 import '../../../../core/services/map_service_factory.dart';
+import 'package:flutter/foundation.dart'; // Added for debugPrint
 
 class LocationService {
   static const String _recentSearchesKey = 'recent_searches';
@@ -116,6 +117,7 @@ class LocationService {
     
     // Check cache first
     if (_searchCache.containsKey(cacheKey)) {
+      debugPrint('Returning cached results for: $query');
       return _searchCache[cacheKey]!;
     }
 
@@ -129,6 +131,8 @@ class LocationService {
         }
       }
       
+      debugPrint('Searching for: "$query" with location: ${searchLocation?.lat}, ${searchLocation?.lng}');
+      
       // Use Map Service Places Autocomplete API with location awareness
       final mapResults = await _mapService.placesAutocomplete(
         query,
@@ -137,25 +141,148 @@ class LocationService {
         radius: radius,
       );
       
+      debugPrint('API returned ${mapResults.length} results for: $query');
+      
       List<PlaceResult> results = [];
       for (final mapResult in mapResults) {
+        // Skip results without proper location data
+        if (mapResult.location == null || 
+            mapResult.location!.lat == 0 || 
+            mapResult.location!.lng == 0) {
+          debugPrint('Skipping result without valid location: ${mapResult.name}');
+          continue;
+        }
+        
         results.add(PlaceResult(
           id: mapResult.placeId,
           title: mapResult.name ?? mapResult.description,
           subtitle: mapResult.description,
-          location: mapResult.location ?? MapLatLng(0, 0),
+          location: mapResult.location!,
           placeType: _determinePlaceTypeFromMap(mapResult.types),
         ));
       }
       
-      // Cache results
-      _searchCache[cacheKey] = results;
+      debugPrint('Processed ${results.length} valid results for: $query');
+      
+      // Cache results only if we have valid results
+      if (results.isNotEmpty) {
+        _searchCache[cacheKey] = results;
+      }
       
       return results;
     } catch (e) {
-      print('Search places error: $e');
+      debugPrint('Search places error for "$query": $e');
+      
+      // Try fallback search with smaller radius
+      if (radius > 10000) {
+        debugPrint('Trying fallback search with smaller radius');
+        return await searchPlaces(query, userLocation: userLocation, radius: 10000);
+      }
+      
       return [];
     }
+  }
+
+  /// Unified search method for consistent search across all screens
+  Future<List<PlaceResult>> unifiedSearch(String query, {
+    MapLatLng? userLocation,
+    int radius = 25000, // Reduced default radius for better results
+    bool includeRecentSearches = true,
+    bool includeSavedPlaces = true,
+  }) async {
+    if (query.isEmpty) {
+      // Return recent searches and saved places when query is empty
+      List<PlaceResult> results = [];
+      
+      if (includeSavedPlaces) {
+        final savedPlaces = await getSavedPlaces();
+        for (final savedPlace in savedPlaces) {
+          if (savedPlace.location != null) {
+            results.add(PlaceResult(
+              id: 'saved_${savedPlace.name.toLowerCase()}',
+              title: savedPlace.name,
+              subtitle: savedPlace.address,
+              location: savedPlace.location!,
+              placeType: PlaceType.other,
+            ));
+          }
+        }
+      }
+      
+      if (includeRecentSearches) {
+        final recentSearches = await getRecentSearches();
+        results.addAll(recentSearches);
+      }
+      
+      return results;
+    }
+    
+    // Use the enhanced search with fallback
+    return await searchWithFallback(query, userLocation: userLocation, radius: radius);
+  }
+
+  /// Enhanced search with multiple fallback strategies
+  Future<List<PlaceResult>> enhancedSearch(String query, {
+    MapLatLng? userLocation,
+    int radius = 25000,
+  }) async {
+    if (query.isEmpty) return [];
+    
+    debugPrint('Enhanced search for: "$query"');
+    
+    // Strategy 1: Normal search with user location
+    var results = await searchPlaces(query, userLocation: userLocation, radius: radius);
+    if (results.isNotEmpty) {
+      debugPrint('Strategy 1 successful: ${results.length} results');
+      return results;
+    }
+    
+    // Strategy 2: Search without location bias
+    debugPrint('Trying strategy 2: Search without location bias');
+    results = await searchPlaces(query, userLocation: null, radius: radius);
+    if (results.isNotEmpty) {
+      debugPrint('Strategy 2 successful: ${results.length} results');
+      return results;
+    }
+    
+    // Strategy 3: Search with smaller radius
+    debugPrint('Trying strategy 3: Search with smaller radius');
+    results = await searchPlaces(query, userLocation: userLocation, radius: 10000);
+    if (results.isNotEmpty) {
+      debugPrint('Strategy 3 successful: ${results.length} results');
+      return results;
+    }
+    
+    // Strategy 4: Search with larger radius
+    debugPrint('Trying strategy 4: Search with larger radius');
+    results = await searchPlaces(query, userLocation: userLocation, radius: 50000);
+    if (results.isNotEmpty) {
+      debugPrint('Strategy 4 successful: ${results.length} results');
+      return results;
+    }
+    
+    debugPrint('All search strategies failed for: "$query"');
+    return [];
+  }
+
+  /// Search with automatic fallback
+  Future<List<PlaceResult>> searchWithFallback(String query, {
+    MapLatLng? userLocation,
+    int radius = 25000,
+  }) async {
+    if (query.isEmpty) return [];
+    
+    // Try the enhanced search first
+    final mainResults = await enhancedSearch(query, userLocation: userLocation, radius: radius);
+    
+    // If main search returns results, use them
+    if (mainResults.isNotEmpty) {
+      return mainResults;
+    }
+    
+    // If main search fails, return empty results (no mock data)
+    debugPrint('Search failed for: "$query" - returning empty results');
+    return [];
   }
 
   Future<String> getAddressFromLatLng(MapLatLng location) async {
@@ -334,6 +461,48 @@ class LocationService {
     double c = 2 * math.asin(math.sqrt(a));
 
     return R * c;
+  }
+
+  /// Test method to verify search functionality
+  Future<void> testSearchFunctionality() async {
+    debugPrint('=== Testing Search Functionality ===');
+    
+    final testQueries = [
+      'airport',
+      'restaurant',
+      'hospital',
+      'mall',
+      'hotel',
+      'bank',
+      'school',
+      'park',
+      'temple',
+      'police',
+    ];
+    
+    for (final query in testQueries) {
+      debugPrint('Testing search for: "$query"');
+      
+      // Test main search
+      final mainResults = await searchPlaces(query);
+      debugPrint('Main search results: ${mainResults.length}');
+      
+      // Test unified search
+      final unifiedResults = await unifiedSearch(query);
+      debugPrint('Unified search results: ${unifiedResults.length}');
+      
+      // Test enhanced search
+      final enhancedResults = await enhancedSearch(query);
+      debugPrint('Enhanced search results: ${enhancedResults.length}');
+      
+      // Test fallback search
+      final fallbackResults = await searchWithFallback(query);
+      debugPrint('Fallback search results: ${fallbackResults.length}');
+      
+      debugPrint('---');
+    }
+    
+    debugPrint('=== Search Functionality Test Complete ===');
   }
 
   void dispose() {

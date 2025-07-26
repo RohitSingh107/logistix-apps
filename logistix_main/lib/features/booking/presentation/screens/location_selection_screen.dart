@@ -17,8 +17,9 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter/foundation.dart';
 import '../widgets/map_widget.dart';
+import '../widgets/search_results_widget.dart';
 import '../../../../core/config/app_theme.dart';
 import '../../data/services/location_service.dart';
 import '../../../../core/services/map_service_interface.dart';
@@ -166,16 +167,15 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
 
   void _selectSavedPlace(SavedPlace place) {
     if (place.location != null) {
+      setState(() {
+        _selectedLocation = place.location;
+        _selectedAddress = place.address;
+      });
+      
       Navigator.pop(context, {
         'location': place.location,
         'address': place.address,
       });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please add your ${place.name.toLowerCase()} location'),
-        ),
-      );
     }
   }
 
@@ -273,11 +273,26 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                             icon: const Icon(Icons.arrow_back),
                             onPressed: () => Navigator.pop(context),
                           ),
-                          Expanded(
-                            child: Text(
-                              widget.title,
-                              style: theme.textTheme.titleLarge,
-                            ),
+                                                  Expanded(
+                          child: Text(
+                            widget.title,
+                            style: theme.textTheme.titleLarge,
+                          ),
+                        ),
+                        // Debug button for testing search functionality
+                        if (kDebugMode)
+                          IconButton(
+                            icon: const Icon(Icons.bug_report),
+                            onPressed: () async {
+                              await _locationService.testSearchFunctionality();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Search test completed. Check debug logs.'),
+                                  ),
+                                );
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -331,177 +346,24 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                       ),
                     ),
                     
-                    // Search Results or Suggestions
-                    if (isSearching)
-                      Container(
-                        color: theme.colorScheme.surface,
-                        constraints: BoxConstraints(
-                          maxHeight: size.height * 0.6,
-                        ),
-                        child: ListView(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          children: [
-                            // Current Location option
-                            ListTile(
-                              leading: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.my_location,
-                                  color: Colors.blue,
-                                  size: 20,
-                                ),
-                              ),
-                              title: const Text('Current Location'),
-                              subtitle: const Text('Using GPS'),
-                              onTap: () {
-                                _getCurrentLocation();
-                                FocusScope.of(context).unfocus();
-                              },
-                            ),
-                            
-                            // Saved Places
-                            if (_savedPlaces.isNotEmpty && _searchController.text.isEmpty) ...[
-                              const Divider(height: 1),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.md,
-                                  vertical: AppSpacing.sm,
-                                ),
-                                child: Text(
-                                  'SAVED PLACES',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              ..._savedPlaces.map((place) => ListTile(
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withOpacity(0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    place.icon == 'home' ? Icons.home : Icons.work,
-                                    color: theme.colorScheme.primary,
-                                    size: 20,
-                                  ),
-                                ),
-                                title: Text(place.name),
-                                subtitle: Text(place.address),
-                                onTap: () => _selectSavedPlace(place),
-                              )),
-                            ],
-                            
-                            // Loading indicator
-                            if (_isLoading)
-                              Container(
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              )
-                            // Search Results
-                            else if (_searchResults.isNotEmpty) ...[
-                              const Divider(height: 1),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.md,
-                                  vertical: AppSpacing.sm,
-                                ),
-                                child: Text(
-                                  'SEARCH RESULTS',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              ..._searchResults.map((result) => ListTile(
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary.withOpacity(0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    _getPlaceIcon(result.placeType),
-                                    color: theme.colorScheme.primary,
-                                    size: 20,
-                                  ),
-                                ),
-                                title: Text(result.title),
-                                subtitle: Text(
-                                  result.subtitle,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onTap: () => _selectLocation(result),
-                              )),
-                            ]
-                            // Recent Searches
-                            else if (_recentSearches.isNotEmpty && _searchController.text.isEmpty) ...[
-                              const Divider(height: 1),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.md,
-                                  vertical: AppSpacing.sm,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'RECENT',
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        // Clear recent searches
-                                        setState(() => _recentSearches.clear());
-                                      },
-                                      child: const Text('Clear'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ..._recentSearches.map((result) => ListTile(
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.outline.withOpacity(0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.history,
-                                    color: theme.colorScheme.outline,
-                                    size: 20,
-                                  ),
-                                ),
-                                title: Text(result.title),
-                                subtitle: Text(
-                                  result.subtitle,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onTap: () => _selectLocation(result),
-                              )),
-                            ],
-                          ],
-                        ),
+                    // Search Results Container
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: size.height * 0.6,
                       ),
+                      child: SearchResultsWidget(
+                        searchResults: _searchResults,
+                        recentSearches: _recentSearches,
+                        savedPlaces: _savedPlaces,
+                        isLoading: _isLoading,
+                        searchQuery: _searchController.text,
+                        onResultSelected: _selectLocation,
+                        onSavedPlaceSelected: _selectSavedPlace,
+                        onClearRecent: () async {
+                          setState(() => _recentSearches.clear());
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -730,23 +592,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
         ],
       ),
     );
-  }
-
-  IconData _getPlaceIcon(PlaceType type) {
-    switch (type) {
-      case PlaceType.airport:
-        return Icons.flight;
-      case PlaceType.station:
-        return Icons.train;
-      case PlaceType.shopping:
-        return Icons.shopping_bag;
-      case PlaceType.hospital:
-        return Icons.local_hospital;
-      case PlaceType.education:
-        return Icons.school;
-      default:
-        return Icons.location_on;
-    }
   }
 
   Future<void> _getAddressFromLatLng(MapLatLng location) async {

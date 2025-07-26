@@ -180,6 +180,8 @@ class OlaMapsServiceImpl implements MapServiceInterface {
     int? radius,
   }) async {
     try {
+      debugPrint('[OlaMaps] Starting places autocomplete for: "$input"');
+      
       final queryParams = {
         'input': input,
         'language': 'en',
@@ -188,35 +190,57 @@ class OlaMapsServiceImpl implements MapServiceInterface {
       
       if (lat != null && lng != null) {
         queryParams['location'] = '$lat,$lng';
+        debugPrint('[OlaMaps] Using location: $lat, $lng');
       }
       if (radius != null) {
         queryParams['radius'] = radius.toString();
+        debugPrint('[OlaMaps] Using radius: $radius');
       }
+
+      debugPrint('[OlaMaps] Making API request with params: $queryParams');
 
       final response = await _dio.get(
         '/places/v1/autocomplete',
         queryParameters: queryParams,
       );
 
+      debugPrint('[OlaMaps] API response status: ${response.statusCode}');
+
       if (response.statusCode == 200 && response.data['predictions'] != null) {
         final predictions = response.data['predictions'] as List;
-        return predictions
-            .map((json) => MapPlaceResult(
+        debugPrint('[OlaMaps] Received ${predictions.length} predictions');
+        
+        final results = predictions
+            .map((json) {
+              try {
+                return MapPlaceResult(
                   placeId: json['place_id'] ?? json['id'] ?? '',
                   description: json['description'] ?? json['formatted_address'] ?? '',
                   name: json['name'],
                   types: List<String>.from(json['types'] ?? []),
-                  location: json['geometry'] != null 
+                  location: json['geometry'] != null && json['geometry']['location'] != null
                       ? MapLatLng(
                           json['geometry']['location']['lat'].toDouble(),
                           json['geometry']['location']['lng'].toDouble(),
                         )
                       : null,
                   rating: json['rating']?.toDouble(),
-                ))
+                );
+              } catch (e) {
+                debugPrint('[OlaMaps] Error parsing prediction: $e');
+                return null;
+              }
+            })
+            .where((result) => result != null)
+            .cast<MapPlaceResult>()
             .toList();
+        
+        debugPrint('[OlaMaps] Successfully parsed ${results.length} results');
+        return results;
+      } else {
+        debugPrint('[OlaMaps] Invalid response format: ${response.data}');
+        return [];
       }
-      return [];
     } catch (e) {
       debugPrint('[OlaMaps] Places autocomplete error: $e');
       return [];
