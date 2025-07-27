@@ -898,6 +898,9 @@ components:
         license_number:
           type: string
           maxLength: 20
+        vehicle_type:
+          type: integer
+          nullable: true
         is_available:
           type: boolean
         fcm_token:
@@ -913,10 +916,14 @@ components:
           type: number
           format: double
           readOnly: true
+        location:
+          type: string
+          readOnly: true
       required:
       - average_rating
       - id
       - license_number
+      - location
       - total_earnings
       - user
     DriverRequest:
@@ -927,12 +934,23 @@ components:
           type: string
           minLength: 1
           maxLength: 20
+        vehicle_type:
+          type: integer
+          nullable: true
         is_available:
           type: boolean
         fcm_token:
           type: string
           nullable: true
           maxLength: 255
+        latitude:
+          type: number
+          format: double
+          writeOnly: true
+        longitude:
+          type: number
+          format: double
+          writeOnly: true
       required:
       - license_number
     Location:
@@ -1062,12 +1080,23 @@ components:
           type: string
           minLength: 1
           maxLength: 20
+        vehicle_type:
+          type: integer
+          nullable: true
         is_available:
           type: boolean
         fcm_token:
           type: string
           nullable: true
           maxLength: 255
+        latitude:
+          type: number
+          format: double
+          writeOnly: true
+        longitude:
+          type: number
+          format: double
+          writeOnly: true
     PatchedUserRequest:
       type: object
       description: Serializer for the User model

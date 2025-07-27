@@ -25,7 +25,7 @@ Logistix is a comprehensive logistics management application built with Flutter,
 
 ```
 logistix-apps/
-├── logistix_main/              # Main application
+├── logistix_driver/              # Main application
 │   ├── lib/
 │   │   ├── core/              # Core functionality
 │   │   │   ├── di/
@@ -115,7 +115,7 @@ lib/
     └── wallet/          # Wallet management
 ```
 
-logistix_main/
+logistix_driver/
 ├── lib/
 │   ├── core/                 # Core functionality shared across features
 │   │   ├── di/              # Dependency injection

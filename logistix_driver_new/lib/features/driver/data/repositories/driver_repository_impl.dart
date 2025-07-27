@@ -41,12 +41,16 @@ class DriverRepositoryImpl implements DriverRepository {
     String? licenseNumber,
     bool? isAvailable,
     String? fcmToken,
+    double? latitude,
+    double? longitude,
   }) async {
     try {
       final request = PatchedDriverRequest(
         licenseNumber: licenseNumber,
         isAvailable: isAvailable,
         fcmToken: fcmToken,
+        latitude: latitude,
+        longitude: longitude,
       );
 
       final response = await _apiClient.patch(

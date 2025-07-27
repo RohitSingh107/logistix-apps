@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/services/driver_auth_service.dart';
 import '../../../../core/services/push_notification_service.dart';
+import '../../../../core/services/location_service.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../notifications/presentation/screens/alerts_screen.dart';
 import '../../../wallet/presentation/screens/wallet_screen.dart';
@@ -38,12 +39,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final DriverAuthService _driverAuthService;
+  late final LocationService _locationService;
   int _currentIndex = 0;
   Map<String, dynamic>? _driverProfile;
   bool _isAvailable = false;
   bool _isUpdatingAvailability = false;
   bool _isInitialized = false;
-
 
   final List<Widget> _screens = [
     const AlertsScreen(),
@@ -56,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _driverAuthService = serviceLocator<DriverAuthService>();
+    _locationService = serviceLocator<LocationService>();
     _fetchDriverProfile();
   }
 
@@ -68,6 +70,12 @@ class _HomeScreenState extends State<HomeScreen> {
           _isAvailable = profile['is_available'] ?? false;
           _isInitialized = true;
         });
+        
+        // Start location tracking if driver is already available
+        if (_isAvailable) {
+          await _locationService.startLocationTracking();
+          debugPrint('📍 Started location tracking for already available driver');
+        }
       }
     } catch (e) {
       debugPrint('Error fetching driver profile: $e');
@@ -120,6 +128,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    // Stop location tracking when screen is disposed
+    _locationService.stopLocationTracking();
     super.dispose();
   }
 
@@ -139,6 +149,17 @@ class _HomeScreenState extends State<HomeScreen> {
           _driverProfile = result;
           _isAvailable = result['is_available'] ?? false;
         });
+        
+        // Handle location tracking based on availability
+        if (_isAvailable) {
+          // Start location tracking when driver becomes available
+          await _locationService.startLocationTracking();
+          debugPrint('📍 Started location tracking for available driver');
+        } else {
+          // Stop location tracking when driver becomes unavailable
+          _locationService.stopLocationTracking();
+          debugPrint('📍 Stopped location tracking for unavailable driver');
+        }
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -177,20 +198,40 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
-      return const Scaffold(
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.background,
         body: Center(
-          child: CircularProgressIndicator(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Loading...',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ],
+          ),
         ),
       );
     }
+
     final theme = Theme.of(context);
     final profile = _driverProfile;
+    
     return Scaffold(
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
         title: const Text('Logistix Driver'),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.onSurface,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
               setState(() {
                 _currentIndex = 0;
@@ -199,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: 'Alerts',
           ),
           IconButton(
-            icon: const Icon(Icons.headset_mic),
+            icon: const Icon(Icons.help_outline),
             onPressed: () {
               // TODO: Implement support/help action
             },
@@ -208,370 +249,467 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Main content area
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Profile and Status Section
+                    if (profile != null) _buildProfileSection(theme, profile),
+                    const SizedBox(height: 24),
+                    
+                    // Earnings Section
+                    if (profile != null) _buildEarningsSection(theme, profile),
+                    const SizedBox(height: 24),
+                    
+                    // Performance Section
+                    _buildPerformanceSection(theme, profile),
+                    const SizedBox(height: 24),
+                    
+                    // Availability Toggle Section
+                    _buildAvailabilitySection(theme),
+                    const SizedBox(height: 24),
+                    
+                    // Main content (current tab)
+                    Container(
+                      height: 400,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: theme.colorScheme.outline.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: _screens[_currentIndex],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(
+            top: BorderSide(
+              color: theme.colorScheme.outline.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
+        ),
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          selectedItemColor: theme.colorScheme.primary,
+          unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.6),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.notifications_outlined),
+              activeIcon: Icon(Icons.notifications),
+              label: 'Alerts',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              activeIcon: Icon(Icons.account_balance_wallet),
+              label: 'Wallet',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.local_shipping_outlined),
+              activeIcon: Icon(Icons.local_shipping),
+              label: 'Trips',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings_outlined),
+              activeIcon: Icon(Icons.settings),
+              label: 'Settings',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileSection(ThemeData theme, Map<String, dynamic> profile) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          // Profile Picture
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: theme.colorScheme.primary,
+                width: 2,
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 28,
+              backgroundImage: profile['user']['profile_picture'] != null
+                  ? NetworkImage(profile['user']['profile_picture'])
+                  : null,
+              child: profile['user']['profile_picture'] == null
+                  ? Icon(
+                      Icons.person,
+                      size: 32,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    )
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // Profile Info
+          Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Card: Profile, Earnings, Ledger
-                if (profile != null) _buildTopCard(theme, profile),
-                const SizedBox(height: 16),
-                // Performance Card
-                _buildPerformanceCard(theme, profile),
-                const SizedBox(height: 16),
-                // Availability Toggle
-                _buildAvailabilityToggle(),
-                const SizedBox(height: 16),
-                // Go Offline/Done for Day Button
-                _buildGoOfflineButton(theme),
-                const SizedBox(height: 16),
-                // Main content (current tab)
-                SizedBox(
-                  height: 400, // Adjust as needed
-                  child: _screens[_currentIndex],
+                Text(
+                  '${profile['user']['first_name']} ${profile['user']['last_name']}',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  profile['vehicle_number'] != null
+                      ? 'Vehicle: ${profile['vehicle_number']}'
+                      : 'No vehicle info',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${profile['average_rating'] ?? '-'} rating',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        selectedItemColor: theme.colorScheme.primary,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Alerts',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'Wallet',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_shipping),
-            label: 'My Trips',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+          
+          // Status Indicator
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: _isAvailable ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _isAvailable ? Colors.green : Colors.grey,
+                width: 1,
+              ),
+            ),
+            child: Text(
+              _isAvailable ? 'Online' : 'Offline',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: _isAvailable ? Colors.green : Colors.grey,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTopCard(ThemeData theme, Map<String, dynamic> profile) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundImage: profile['user']['profile_picture'] != null
-                      ? NetworkImage(profile['user']['profile_picture'])
-                      : null,
-                  child: profile['user']['profile_picture'] == null
-                      ? const Icon(Icons.person, size: 32)
-                      : null,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${profile['user']['first_name']} ${profile['user']['last_name']}',
-                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        profile['vehicle_number'] != null
-                            ? 'Vehicle: ${profile['vehicle_number']}'
-                            : 'No vehicle info',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      Row(
-                        children: [
-                          Icon(Icons.star, color: Colors.amber, size: 18),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${profile['average_rating'] ?? '-'}',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Today\'s Earnings', style: theme.textTheme.bodySmall),
-                      Text(
-                        '₹${profile['today_earnings'] ?? profile['total_earnings'] ?? '0'}',
-                        style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Ledger Balance', style: theme.textTheme.bodySmall),
-                      Row(
-                        children: [
-                          Icon(Icons.account_balance_wallet, color: (profile['ledger_balance'] ?? 0) < 0 ? Colors.red : theme.colorScheme.primary, size: 18),
-                          const SizedBox(width: 4),
-                          Text(
-                            '₹${profile['ledger_balance'] ?? '0'}',
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              color: (profile['ledger_balance'] ?? 0) < 0 ? Colors.red : theme.colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if ((profile['ledger_balance'] ?? 0) < 0)
-                        TextButton(
-                          onPressed: () {
-                            // TODO: Implement clear dues action
-                          },
-                          child: const Text('Clear Dues'),
-                          style: TextButton.styleFrom(foregroundColor: Colors.red),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
+  Widget _buildEarningsSection(ThemeData theme, Map<String, dynamic> profile) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.1),
+          width: 1,
         ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Today\'s Earnings',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '₹${profile['today_earnings'] ?? profile['total_earnings'] ?? '0'}',
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Total earned today',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet,
+                          color: (profile['ledger_balance'] ?? 0) < 0 
+                              ? theme.colorScheme.error 
+                              : theme.colorScheme.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '₹${profile['ledger_balance'] ?? '0'}',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: (profile['ledger_balance'] ?? 0) < 0 
+                                ? theme.colorScheme.error 
+                                : theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Wallet balance',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                    if ((profile['ledger_balance'] ?? 0) < 0) ...[
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () {
+                          // TODO: Implement clear dues action
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          minimumSize: Size.zero,
+                        ),
+                        child: Text(
+                          'Clear Dues',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.error,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildPerformanceCard(ThemeData theme, Map<String, dynamic>? profile) {
-    // Placeholder values, replace with real data if available
+  Widget _buildPerformanceSection(ThemeData theme, Map<String, dynamic>? profile) {
     final completion = profile?['completion_score'] ?? 16;
     final loginHours = profile?['login_hours'] ?? 5;
     final cancelRate = profile?['cancellation_rate'] ?? 3;
     final isPrime = profile?['is_prime'] ?? false;
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text('Performance', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(width: 8),
-                if (!isPrime)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.thumb_down, color: Colors.orange, size: 16),
-                        const SizedBox(width: 4),
-                        Text('Not Prime', style: theme.textTheme.bodySmall?.copyWith(color: Colors.orange)),
-                      ],
-                    ),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.thumb_up, color: Colors.green, size: 16),
-                        const SizedBox(width: 4),
-                        Text('Prime', style: theme.textTheme.bodySmall?.copyWith(color: Colors.green)),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Completion', style: theme.textTheme.bodySmall),
-                      LinearProgressIndicator(
-                        value: completion / 100,
-                        color: theme.colorScheme.primary,
-                        backgroundColor: theme.colorScheme.surface,
-                        minHeight: 8,
-                      ),
-                      const SizedBox(height: 4),
-                      Text('$completion%', style: theme.textTheme.bodySmall),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Login Hours', style: theme.textTheme.bodySmall),
-                      Text('$loginHours hrs', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Cancel Rate', style: theme.textTheme.bodySmall),
-                      Text('$cancelRate%', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.1),
+          width: 1,
         ),
       ),
-    );
-  }
-
-  Widget _buildGoOfflineButton(ThemeData theme) {
-    final isOnline = _isAvailable;
-    return ElevatedButton(
-      onPressed: () async {
-        final confirm = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(isOnline ? 'Done for the day?' : 'Ready to go online?'),
-            content: Text(isOnline
-                ? 'Are you sure you want to go offline?'
-                : 'Are you sure you want to go online and start accepting bookings?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Performance',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(isOnline ? 'Go Offline' : 'Go Online'),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isPrime 
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isPrime ? Colors.green : Colors.orange,
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isPrime ? Icons.thumb_up : Icons.thumb_down,
+                      color: isPrime ? Colors.green : Colors.orange,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      isPrime ? 'Prime' : 'Not Prime',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: isPrime ? Colors.green : Colors.orange,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-        );
-        if (confirm == true) {
-          await _toggleAvailability();
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isOnline ? theme.colorScheme.error : Colors.green,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Completion Rate',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: completion / 100,
+                      color: theme.colorScheme.primary,
+                      backgroundColor: theme.colorScheme.surface,
+                      minHeight: 6,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$completion%',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Login Hours',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '$loginHours hrs',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cancel Rate',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '$cancelRate%',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      child: Text(isOnline ? 'GO OFFLINE' : 'GO ONLINE'),
     );
   }
 
-  Widget _buildAvailabilityToggle() {
+  Widget _buildAvailabilitySection(ThemeData theme) {
     return Container(
-      margin: const EdgeInsets.all(16.0),
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _isAvailable ? Colors.green.shade50 : Colors.grey.shade50,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _isAvailable ? Colors.green.shade300 : Colors.grey.shade300,
-          width: 2,
+          color: theme.colorScheme.outline.withOpacity(0.1),
+          width: 1,
         ),
       ),
       child: Column(
         children: [
-          // Driver Info Section
-          if (_driverProfile != null) ...[
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 25,
-                  backgroundImage: _driverProfile!['user']['profile_picture'] != null
-                      ? NetworkImage(_driverProfile!['user']['profile_picture'])
-                      : null,
-                  child: _driverProfile!['user']['profile_picture'] == null
-                      ? const Icon(Icons.person, size: 30)
-                      : null,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${_driverProfile!['user']['first_name']} ${_driverProfile!['user']['last_name']}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Earnings: ₹${_driverProfile!['total_earnings']}',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Icon(Icons.star, color: Colors.amber, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${_driverProfile!['average_rating']} rating',
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
-          
-          // Availability Toggle Section
           Row(
             children: [
               Expanded(
@@ -580,18 +718,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       'Availability Status',
-                      style: TextStyle(
-                        fontSize: 16,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _isAvailable ? 'Online - Ready for bookings' : 'Offline - Not accepting bookings',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: _isAvailable ? Colors.green.shade700 : Colors.grey.shade600,
+                      _isAvailable 
+                          ? 'Online - Ready for bookings' 
+                          : 'Offline - Not accepting bookings',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: _isAvailable 
+                            ? Colors.green 
+                            : theme.colorScheme.onSurface.withOpacity(0.6),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -604,11 +743,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 scale: 1.2,
                 child: Switch(
                   value: _isAvailable,
-                  onChanged: _isUpdatingAvailability ? null : (value) => _toggleAvailability(),
+                  onChanged: _isUpdatingAvailability 
+                      ? null 
+                      : (value) => _toggleAvailability(),
                   activeColor: Colors.white,
-                  activeTrackColor: Colors.green,
+                  activeTrackColor: theme.colorScheme.primary,
                   inactiveThumbColor: Colors.white,
-                  inactiveTrackColor: Colors.grey.shade400,
+                  inactiveTrackColor: theme.colorScheme.onSurface.withOpacity(0.3),
                 ),
               ),
             ],
@@ -616,20 +757,78 @@ class _HomeScreenState extends State<HomeScreen> {
           
           // Loading indicator when updating
           if (_isUpdatingAvailability) ...[
-            const SizedBox(height: 12),
-            const Row(
+            const SizedBox(height: 16),
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
-                SizedBox(width: 8),
-                Text('Updating...'),
+                const SizedBox(width: 8),
+                Text(
+                  'Updating...',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
               ],
             ),
           ],
+          
+          const SizedBox(height: 16),
+          
+          // Go Online/Offline Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(_isAvailable ? 'Done for the day?' : 'Ready to go online?'),
+                    content: Text(_isAvailable
+                        ? 'Are you sure you want to go offline?'
+                        : 'Are you sure you want to go online and start accepting bookings?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: Text(_isAvailable ? 'Go Offline' : 'Go Online'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await _toggleAvailability();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isAvailable 
+                    ? theme.colorScheme.error 
+                    : theme.colorScheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                _isAvailable ? 'GO OFFLINE' : 'GO ONLINE',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

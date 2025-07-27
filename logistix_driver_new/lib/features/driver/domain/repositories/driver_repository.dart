@@ -28,6 +28,8 @@ abstract class DriverRepository {
     String? licenseNumber,
     bool? isAvailable,
     String? fcmToken,
+    double? latitude,
+    double? longitude,
   });
 
   /// Create a new driver profile

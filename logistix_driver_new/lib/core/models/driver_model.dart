@@ -76,11 +76,15 @@ class PatchedDriverRequest {
   final bool? isAvailable;
   @JsonKey(name: 'fcm_token')
   final String? fcmToken;
+  final double? latitude;
+  final double? longitude;
 
   PatchedDriverRequest({
     this.licenseNumber,
     this.isAvailable,
     this.fcmToken,
+    this.latitude,
+    this.longitude,
   });
 
   factory PatchedDriverRequest.fromJson(Map<String, dynamic> json) => _$PatchedDriverRequestFromJson(json);

@@ -37,6 +37,8 @@ import '../../features/booking/domain/repositories/booking_repository.dart';
 import 'package:dio/dio.dart';
 import '../repositories/user_repository_impl.dart';
 import '../repositories/user_repository.dart';
+import '../services/location_service.dart';
+import '../services/background_location_service.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -55,6 +57,14 @@ Future<void> setupServiceLocator() async {
 
   serviceLocator.registerLazySingleton<DriverAuthService>(
     () => DriverAuthService(serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton<LocationService>(
+    () => LocationService(),
+  );
+
+  serviceLocator.registerLazySingleton<BackgroundLocationService>(
+    () => BackgroundLocationService(),
   );
 
   // Network
