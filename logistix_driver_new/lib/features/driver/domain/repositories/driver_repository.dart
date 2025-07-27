@@ -38,4 +38,13 @@ abstract class DriverRepository {
     bool isAvailable = true,
     String? fcmToken,
   });
+
+  /// Update driver location only
+  Future<Driver> updateDriverLocation({
+    required double latitude,
+    required double longitude,
+  });
+
+  /// Update driver FCM token only
+  Future<Driver> updateDriverFcmToken(String fcmToken);
 } 

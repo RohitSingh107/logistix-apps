@@ -14,6 +14,8 @@ import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../repositories/user_repository.dart';
 import '../services/auth_service.dart';
+import '../di/service_locator.dart';
+import '../../features/driver/domain/repositories/driver_repository.dart';
 
 class PushNotificationService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -37,6 +39,7 @@ class PushNotificationService {
           userRepository != null && 
           authService != null) {
         await _updateFcmTokenOnServer(fcmToken, userRepository, authService);
+        await _updateDriverFcmTokenOnServer(fcmToken, authService);
       }
       
       // Configure message handlers
@@ -98,7 +101,8 @@ class PushNotificationService {
         // Listen for token refresh
         _firebaseMessaging.onTokenRefresh.listen((String newToken) {
           print("🔄 FCM Token refreshed: $newToken");
-          // TODO: Update token on server when it refreshes
+          // Update both user and driver FCM tokens when refreshed
+          _handleTokenRefresh(newToken);
         });
         
         return token;
@@ -109,6 +113,26 @@ class PushNotificationService {
     } catch (e) {
       print("❌ Error getting FCM token: $e");
       return null;
+    }
+  }
+  
+  /// Handle FCM token refresh
+  static Future<void> _handleTokenRefresh(String newToken) async {
+    try {
+      print("🔄 Handling FCM token refresh...");
+      
+      final authService = serviceLocator<AuthService>();
+      final userRepository = serviceLocator<UserRepository>();
+      
+      // Update user FCM token
+      await _updateFcmTokenOnServer(newToken, userRepository, authService);
+      
+      // Update driver FCM token
+      await _updateDriverFcmTokenOnServer(newToken, authService);
+      
+      print("✅ FCM token refresh handled successfully");
+    } catch (e) {
+      print("❌ Error handling FCM token refresh: $e");
     }
   }
   
@@ -202,6 +226,7 @@ class PushNotificationService {
       final fcmToken = await getCurrentToken();
       if (fcmToken != null) {
         await _updateFcmTokenOnServer(fcmToken, userRepository, authService);
+        await _updateDriverFcmTokenOnServer(fcmToken, authService);
       } else {
         print("❌ No FCM token available to update");
       }
@@ -224,12 +249,54 @@ class PushNotificationService {
         return;
       }
       
-      print("🔄 Updating FCM token on server...");
+      print("🔄 Updating user FCM token on server...");
       await userRepository.updateFcmToken(fcmToken);
-      print("✅ FCM token successfully updated on server");
+      print("✅ User FCM token successfully updated on server");
     } catch (e) {
-      print("❌ Failed to update FCM token on server: $e");
+      print("❌ Failed to update user FCM token on server: $e");
       // Don't throw error as this shouldn't prevent app initialization
+    }
+  }
+  
+  /// Update driver FCM token on server if user is authenticated
+  static Future<void> _updateDriverFcmTokenOnServer(
+    String fcmToken,
+    AuthService authService,
+  ) async {
+    try {
+      // Check if user is authenticated
+      final accessToken = await authService.getAccessToken();
+      if (accessToken == null) {
+        print("📱 User not authenticated, skipping driver FCM token update");
+        return;
+      }
+      
+      print("🔄 Updating driver FCM token on server...");
+      
+      // Get driver repository and update driver FCM token
+      final driverRepository = serviceLocator<DriverRepository>();
+      await driverRepository.updateDriverFcmToken(fcmToken);
+      
+      print("✅ Driver FCM token successfully updated on server");
+    } catch (e) {
+      print("❌ Failed to update driver FCM token on server: $e");
+      // Don't throw error as this shouldn't prevent app initialization
+    }
+  }
+  
+  /// Update driver FCM token on server (public method for external use)
+  static Future<void> updateDriverFcmToken() async {
+    try {
+      print("🔑 Updating driver FCM token...");
+      final fcmToken = await getCurrentToken();
+      if (fcmToken != null) {
+        final authService = serviceLocator<AuthService>();
+        await _updateDriverFcmTokenOnServer(fcmToken, authService);
+      } else {
+        print("❌ No FCM token available to update driver profile");
+      }
+    } catch (e) {
+      print("❌ Failed to update driver FCM token: $e");
     }
   }
 }
