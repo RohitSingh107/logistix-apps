@@ -7,7 +7,7 @@
  * - Manages wallet BLoC integration and real-time data updates
  * 
  * Key Logic:
- * - Creates WalletBloc instance with dependency injection
+ * - Uses WalletBloc instance provided at app level
  * - Displays wallet balance in attractive gradient card design
  * - Implements infinite scrolling for transaction history
  * - Provides pull-to-refresh functionality for data updates
@@ -34,11 +34,7 @@ class WalletScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => WalletBloc(serviceLocator<WalletRepository>())
-        ..add(LoadWalletData()),
-      child: const _WalletScreenContent(),
-    );
+    return const _WalletScreenContent();
   }
 }
 

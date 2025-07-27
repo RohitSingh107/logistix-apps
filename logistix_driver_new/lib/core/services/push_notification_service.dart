@@ -6,19 +6,24 @@
  * - Manages FCM token retrieval and printing
  * - Configures notification permissions and settings
  * - Handles foreground and background notifications
+ * - Integrates with enhanced notification service
  */
 
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../network/api_client.dart';
 import '../repositories/user_repository.dart';
 import '../services/auth_service.dart';
 import '../di/service_locator.dart';
 import '../../features/driver/domain/repositories/driver_repository.dart';
+import 'notification_service.dart';
+import '../models/notification_model.dart' as app_notification;
 
 class PushNotificationService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  static final NotificationService _notificationService = NotificationService();
   
   /// Initialize push notifications
   static Future<void> initialize({
@@ -27,6 +32,9 @@ class PushNotificationService {
   }) async {
     try {
       print("🔥 Initializing Push Notification Service...");
+      
+      // Initialize enhanced notification service
+      await _notificationService.initialize();
       
       // Request notification permissions
       await _requestPermissions();
@@ -144,7 +152,9 @@ class PushNotificationService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("🔔 Foreground message received:");
       _printMessageDetails(message);
-      // You can show in-app notification here
+      
+      // Show in-app notification using enhanced notification service
+      _showInAppNotification(message);
     });
     
     // Handle messages when app is in background but not terminated
@@ -152,10 +162,81 @@ class PushNotificationService {
       print("📱 Background message tapped:");
       _printMessageDetails(message);
       // Handle navigation when notification is tapped
+      _handleNotificationNavigation(message);
     });
     
     // Handle messages when app is terminated
     _handleTerminatedAppMessages();
+  }
+  
+  /// Show in-app notification for foreground messages
+  static void _showInAppNotification(RemoteMessage message) {
+    try {
+      final data = message.data;
+      final notification = message.notification;
+      
+      print("🔔 Processing notification: ${notification?.title}");
+      
+      // Create notification object
+      final notificationData = {
+        'title': notification?.title ?? data['title'] ?? 'Notification',
+        'body': notification?.body ?? data['body'] ?? '',
+        'type': data['type'] ?? 'GENERAL',
+        'priority': data['priority'] ?? 'NORMAL',
+        'data': data,
+        'image_url': data['image_url'],
+        'action_url': data['action_url'],
+        'action_text': data['action_text'],
+      };
+      
+      // Show custom notification
+      _notificationService.showCustomNotification(
+        title: notificationData['title'],
+        body: notificationData['body'],
+        type: _parseNotificationType(notificationData['type']),
+        priority: _parseNotificationPriority(notificationData['priority']),
+        data: notificationData['data'],
+        imageUrl: notificationData['image_url'],
+        actionUrl: notificationData['action_url'],
+        actionText: notificationData['action_text'],
+      );
+      
+      print("✅ In-app notification processed successfully");
+      
+    } catch (e) {
+      print("❌ Error showing in-app notification: $e");
+      // Don't let notification errors crash the app
+    }
+  }
+  
+  /// Handle notification navigation
+  static void _handleNotificationNavigation(RemoteMessage message) {
+    try {
+      final data = message.data;
+      final type = data['type'] ?? 'GENERAL';
+      
+      // Handle navigation based on notification type
+      switch (type.toUpperCase()) {
+        case 'RIDE_REQUEST':
+          print("🚗 Navigating to ride request");
+          // TODO: Navigate to ride request screen
+          break;
+        case 'RIDE_ACCEPTED':
+          print("✅ Navigating to active trip");
+          // TODO: Navigate to active trip screen
+          break;
+        case 'PAYMENT_RECEIVED':
+          print("💰 Navigating to wallet");
+          // TODO: Navigate to wallet screen
+          break;
+        default:
+          print("📢 Navigating to notifications");
+          // TODO: Navigate to notifications screen
+          break;
+      }
+    } catch (e) {
+      print("❌ Error handling notification navigation: $e");
+    }
   }
   
   /// Handle messages when app is launched from terminated state
@@ -166,6 +247,7 @@ class PushNotificationService {
       print("🚀 App launched from notification:");
       _printMessageDetails(initialMessage);
       // Handle initial navigation
+      _handleNotificationNavigation(initialMessage);
     }
   }
   
@@ -183,6 +265,51 @@ class PushNotificationService {
     
     if (message.notification?.apple != null) {
       print("   Apple: ${message.notification!.apple}");
+    }
+  }
+  
+  /// Parse notification type from string
+  static app_notification.NotificationType _parseNotificationType(String? type) {
+    if (type == null) return app_notification.NotificationType.general;
+    
+    switch (type.toUpperCase()) {
+      case 'RIDE_REQUEST':
+      case 'BOOKING_REQUEST':
+      case 'BOOKING_ALERT':
+        return app_notification.NotificationType.rideRequest;
+      case 'RIDE_ACCEPTED':
+      case 'BOOKING_ACCEPTED':
+        return app_notification.NotificationType.rideAccepted;
+      case 'RIDE_STARTED':
+        return app_notification.NotificationType.rideStarted;
+      case 'RIDE_COMPLETED':
+        return app_notification.NotificationType.rideCompleted;
+      case 'PAYMENT_RECEIVED':
+        return app_notification.NotificationType.paymentReceived;
+      case 'WALLET_TOPUP':
+        return app_notification.NotificationType.walletTopup;
+      case 'SYSTEM_UPDATE':
+        return app_notification.NotificationType.systemUpdate;
+      case 'PROMOTION':
+        return app_notification.NotificationType.promotion;
+      default:
+        return app_notification.NotificationType.general;
+    }
+  }
+  
+  /// Parse notification priority from string
+  static app_notification.NotificationPriority _parseNotificationPriority(String? priority) {
+    if (priority == null) return app_notification.NotificationPriority.normal;
+    
+    switch (priority.toUpperCase()) {
+      case 'LOW':
+        return app_notification.NotificationPriority.low;
+      case 'HIGH':
+        return app_notification.NotificationPriority.high;
+      case 'URGENT':
+        return app_notification.NotificationPriority.urgent;
+      default:
+        return app_notification.NotificationPriority.normal;
     }
   }
   
@@ -297,6 +424,42 @@ class PushNotificationService {
       }
     } catch (e) {
       print("❌ Failed to update driver FCM token: $e");
+    }
+  }
+
+  /// Test method to simulate incoming FCM notification
+  static Future<void> testIncomingNotification({
+    String type = 'booking_alert',
+    String title = 'Test Notification',
+    String body = 'This is a test notification',
+    Map<String, dynamic>? data,
+  }) async {
+    try {
+      print("🧪 Testing incoming notification: $type");
+      
+      // Create a mock RemoteMessage
+      final mockMessage = RemoteMessage(
+        data: data ?? {
+          'type': type,
+          'booking_id': '999',
+          'estimated_fare': '300',
+          'pickup_address': 'Test Pickup Location',
+          'dropoff_address': 'Test Dropoff Location',
+          'goods_type': 'Test Goods',
+        },
+        notification: RemoteNotification(
+          title: title,
+          body: body,
+        ),
+        messageId: 'test_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      
+      // Process the mock message
+      _showInAppNotification(mockMessage);
+      
+      print("✅ Test notification processed successfully");
+    } catch (e) {
+      print("❌ Error testing incoming notification: $e");
     }
   }
 }

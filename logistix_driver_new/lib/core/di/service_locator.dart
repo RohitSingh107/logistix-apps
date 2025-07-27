@@ -34,6 +34,9 @@ import '../../features/driver/data/repositories/driver_repository_impl.dart';
 import '../../features/driver/domain/repositories/driver_repository.dart';
 import '../../features/booking/data/repositories/booking_repository_impl.dart';
 import '../../features/booking/domain/repositories/booking_repository.dart';
+import '../../features/notifications/data/repositories/notification_repository_impl.dart';
+import '../../features/notifications/domain/repositories/notification_repository.dart';
+import '../../features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:dio/dio.dart';
 import '../repositories/user_repository_impl.dart';
 import '../repositories/user_repository.dart';
@@ -97,10 +100,15 @@ Future<void> setupServiceLocator() async {
     () => BookingRepositoryImpl(serviceLocator()),
   );
 
+  serviceLocator.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(serviceLocator(), serviceLocator()),
+  );
+
   // Use Cases
   // serviceLocator.registerLazySingleton(() => LoginUseCase(serviceLocator()));
 
   // Blocs
   serviceLocator.registerFactory(() => AuthBloc(serviceLocator(), serviceLocator()));
   serviceLocator.registerFactory(() => WalletBloc(serviceLocator()));
+  serviceLocator.registerFactory(() => NotificationBloc(serviceLocator()));
 } 

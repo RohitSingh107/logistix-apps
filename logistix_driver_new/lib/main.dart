@@ -34,6 +34,8 @@ import 'features/profile/presentation/bloc/user_bloc.dart';
 import 'features/theme/presentation/bloc/theme_bloc.dart';
 import 'features/theme/presentation/bloc/theme_event.dart';
 import 'features/theme/presentation/bloc/theme_state.dart';
+import 'features/wallet/presentation/bloc/wallet_bloc.dart';
+import 'features/notifications/presentation/bloc/notification_bloc.dart';
 import 'core/services/auth_service.dart';
 import 'core/config/app_config.dart';
 import 'core/config/app_theme.dart';
@@ -176,6 +178,12 @@ class DriverApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => ThemeBloc(sharedPreferences)..add(const LoadThemeEvent()),
+        ),
+        BlocProvider(
+          create: (context) => WalletBloc(serviceLocator())..add(LoadWalletData()),
+        ),
+        BlocProvider(
+          create: (context) => NotificationBloc(serviceLocator()),
         ),
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
