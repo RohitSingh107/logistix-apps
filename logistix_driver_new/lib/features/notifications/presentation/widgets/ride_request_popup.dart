@@ -365,18 +365,12 @@ class _RideRequestPopupState extends State<RideRequestPopup> {
           _showAcceptanceSuccessDialog(trip);
         }
       } else {
-        // Reject the ride
+        // Reject the ride - just close the popup
         await widget.onRideAction(bookingId, accepted);
         
         if (mounted) {
           Navigator.of(context).pop();
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Ride rejected'),
-              backgroundColor: Colors.orange,
-            ),
-          );
+          // No snackbar for reject - just close the popup
         }
       }
     } catch (e) {
