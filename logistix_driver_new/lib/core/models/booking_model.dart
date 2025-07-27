@@ -1,39 +1,34 @@
 /**
- * booking_model.dart - Booking and Trip Request Data Models
+ * booking_model.dart - Booking Model
  * 
  * Purpose:
- * - Defines data models for booking and trip request functionality
- * - Handles serialization for booking-related API communication
- * - Manages booking states and payment modes through enums
+ * - Represents a booking request in the system
+ * - Contains booking details, sender/receiver info, and trip details
+ * - Used for ride requests and booking management
  * 
  * Key Logic:
- * - BookingRequest: Core booking entity with complete booking information
- * - BookingRequestRequest: Payload for creating new booking requests
- * - BookingAcceptRequest/Response: Models for driver accepting bookings
- * - BookingStatus enum: Tracks booking lifecycle (requested, searching, accepted, cancelled)
- * - PaymentMode enum: Defines payment options (cash, wallet)
- * - Uses JSON serialization with snake_case field mapping
- * - Extends BaseModel for consistent model behavior
- * - Includes comprehensive booking details (pickup, dropoff, goods, pricing)
+ * - Booking request creation and management
+ * - Booking status tracking
+ * - Sender and receiver information
+ * - Payment and timing details
  */
 
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
-import 'trip_model.dart';
 
 part 'booking_model.g.dart';
 
 enum BookingStatus {
-  @JsonValue('REQUESTED')
-  requested,
-  @JsonValue('SEARCHING')
-  searching,
+  @JsonValue('PENDING')
+  pending,
   @JsonValue('ACCEPTED')
   accepted,
+  @JsonValue('REJECTED')
+  rejected,
   @JsonValue('CANCELLED')
   cancelled,
-  @JsonValue('DRIVERS_NOT_FOUND')
-  driversNotFound,
+  @JsonValue('COMPLETED')
+  completed,
 }
 
 enum PaymentMode {
@@ -41,47 +36,35 @@ enum PaymentMode {
   cash,
   @JsonValue('WALLET')
   wallet,
+  @JsonValue('CARD')
+  card,
+  @JsonValue('UPI')
+  upi,
 }
 
 @JsonSerializable()
-class BookingRequest extends BaseModel {
+class Booking extends BaseModel {
   final int id;
-  @JsonKey(name: 'trip_id')
   final int? tripId;
-  @JsonKey(name: 'sender_name')
   final String senderName;
-  @JsonKey(name: 'receiver_name')
   final String receiverName;
-  @JsonKey(name: 'sender_phone')
   final String senderPhone;
-  @JsonKey(name: 'receiver_phone')
   final String receiverPhone;
-  @JsonKey(name: 'pickup_location')
   final String pickupLocation;
-  @JsonKey(name: 'dropoff_location')
   final String dropoffLocation;
-  @JsonKey(name: 'pickup_time')
   final DateTime pickupTime;
-  @JsonKey(name: 'pickup_address')
   final String pickupAddress;
-  @JsonKey(name: 'dropoff_address')
   final String dropoffAddress;
-  @JsonKey(name: 'goods_type')
   final String goodsType;
-  @JsonKey(name: 'goods_quantity')
   final String goodsQuantity;
-  @JsonKey(name: 'payment_mode')
   final PaymentMode paymentMode;
-  @JsonKey(name: 'estimated_fare')
   final double estimatedFare;
   final BookingStatus status;
   final String? instructions;
-  @JsonKey(name: 'created_at')
   final DateTime createdAt;
-  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
-  const BookingRequest({
+  const Booking({
     required this.id,
     this.tripId,
     required this.senderName,
@@ -103,115 +86,118 @@ class BookingRequest extends BaseModel {
     required this.updatedAt,
   });
 
-  factory BookingRequest.fromJson(Map<String, dynamic> json) => _$BookingRequestFromJson(json);
+  factory Booking.fromJson(Map<String, dynamic> json) => _$BookingFromJson(json);
+  Map<String, dynamic> toJson() => _$BookingToJson(this);
 
-  @override
-  Map<String, dynamic> toJson() => _$BookingRequestToJson(this);
+  /// Create a copy of this booking with updated fields
+  Booking copyWith({
+    int? id,
+    int? tripId,
+    String? senderName,
+    String? receiverName,
+    String? senderPhone,
+    String? receiverPhone,
+    String? pickupLocation,
+    String? dropoffLocation,
+    DateTime? pickupTime,
+    String? pickupAddress,
+    String? dropoffAddress,
+    String? goodsType,
+    String? goodsQuantity,
+    PaymentMode? paymentMode,
+    double? estimatedFare,
+    BookingStatus? status,
+    String? instructions,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Booking(
+      id: id ?? this.id,
+      tripId: tripId ?? this.tripId,
+      senderName: senderName ?? this.senderName,
+      receiverName: receiverName ?? this.receiverName,
+      senderPhone: senderPhone ?? this.senderPhone,
+      receiverPhone: receiverPhone ?? this.receiverPhone,
+      pickupLocation: pickupLocation ?? this.pickupLocation,
+      dropoffLocation: dropoffLocation ?? this.dropoffLocation,
+      pickupTime: pickupTime ?? this.pickupTime,
+      pickupAddress: pickupAddress ?? this.pickupAddress,
+      dropoffAddress: dropoffAddress ?? this.dropoffAddress,
+      goodsType: goodsType ?? this.goodsType,
+      goodsQuantity: goodsQuantity ?? this.goodsQuantity,
+      paymentMode: paymentMode ?? this.paymentMode,
+      estimatedFare: estimatedFare ?? this.estimatedFare,
+      status: status ?? this.status,
+      instructions: instructions ?? this.instructions,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 
-  @override
-  List<Object?> get props => [
-        id,
-        tripId,
-        senderName,
-        receiverName,
-        senderPhone,
-        receiverPhone,
-        pickupLocation,
-        dropoffLocation,
-        pickupTime,
-        pickupAddress,
-        dropoffAddress,
-        goodsType,
-        goodsQuantity,
-        paymentMode,
-        estimatedFare,
-        status,
-        instructions,
-        createdAt,
-        updatedAt,
-      ];
-}
+  /// Check if booking is available for acceptance
+  bool get isAvailable => status == BookingStatus.pending;
 
-@JsonSerializable()
-class BookingRequestRequest {
-  @JsonKey(name: 'sender_name')
-  final String senderName;
-  @JsonKey(name: 'receiver_name')
-  final String receiverName;
-  @JsonKey(name: 'sender_phone')
-  final String senderPhone;
-  @JsonKey(name: 'receiver_phone')
-  final String receiverPhone;
-  @JsonKey(name: 'pickup_latitude')
-  final double pickupLatitude;
-  @JsonKey(name: 'pickup_longitude')
-  final double pickupLongitude;
-  @JsonKey(name: 'dropoff_latitude')
-  final double dropoffLatitude;
-  @JsonKey(name: 'dropoff_longitude')
-  final double dropoffLongitude;
-  @JsonKey(name: 'pickup_time')
-  final DateTime pickupTime;
-  @JsonKey(name: 'pickup_address')
-  final String pickupAddress;
-  @JsonKey(name: 'dropoff_address')
-  final String dropoffAddress;
-  @JsonKey(name: 'vehicle_type_id')
-  final int vehicleTypeId;
-  @JsonKey(name: 'goods_type')
-  final String goodsType;
-  @JsonKey(name: 'goods_quantity')
-  final String goodsQuantity;
-  @JsonKey(name: 'payment_mode')
-  final PaymentMode paymentMode;
-  final String? instructions;
+  /// Check if booking is accepted
+  bool get isAccepted => status == BookingStatus.accepted;
 
-  BookingRequestRequest({
-    required this.senderName,
-    required this.receiverName,
-    required this.senderPhone,
-    required this.receiverPhone,
-    required this.pickupLatitude,
-    required this.pickupLongitude,
-    required this.dropoffLatitude,
-    required this.dropoffLongitude,
-    required this.pickupTime,
-    required this.pickupAddress,
-    required this.dropoffAddress,
-    required this.vehicleTypeId,
-    required this.goodsType,
-    required this.goodsQuantity,
-    required this.paymentMode,
-    this.instructions,
-  });
+  /// Check if booking is completed
+  bool get isCompleted => status == BookingStatus.completed;
 
-  factory BookingRequestRequest.fromJson(Map<String, dynamic> json) => _$BookingRequestRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$BookingRequestRequestToJson(this);
-}
+  /// Check if booking is cancelled
+  bool get isCancelled => status == BookingStatus.cancelled;
 
-@JsonSerializable()
-class BookingAcceptRequest {
-  @JsonKey(name: 'booking_request_id')
-  final int bookingRequestId;
+  /// Get formatted estimated fare
+  String get formattedEstimatedFare => '₹${estimatedFare.toStringAsFixed(2)}';
 
-  BookingAcceptRequest({
-    required this.bookingRequestId,
-  });
+  /// Get booking status display text
+  String get statusText {
+    switch (status) {
+      case BookingStatus.pending:
+        return 'Pending';
+      case BookingStatus.accepted:
+        return 'Accepted';
+      case BookingStatus.rejected:
+        return 'Rejected';
+      case BookingStatus.cancelled:
+        return 'Cancelled';
+      case BookingStatus.completed:
+        return 'Completed';
+    }
+  }
 
-  factory BookingAcceptRequest.fromJson(Map<String, dynamic> json) => _$BookingAcceptRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$BookingAcceptRequestToJson(this);
-}
+  /// Get payment mode display text
+  String get paymentModeText {
+    switch (paymentMode) {
+      case PaymentMode.cash:
+        return 'Cash';
+      case PaymentMode.wallet:
+        return 'Wallet';
+      case PaymentMode.card:
+        return 'Card';
+      case PaymentMode.upi:
+        return 'UPI';
+    }
+  }
 
-@JsonSerializable()
-class BookingAcceptResponse {
-  final String message;
-  final Trip trip;
+  /// Get pickup time formatted
+  String get formattedPickupTime {
+    return '${pickupTime.hour.toString().padLeft(2, '0')}:${pickupTime.minute.toString().padLeft(2, '0')}';
+  }
 
-  BookingAcceptResponse({
-    required this.message,
-    required this.trip,
-  });
+  /// Get pickup date formatted
+  String get formattedPickupDate {
+    return '${pickupTime.day}/${pickupTime.month}/${pickupTime.year}';
+  }
 
-  factory BookingAcceptResponse.fromJson(Map<String, dynamic> json) => _$BookingAcceptResponseFromJson(json);
-  Map<String, dynamic> toJson() => _$BookingAcceptResponseToJson(this);
+  /// Get short pickup address (first 2 parts)
+  String get shortPickupAddress {
+    final parts = pickupAddress.split(',');
+    return parts.take(2).join(',');
+  }
+
+  /// Get short dropoff address (first 2 parts)
+  String get shortDropoffAddress {
+    final parts = dropoffAddress.split(',');
+    return parts.take(2).join(',');
+  }
 } 

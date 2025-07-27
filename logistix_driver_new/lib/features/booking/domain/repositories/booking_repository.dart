@@ -17,17 +17,18 @@
  */
 
 import '../../../../core/models/booking_model.dart';
+import '../../../../core/models/trip_model.dart';
 
 abstract class BookingRepository {
   /// Create a new booking request
-  Future<BookingRequest> createBooking(BookingRequestRequest request);
+  Future<Booking> createBooking(Map<String, dynamic> requestData);
   
   /// Accept a booking request (driver only)
-  Future<BookingAcceptResponse> acceptBooking(int bookingRequestId);
+  Future<Trip> acceptBooking(int bookingRequestId);
   
   /// Get booking request details
-  Future<BookingRequest> getBookingDetail(int bookingRequestId);
+  Future<Booking> getBookingDetail(int bookingRequestId);
   
   /// Get list of booking requests
-  Future<List<BookingRequest>> getBookingList();
+  Future<List<Booking>> getBookingList();
 } 

@@ -48,6 +48,10 @@ import 'features/settings/presentation/screens/settings_screen.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
 import 'features/notifications/presentation/screens/alerts_screen.dart';
 import 'features/trip/presentation/screens/my_trips_screen.dart';
+import 'core/services/notification_service.dart';
+
+// Global navigator key for showing popups from anywhere
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -104,6 +108,9 @@ API_KEY=development_key
         userRepository: userRepository,
         authService: serviceLocator<AuthService>(),
       );
+      
+      // Set the navigator key for notification popups
+      NotificationService.setNavigatorKey(navigatorKey);
       
       // Update driver FCM token on app start if user is authenticated
       try {
@@ -192,6 +199,7 @@ class DriverApp extends StatelessWidget {
             child: MaterialApp(
               title: 'Logistix Driver',
               debugShowCheckedModeBanner: false,
+              navigatorKey: navigatorKey,
               theme: themeState is ThemeLoaded 
                 ? AppTheme.getTheme(themeState.themeName)
                 : AppTheme.getTheme(AppTheme.lightTheme),
