@@ -188,7 +188,8 @@ class BackgroundLocationService {
     try {
       final driverRepository = serviceLocator<DriverRepository>();
       
-      await driverRepository.updateDriverProfile(
+      // Only send location fields, exclude null values
+      await driverRepository.updateDriverLocation(
         latitude: position.latitude,
         longitude: position.longitude,
       );

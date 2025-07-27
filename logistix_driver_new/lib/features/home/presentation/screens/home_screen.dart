@@ -1,16 +1,15 @@
 /**
- * home_screen.dart - Driver Application Home Interface
+ * home_screen.dart - Driver Application Dashboard
  * 
  * Purpose:
- * - Provides the main home screen for drivers with bottom navigation
- * - Serves as the primary dashboard for driver operations
- * - Integrates driver-specific features through bottom navigation
+ * - Provides the main dashboard screen for drivers
+ * - Shows driver profile, earnings, performance, and availability
+ * - Provides quick navigation to other screens
  * 
  * Key Logic:
- * - HomeScreen: Main container with driver-specific bottom navigation
  * - Displays driver availability toggle and profile information
  * - Shows driver earnings, rating, and status
- * - Provides navigation to driver-specific screens (Alerts, Wallet, Trips, Settings)
+ * - Provides quick actions to navigate to other screens
  * - Implements availability management for accepting/declining bookings
  * - Loads and displays driver profile information
  * - Handles first-time user driver profile creation
@@ -19,15 +18,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import '../../../../core/services/driver_auth_service.dart';
-import '../../../../core/services/push_notification_service.dart';
-import '../../../../core/services/location_service.dart';
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/services/driver_auth_service.dart';
+import '../../../../core/services/location_service.dart';
+import '../../../../core/services/push_notification_service.dart';
+import '../../../driver/presentation/screens/create_driver_profile_screen.dart';
 import '../../../notifications/presentation/screens/alerts_screen.dart';
 import '../../../wallet/presentation/screens/wallet_screen.dart';
 import '../../../trip/presentation/screens/my_trips_screen.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
-import '../../../driver/presentation/screens/create_driver_profile_screen.dart';
 import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
@@ -40,18 +39,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late final DriverAuthService _driverAuthService;
   late final LocationService _locationService;
-  int _currentIndex = 0;
   Map<String, dynamic>? _driverProfile;
   bool _isAvailable = false;
   bool _isUpdatingAvailability = false;
   bool _isInitialized = false;
-
-  final List<Widget> _screens = [
-    const AlertsScreen(),
-    const WalletScreen(),
-    const MyTripsScreen(),
-    const SettingsScreen(),
-  ];
 
   @override
   void initState() {
@@ -76,6 +67,9 @@ class _HomeScreenState extends State<HomeScreen> {
           await _locationService.startLocationTracking();
           debugPrint('📍 Started location tracking for already available driver');
         }
+        
+        // Update driver FCM token when profile is fetched successfully
+        _updateDriverFcmToken();
       }
     } catch (e) {
       debugPrint('Error fetching driver profile: $e');
@@ -96,6 +90,16 @@ class _HomeScreenState extends State<HomeScreen> {
       
       // For other errors, try to create driver profile automatically for first-time users
       await _handleFirstTimeUserCreation();
+    }
+  }
+
+  /// Update driver FCM token when profile is fetched
+  Future<void> _updateDriverFcmToken() async {
+    try {
+      debugPrint('🚗 Updating driver FCM token on home screen load...');
+      await PushNotificationService.updateDriverFcmToken();
+    } catch (e) {
+      debugPrint('Warning: Failed to update driver FCM token on home screen load: $e');
     }
   }
 
@@ -224,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
-        title: const Text('Logistix Driver'),
+        title: const Text('Dashboard'),
         centerTitle: true,
         elevation: 0,
         backgroundColor: theme.colorScheme.surface,
@@ -233,9 +237,8 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
-              setState(() {
-                _currentIndex = 0;
-              });
+              // Navigate to alerts
+              Navigator.of(context).pushNamed('/alerts');
             },
             tooltip: 'Alerts',
           ),
@@ -249,98 +252,31 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Main content area
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Profile and Status Section
-                    if (profile != null) _buildProfileSection(theme, profile),
-                    const SizedBox(height: 24),
-                    
-                    // Earnings Section
-                    if (profile != null) _buildEarningsSection(theme, profile),
-                    const SizedBox(height: 24),
-                    
-                    // Performance Section
-                    _buildPerformanceSection(theme, profile),
-                    const SizedBox(height: 24),
-                    
-                    // Availability Toggle Section
-                    _buildAvailabilitySection(theme),
-                    const SizedBox(height: 24),
-                    
-                    // Main content (current tab)
-                    Container(
-                      height: 400,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: theme.colorScheme.outline.withOpacity(0.1),
-                          width: 1,
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: _screens[_currentIndex],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: theme.colorScheme.outline.withOpacity(0.1),
-              width: 1,
-            ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Profile and Status Section
+              if (profile != null) _buildProfileSection(theme, profile),
+              const SizedBox(height: 24),
+              
+              // Earnings Section
+              if (profile != null) _buildEarningsSection(theme, profile),
+              const SizedBox(height: 24),
+              
+              // Performance Section
+              _buildPerformanceSection(theme, profile),
+              const SizedBox(height: 24),
+              
+              // Availability Toggle Section
+              _buildAvailabilitySection(theme),
+              const SizedBox(height: 24),
+              
+              // Quick Actions Section
+              _buildQuickActionsSection(theme),
+            ],
           ),
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          selectedItemColor: theme.colorScheme.primary,
-          unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.6),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.notifications_outlined),
-              activeIcon: Icon(Icons.notifications),
-              label: 'Alerts',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              activeIcon: Icon(Icons.account_balance_wallet),
-              label: 'Wallet',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.local_shipping_outlined),
-              activeIcon: Icon(Icons.local_shipping),
-              label: 'Trips',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: 'Settings',
-            ),
-          ],
         ),
       ),
     );
@@ -532,7 +468,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 8),
                       TextButton(
                         onPressed: () {
-                          // TODO: Implement clear dues action
+                          // Navigate to wallet
+                          Navigator.of(context).pushNamed('/wallet');
                         },
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -830,6 +767,115 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsSection(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Quick Actions',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickActionButton(
+                  theme,
+                  'Wallet',
+                  Icons.account_balance_wallet,
+                  () {
+                    Navigator.of(context).pushNamed('/wallet');
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionButton(
+                  theme,
+                  'Trips',
+                  Icons.local_shipping,
+                  () {
+                    Navigator.of(context).pushNamed('/trips');
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionButton(
+                  theme,
+                  'Alerts',
+                  Icons.notifications,
+                  () {
+                    Navigator.of(context).pushNamed('/alerts');
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton(ThemeData theme, String label, IconData icon, VoidCallback onPressed) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: theme.colorScheme.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -25,10 +25,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/widgets/app_lifecycle_wrapper.dart';
+import 'core/widgets/auth_wrapper.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
-import 'features/home/presentation/screens/home_screen.dart';
+import 'features/home/presentation/screens/main_navigation_screen.dart';
 import 'features/profile/presentation/bloc/user_bloc.dart';
 import 'features/theme/presentation/bloc/theme_bloc.dart';
 import 'features/theme/presentation/bloc/theme_event.dart';
@@ -43,6 +44,8 @@ import 'features/profile/presentation/screens/create_profile_screen.dart';
 import 'features/driver/presentation/screens/create_driver_profile_screen.dart';
 import 'features/settings/presentation/screens/settings_screen.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
+import 'features/notifications/presentation/screens/alerts_screen.dart';
+import 'features/trip/presentation/screens/my_trips_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -99,6 +102,18 @@ API_KEY=development_key
         userRepository: userRepository,
         authService: serviceLocator<AuthService>(),
       );
+      
+      // Update driver FCM token on app start if user is authenticated
+      try {
+        final authService = serviceLocator<AuthService>();
+        final isAuthenticated = await authService.isAuthenticated();
+        if (isAuthenticated) {
+          print("🚗 Updating driver FCM token on app start...");
+          await PushNotificationService.updateDriverFcmToken();
+        }
+      } catch (e) {
+        print("Warning: Failed to update driver FCM token on app start: $e");
+      }
     } catch (e) {
       print("Push notification initialization failed: $e");
     }
@@ -172,19 +187,10 @@ class DriverApp extends StatelessWidget {
               theme: themeState is ThemeLoaded 
                 ? AppTheme.getTheme(themeState.themeName)
                 : AppTheme.getTheme(AppTheme.lightTheme),
-              home: BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  if (state is AuthSuccess) {
-                    // If it's a new user, they might need to create a driver profile
-                    // The HomeScreen will handle checking for driver profile existence
-                    return const HomeScreen();
-                  }
-                  return const LoginScreen();
-                },
-              ),
+              home: const AuthWrapper(),
               routes: {
                 '/login': (context) => const LoginScreen(),
-                '/home': (context) => const HomeScreen(),
+                '/home': (context) => const MainNavigationScreen(),
                 '/profile/create': (context) {
                   final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
                   return CreateProfileScreen(
@@ -194,6 +200,18 @@ class DriverApp extends StatelessWidget {
                 '/driver/create': (context) => const CreateDriverProfileScreen(),
                 '/settings': (context) => const SettingsScreen(),
                 '/wallet': (context) => const WalletScreen(),
+                '/alerts': (context) => const AlertsScreen(),
+                '/trips': (context) => const MyTripsScreen(),
+              },
+              onGenerateRoute: (settings) {
+                // Handle any additional routes
+                return null;
+              },
+              onUnknownRoute: (settings) {
+                // Redirect to home if route is not found
+                return MaterialPageRoute(
+                  builder: (context) => const MainNavigationScreen(),
+                );
               },
             ),
           );

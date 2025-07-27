@@ -2,23 +2,22 @@
  * driver_repository_impl.dart - Driver Repository Implementation
  * 
  * Purpose:
- * - Implements the DriverRepository interface for driver operations
- * - Provides API communication for driver-related requests
- * - Handles driver profile, status, and location management
+ * - Implements the DriverRepository interface
+ * - Handles driver profile CRUD operations
+ * - Manages driver availability and location updates
+ * - Provides driver-specific API calls
  * 
  * Key Logic:
- * - getDriverProfile: Retrieves driver profile information and status
- * - updateDriverLocation: Updates driver's real-time location
- * - updateDriverStatus: Changes driver availability status
- * - getDriverTrips: Fetches driver's trip history and active trips
- * - handleTripRequests: Manages incoming trip requests for drivers
- * - Transforms API responses into Driver domain models
- * - Handles location tracking and status synchronization
+ * - Uses ApiClient for HTTP requests with authentication
+ * - Handles driver profile creation and updates
+ * - Manages driver availability status
+ * - Updates driver location for real-time tracking
+ * - Includes FCM token management for push notifications
  */
 
-import '../../../../core/models/driver_model.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
+import '../../../../core/models/driver_model.dart';
 import '../../domain/repositories/driver_repository.dart';
 
 class DriverRepositoryImpl implements DriverRepository {
@@ -84,6 +83,50 @@ class DriverRepositoryImpl implements DriverRepository {
 
       return Driver.fromJson(response.data);
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Driver> updateDriverLocation({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      // Create a request with only location fields
+      final request = {
+        'latitude': latitude,
+        'longitude': longitude,
+      };
+
+      final response = await _apiClient.patch(
+        ApiEndpoints.driverProfile,
+        data: request,
+      );
+
+      return Driver.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Driver> updateDriverFcmToken(String fcmToken) async {
+    try {
+      // Create a request with only FCM token field
+      final request = {
+        'fcm_token': fcmToken,
+      };
+
+      final response = await _apiClient.patch(
+        ApiEndpoints.driverProfile,
+        data: request,
+      );
+
+      print('✅ Driver FCM token updated successfully on server');
+      return Driver.fromJson(response.data);
+    } catch (e) {
+      print('❌ Failed to update driver FCM token on server: $e');
       rethrow;
     }
   }

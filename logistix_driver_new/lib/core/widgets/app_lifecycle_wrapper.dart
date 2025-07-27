@@ -17,6 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/background_location_service.dart';
 import '../services/location_service.dart';
+import '../services/push_notification_service.dart';
+import '../services/auth_service.dart';
 import '../di/service_locator.dart';
 
 class AppLifecycleWrapper extends StatefulWidget {
@@ -35,6 +37,7 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
     with WidgetsBindingObserver {
   late final BackgroundLocationService _backgroundLocationService;
   late final LocationService _locationService;
+  late final AuthService _authService;
   bool _isInBackground = false;
 
   @override
@@ -43,6 +46,7 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
     WidgetsBinding.instance.addObserver(this);
     _backgroundLocationService = serviceLocator<BackgroundLocationService>();
     _locationService = serviceLocator<LocationService>();
+    _authService = serviceLocator<AuthService>();
   }
 
   @override
@@ -82,6 +86,23 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
     // If location tracking is active, ensure it's using foreground mode
     if (_locationService.isTracking) {
       debugPrint('📍 Ensuring foreground location tracking is active');
+    }
+    
+    // Update driver FCM token when app comes to foreground
+    _updateDriverFcmTokenOnResume();
+  }
+
+  /// Update driver FCM token when app is resumed
+  Future<void> _updateDriverFcmTokenOnResume() async {
+    try {
+      // Check if user is authenticated
+      final isAuthenticated = await _authService.isAuthenticated();
+      if (isAuthenticated) {
+        debugPrint('🚗 Updating driver FCM token on app resume...');
+        await PushNotificationService.updateDriverFcmToken();
+      }
+    } catch (e) {
+      debugPrint('Warning: Failed to update driver FCM token on app resume: $e');
     }
   }
 
