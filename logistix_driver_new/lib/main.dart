@@ -49,6 +49,8 @@ import 'features/wallet/presentation/screens/wallet_screen.dart';
 import 'features/notifications/presentation/screens/alerts_screen.dart';
 import 'features/trip/presentation/screens/my_trips_screen.dart';
 import 'core/services/notification_service.dart';
+import 'core/models/trip_model.dart';
+import 'features/trip/presentation/screens/driver_trip_screen.dart';
 
 // Global navigator key for showing popups from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -218,6 +220,13 @@ class DriverApp extends StatelessWidget {
                 '/wallet': (context) => const WalletScreen(),
                 '/alerts': (context) => const AlertsScreen(),
                 '/trips': (context) => const MyTripsScreen(),
+                '/driver-trip': (context) {
+                  final trip = ModalRoute.of(context)?.settings.arguments as Trip?;
+                  if (trip != null) {
+                    return DriverTripScreen(trip: trip);
+                  }
+                  return const MainNavigationScreen();
+                },
               },
               onGenerateRoute: (settings) {
                 // Handle any additional routes
