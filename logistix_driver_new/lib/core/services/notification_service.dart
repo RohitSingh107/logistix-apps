@@ -26,6 +26,8 @@ import '../../core/models/notification_model.dart' as app_notification;
 import '../di/service_locator.dart';
 import '../../features/notifications/presentation/bloc/notification_bloc.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
+import '../../features/notifications/presentation/widgets/ride_request_popup.dart';
+import 'ride_action_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -39,9 +41,17 @@ class NotificationService {
   final StreamController<app_notification.Notification> _notificationController = StreamController<app_notification.Notification>.broadcast();
   final StreamController<int> _badgeController = StreamController<int>.broadcast();
   
+  // Global key for showing popups
+  static GlobalKey<NavigatorState>? _navigatorKey;
+  
   // Getters for streams
   Stream<app_notification.Notification> get notificationStream => _notificationController.stream;
   Stream<int> get badgeStream => _badgeController.stream;
+
+  /// Set the navigator key for showing popups
+  static void setNavigatorKey(GlobalKey<NavigatorState> key) {
+    _navigatorKey = key;
+  }
 
   /// Initialize the notification service
   Future<void> initialize() async {
@@ -208,6 +218,46 @@ class NotificationService {
     final timestamp = now.millisecondsSinceEpoch % 100000; // Last 5 digits
     final random = (now.microsecond % 1000); // Last 3 digits
     return timestamp * 1000 + random;
+  }
+
+  /// Show ride request popup
+  Future<void> showRideRequestPopup(app_notification.Notification notification) async {
+    try {
+      final bookingId = notification.data?['booking_id'] ?? 'Unknown';
+      print("🚗 Showing ride request popup for booking: $bookingId");
+      
+      // Use global navigator key to show popup
+      if (_navigatorKey?.currentContext == null) {
+        print("❌ No navigator context available for showing popup");
+        return;
+      }
+      
+      final rideActionService = serviceLocator<RideActionService>();
+      
+      showDialog(
+        context: _navigatorKey!.currentContext!,
+        barrierDismissible: false,
+        builder: (context) => RideRequestPopup(
+          notification: notification,
+          onRideAction: (bookingId, accepted) async {
+            try {
+              if (accepted) {
+                await rideActionService.acceptRide(bookingId);
+              } else {
+                await rideActionService.rejectRide(bookingId);
+              }
+            } catch (e) {
+              print("❌ Error handling ride action: $e");
+              rethrow;
+            }
+          },
+        ),
+      );
+      
+      print("✅ Ride request popup shown successfully");
+    } catch (e) {
+      print("❌ Error showing ride request popup: $e");
+    }
   }
 
   /// Show in-app notification popup

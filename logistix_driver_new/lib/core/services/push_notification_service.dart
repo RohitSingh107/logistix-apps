@@ -201,12 +201,50 @@ class PushNotificationService {
         actionText: notificationData['action_text'],
       );
       
+      // If this is a ride request, show the popup
+      if (data['type'] == 'booking_alert' || data['type'] == 'booking_request') {
+        _showRideRequestPopup(data);
+      }
+      
       print("✅ In-app notification processed successfully");
       
     } catch (e) {
       print("❌ Error showing in-app notification: $e");
       // Don't let notification errors crash the app
     }
+  }
+
+  /// Show ride request popup
+  static void _showRideRequestPopup(Map<String, dynamic> data) {
+    try {
+      print("🚗 Showing ride request popup for booking: ${data['booking_id']}");
+      
+      // Create a notification object for the popup
+      final notification = app_notification.Notification(
+        id: _generateNotificationId(),
+        title: 'New Ride Request #${data['booking_id']}',
+        body: '₹${data['estimated_fare']} • ${data['goods_type']}\nFrom: ${data['pickup_address']}\nTo: ${data['dropoff_address']}',
+        type: app_notification.NotificationType.rideRequest,
+        priority: app_notification.NotificationPriority.high,
+        isRead: false,
+        data: data,
+        createdAt: DateTime.now(),
+      );
+      
+      // Show the popup (this will be handled by the UI layer)
+      _notificationService.showRideRequestPopup(notification);
+      
+    } catch (e) {
+      print("❌ Error showing ride request popup: $e");
+    }
+  }
+
+  /// Generate a unique notification ID
+  static int _generateNotificationId() {
+    final now = DateTime.now();
+    final timestamp = now.millisecondsSinceEpoch % 100000;
+    final random = (now.microsecond % 1000);
+    return timestamp * 1000 + random;
   }
   
   /// Handle notification navigation

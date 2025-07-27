@@ -25,6 +25,9 @@ import '../bloc/notification_bloc.dart';
 import '../widgets/notification_tile.dart';
 import '../widgets/notification_filter_sheet.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/ride_action_service.dart';
+import '../widgets/ride_request_popup.dart';
+import '../../../../core/di/service_locator.dart';
 
 class AlertsScreen extends StatefulWidget {
   const AlertsScreen({super.key});
@@ -335,8 +338,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
     // Handle navigation based on notification type
     switch (notification.type) {
       case app_notification.NotificationType.rideRequest:
-        // Navigate to ride request screen
-        print("🚗 Navigating to ride request");
+        // Show ride request popup
+        _showRideRequestPopup(notification);
         break;
       case app_notification.NotificationType.rideAccepted:
         // Navigate to active trip screen
@@ -350,6 +353,42 @@ class _AlertsScreenState extends State<AlertsScreen> {
         // Show notification details or navigate to notifications
         print("📢 Showing notification details");
         break;
+    }
+  }
+
+  void _showRideRequestPopup(app_notification.Notification notification) async {
+    try {
+      final rideActionService = serviceLocator<RideActionService>();
+      
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => RideRequestPopup(
+          notification: notification,
+          onRideAction: (bookingId, accepted) async {
+            try {
+              if (accepted) {
+                final trip = await rideActionService.acceptRide(bookingId);
+                return trip;
+              } else {
+                await rideActionService.rejectRide(bookingId);
+                return null;
+              }
+            } catch (e) {
+              print("❌ Error handling ride action: $e");
+              rethrow;
+            }
+          },
+        ),
+      );
+    } catch (e) {
+      print("❌ Error showing ride request popup: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error showing ride request popup: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

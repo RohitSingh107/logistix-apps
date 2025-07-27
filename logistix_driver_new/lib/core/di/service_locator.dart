@@ -37,6 +37,7 @@ import '../../features/booking/domain/repositories/booking_repository.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
 import '../../features/notifications/presentation/bloc/notification_bloc.dart';
+import '../services/ride_action_service.dart';
 import 'package:dio/dio.dart';
 import '../repositories/user_repository_impl.dart';
 import '../repositories/user_repository.dart';
@@ -102,6 +103,10 @@ Future<void> setupServiceLocator() async {
 
   serviceLocator.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(serviceLocator(), serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton<RideActionService>(
+    () => RideActionService(serviceLocator()),
   );
 
   // Use Cases
