@@ -14,6 +14,7 @@
  * - Trip endpoints: listing, details, status updates
  * - Payment endpoints: wallet operations and transactions
  * - Vehicle estimation endpoints: fare calculation
+ * - Notification endpoints: notification management and status updates
  * - Parameterized methods for dynamic endpoints (bookingDetail, tripDetail)
  * - Follows RESTful API conventions for URL structure
  */
@@ -47,4 +48,11 @@ class ApiEndpoints {
 
   // Vehicle estimation endpoints
   static const String vehicleEstimates = '/api/strategy/vehicle-estimates/';
+
+  // Notification endpoints
+  static const String notifications = '/api/notifications/';
+  static String notificationDetail(int notificationId) => '/api/notifications/$notificationId/';
+  static String markNotificationRead(int notificationId) => '/api/notifications/$notificationId/read/';
+  static const String markAllNotificationsRead = '/api/notifications/mark-all-read/';
+  static const String unreadNotificationCount = '/api/notifications/unread-count/';
 } 
