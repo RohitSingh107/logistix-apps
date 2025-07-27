@@ -90,12 +90,8 @@ class RideActionService {
         throw Exception('Invalid booking request ID');
       }
 
-      // For now, we'll just log the rejection
-      // In a full implementation, you might want to call a reject endpoint
-      print("✅ Ride rejected successfully");
-      
-      // Update driver availability status (keep available for new requests)
-      await _updateDriverAvailability(true);
+      // For reject, we just close the popup without making any API call
+      print("✅ Ride rejected - popup closed");
       
     } catch (e) {
       print("❌ Error rejecting ride: $e");
@@ -107,10 +103,10 @@ class RideActionService {
   Future<bool> _checkRideAvailability(String bookingRequestId) async {
     try {
       final response = await _apiClient.get('/api/booking/detail/$bookingRequestId/');
-      final status = response.data['status'];
+      final status = response.data['booking_request']['status'];
       
-      // Ride is available if status is pending or available
-      return status == 'PENDING' || status == 'AVAILABLE';
+      // Ride is available if status is SEARCHING, PENDING, or AVAILABLE
+      return status == 'SEARCHING' || status == 'PENDING' || status == 'AVAILABLE';
     } catch (e) {
       print("❌ Error checking ride availability: $e");
       return false;

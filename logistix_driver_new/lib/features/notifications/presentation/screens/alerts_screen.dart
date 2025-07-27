@@ -371,6 +371,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 final trip = await rideActionService.acceptRide(bookingId);
                 return trip;
               } else {
+                // For reject, just return null to close popup
                 await rideActionService.rejectRide(bookingId);
                 return null;
               }
