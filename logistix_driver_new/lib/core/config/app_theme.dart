@@ -39,87 +39,103 @@ class AppTheme {
     }
   }
 
-  // Light Theme
+  // Light Theme - Uber-inspired
   static final ThemeData _lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
     
-    // Color Scheme
+    // Color Scheme - Uber-inspired colors
     colorScheme: const ColorScheme.light(
-      primary: Color(0xFFD4A574), // Golden/Orange color from the screenshot
-      secondary: Color(0xFF4CAF50), // Green for success
-      tertiary: Color(0xFF2196F3), // Blue for info
-      error: Color(0xFFE91E63),
-      surface: Color(0xFFF5F5F5),
+      primary: Color(0xFF000000), // Uber black
+      secondary: Color(0xFF1A1A1A), // Dark gray
+      tertiary: Color(0xFF4CAF50), // Green for success
+      error: Color(0xFFE53E3E), // Red for errors
+      surface: Color(0xFFFFFFFF), // Pure white
+      background: Color(0xFFF8F9FA), // Light gray background
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: Color(0xFF1A1A1A),
+      onBackground: Color(0xFF1A1A1A),
     ),
     
-    // App Bar Theme
+    // App Bar Theme - Clean and minimal
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.white,
       foregroundColor: const Color(0xFF1A1A1A),
       elevation: 0,
-      centerTitle: false,
-      titleTextStyle: GoogleFonts.poppins(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: const Color(0xFF1A1A1A),
-      ),
-    ),
-    
-    // Text Theme
-    textTheme: TextTheme(
-      // Display styles
-      displayLarge: GoogleFonts.poppins(
-        fontSize: 32,
-        fontWeight: FontWeight.bold,
-        color: const Color(0xFF1A1A1A),
-      ),
-      displayMedium: GoogleFonts.poppins(
-        fontSize: 28,
-        fontWeight: FontWeight.bold,
-        color: const Color(0xFF1A1A1A),
-      ),
-      displaySmall: GoogleFonts.poppins(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: const Color(0xFF1A1A1A),
-      ),
-      
-      // Headline styles
-      headlineLarge: GoogleFonts.poppins(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: const Color(0xFF1A1A1A),
-      ),
-      headlineMedium: GoogleFonts.poppins(
+      centerTitle: true,
+      titleTextStyle: GoogleFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.5,
       ),
-      headlineSmall: GoogleFonts.poppins(
-        fontSize: 16,
+      iconTheme: const IconThemeData(
+        color: Color(0xFF1A1A1A),
+        size: 24,
+      ),
+    ),
+    
+    // Text Theme - Uber-style typography
+    textTheme: TextTheme(
+      // Display styles
+      displayLarge: GoogleFonts.inter(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        color: const Color(0xFF1A1A1A),
+        letterSpacing: -1.0,
+      ),
+      displayMedium: GoogleFonts.inter(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.8,
+      ),
+      displaySmall: GoogleFonts.inter(
+        fontSize: 24,
         fontWeight: FontWeight.w600,
         color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.5,
+      ),
+      
+      // Headline styles
+      headlineLarge: GoogleFonts.inter(
+        fontSize: 22,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.5,
+      ),
+      headlineMedium: GoogleFonts.inter(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.3,
+      ),
+      headlineSmall: GoogleFonts.inter(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.2,
       ),
       
       // Title styles
-      titleLarge: GoogleFonts.poppins(
+      titleLarge: GoogleFonts.inter(
         fontSize: 16,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.2,
       ),
-      titleMedium: GoogleFonts.poppins(
+      titleMedium: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.1,
       ),
-      titleSmall: GoogleFonts.poppins(
+      titleSmall: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: const Color(0xFF1A1A1A),
+        letterSpacing: 0,
       ),
       
       // Body styles
@@ -127,16 +143,19 @@ class AppTheme {
         fontSize: 16,
         fontWeight: FontWeight.normal,
         color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.1,
       ),
       bodyMedium: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.normal,
         color: const Color(0xFF1A1A1A),
+        letterSpacing: 0,
       ),
       bodySmall: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFF757575),
+        color: const Color(0xFF6B7280),
+        letterSpacing: 0,
       ),
       
       // Label styles
@@ -144,274 +163,439 @@ class AppTheme {
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: const Color(0xFF1A1A1A),
+        letterSpacing: 0,
       ),
       labelMedium: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: const Color(0xFF1A1A1A),
+        letterSpacing: 0,
       ),
       labelSmall: GoogleFonts.inter(
         fontSize: 10,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF757575),
+        color: const Color(0xFF6B7280),
+        letterSpacing: 0.5,
       ),
     ),
     
-    // Card Theme
+    // Card Theme - Clean and modern
     cardTheme: CardThemeData(
       color: Colors.white,
       surfaceTintColor: Colors.white,
-      elevation: 2,
+      elevation: 0,
+      shadowColor: const Color(0xFF000000).withOpacity(0.1),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
     ),
     
-    // Elevated Button Theme
+    // Elevated Button Theme - Uber-style buttons
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFD4A574),
+        backgroundColor: const Color(0xFF000000),
         foregroundColor: Colors.white,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
         ),
-        textStyle: GoogleFonts.poppins(
-          fontSize: 14,
+        textStyle: GoogleFonts.inter(
+          fontSize: 16,
           fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
         ),
       ),
     ),
     
-    // Input Decoration Theme
+    // Outlined Button Theme
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFF000000),
+        side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        textStyle: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
+        ),
+      ),
+    ),
+    
+    // Text Button Theme
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: const Color(0xFF000000),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        textStyle: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
+        ),
+      ),
+    ),
+    
+    // Input Decoration Theme - Clean and modern
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFFF5F5F5),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      fillColor: const Color(0xFFF9FAFB),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFD4A574), width: 2),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF000000), width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFE91E63), width: 1),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE53E3E), width: 1),
       ),
       labelStyle: GoogleFonts.inter(
         fontSize: 14,
-        color: const Color(0xFF757575),
+        color: const Color(0xFF6B7280),
+        fontWeight: FontWeight.w500,
       ),
       hintStyle: GoogleFonts.inter(
         fontSize: 14,
-        color: const Color(0xFF9E9E9E),
+        color: const Color(0xFF9CA3AF),
+        fontWeight: FontWeight.normal,
       ),
     ),
     
-    // Bottom Navigation Bar Theme
+    // Bottom Navigation Bar Theme - Uber-style
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
-      selectedItemColor: const Color(0xFFD4A574),
-      unselectedItemColor: const Color(0xFF757575),
+      selectedItemColor: const Color(0xFF000000),
+      unselectedItemColor: const Color(0xFF6B7280),
       selectedLabelStyle: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w600,
+        letterSpacing: -0.1,
       ),
       unselectedLabelStyle: GoogleFonts.inter(
         fontSize: 12,
-        fontWeight: FontWeight.normal,
+        fontWeight: FontWeight.w500,
+        letterSpacing: -0.1,
       ),
       type: BottomNavigationBarType.fixed,
-      elevation: 8,
+      elevation: 0,
+    ),
+    
+    // Dialog Theme
+    dialogTheme: DialogThemeData(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      titleTextStyle: GoogleFonts.inter(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFF1A1A1A),
+        letterSpacing: -0.5,
+      ),
+      contentTextStyle: GoogleFonts.inter(
+        fontSize: 16,
+        fontWeight: FontWeight.normal,
+        color: const Color(0xFF6B7280),
+        letterSpacing: -0.1,
+      ),
+    ),
+    
+    // SnackBar Theme
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: const Color(0xFF1A1A1A),
+      contentTextStyle: GoogleFonts.inter(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: Colors.white,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      behavior: SnackBarBehavior.floating,
     ),
   );
 
-  // Dark Theme
+  // Dark Theme - Uber-inspired dark mode
   static final ThemeData _darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
     
     colorScheme: const ColorScheme.dark(
-      primary: Color(0xFFE5B88A),
-      secondary: Color(0xFF81C784),
-      tertiary: Color(0xFF64B5F6),
-      error: Color(0xFFFF5252),
-      surface: Color(0xFF1E1E1E),
-      onPrimary: Color(0xFF1A1A1A),
-      onSecondary: Color(0xFF1A1A1A),
-      onSurface: Color(0xFFE0E0E0),
+      primary: Color(0xFFFFFFFF), // White for dark mode
+      secondary: Color(0xFFE5E7EB), // Light gray
+      tertiary: Color(0xFF4CAF50), // Green for success
+      error: Color(0xFFEF4444), // Red for errors
+      surface: Color(0xFF1F2937), // Dark surface
+      background: Color(0xFF111827), // Dark background
+      onPrimary: Color(0xFF000000),
+      onSecondary: Color(0xFF000000),
+      onSurface: Color(0xFFF9FAFB),
+      onBackground: Color(0xFFF9FAFB),
     ),
     
     appBarTheme: AppBarTheme(
-      backgroundColor: const Color(0xFF1E1E1E),
-      foregroundColor: const Color(0xFFE0E0E0),
+      backgroundColor: const Color(0xFF1F2937),
+      foregroundColor: const Color(0xFFF9FAFB),
       elevation: 0,
-      centerTitle: false,
-      titleTextStyle: GoogleFonts.poppins(
-        fontSize: 20,
+      centerTitle: true,
+      titleTextStyle: GoogleFonts.inter(
+        fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.5,
+      ),
+      iconTheme: const IconThemeData(
+        color: Color(0xFFF9FAFB),
+        size: 24,
       ),
     ),
     
     textTheme: TextTheme(
-      displayLarge: GoogleFonts.poppins(
+      displayLarge: GoogleFonts.inter(
         fontSize: 32,
-        fontWeight: FontWeight.bold,
-        color: const Color(0xFFE0E0E0),
+        fontWeight: FontWeight.w700,
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -1.0,
       ),
-      displayMedium: GoogleFonts.poppins(
+      displayMedium: GoogleFonts.inter(
         fontSize: 28,
-        fontWeight: FontWeight.bold,
-        color: const Color(0xFFE0E0E0),
+        fontWeight: FontWeight.w700,
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.8,
       ),
-      displaySmall: GoogleFonts.poppins(
+      displaySmall: GoogleFonts.inter(
         fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: const Color(0xFFE0E0E0),
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.5,
       ),
-      headlineLarge: GoogleFonts.poppins(
+      headlineLarge: GoogleFonts.inter(
+        fontSize: 22,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.5,
+      ),
+      headlineMedium: GoogleFonts.inter(
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.3,
       ),
-      headlineMedium: GoogleFonts.poppins(
+      headlineSmall: GoogleFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.2,
       ),
-      headlineSmall: GoogleFonts.poppins(
+      titleLarge: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.2,
       ),
-      titleLarge: GoogleFonts.poppins(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        color: const Color(0xFFE0E0E0),
-      ),
-      titleMedium: GoogleFonts.poppins(
+      titleMedium: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.1,
       ),
-      titleSmall: GoogleFonts.poppins(
+      titleSmall: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: 0,
       ),
       bodyLarge: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.1,
       ),
       bodyMedium: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: 0,
       ),
       bodySmall: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFF9E9E9E),
+        color: const Color(0xFF9CA3AF),
+        letterSpacing: 0,
       ),
       labelLarge: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: 0,
       ),
       labelMedium: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFFE0E0E0),
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: 0,
       ),
       labelSmall: GoogleFonts.inter(
         fontSize: 10,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF9E9E9E),
+        color: const Color(0xFF9CA3AF),
+        letterSpacing: 0.5,
       ),
     ),
     
     cardTheme: CardThemeData(
-      color: const Color(0xFF2C2C2C),
-      surfaceTintColor: const Color(0xFF2C2C2C),
-      elevation: 2,
+      color: const Color(0xFF1F2937),
+      surfaceTintColor: const Color(0xFF1F2937),
+      elevation: 0,
+      shadowColor: const Color(0xFF000000).withOpacity(0.3),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
     ),
     
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFE5B88A),
-        foregroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: const Color(0xFFFFFFFF),
+        foregroundColor: const Color(0xFF000000),
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
         ),
-        textStyle: GoogleFonts.poppins(
-          fontSize: 14,
+        textStyle: GoogleFonts.inter(
+          fontSize: 16,
           fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
+        ),
+      ),
+    ),
+    
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFFFFFFFF),
+        side: const BorderSide(color: Color(0xFF374151), width: 1.5),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        textStyle: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
+        ),
+      ),
+    ),
+    
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: const Color(0xFFFFFFFF),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        textStyle: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
         ),
       ),
     ),
     
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF2C2C2C),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      fillColor: const Color(0xFF374151),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF374151), width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFE5B88A), width: 2),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFFFFFFF), width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFFF5252), width: 1),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
       ),
       labelStyle: GoogleFonts.inter(
         fontSize: 14,
-        color: const Color(0xFF9E9E9E),
+        color: const Color(0xFF9CA3AF),
+        fontWeight: FontWeight.w500,
       ),
       hintStyle: GoogleFonts.inter(
         fontSize: 14,
-        color: const Color(0xFF757575),
+        color: const Color(0xFF6B7280),
+        fontWeight: FontWeight.normal,
       ),
     ),
     
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: const Color(0xFF1E1E1E),
-      selectedItemColor: const Color(0xFFE5B88A),
-      unselectedItemColor: const Color(0xFF757575),
+      backgroundColor: const Color(0xFF1F2937),
+      selectedItemColor: const Color(0xFFFFFFFF),
+      unselectedItemColor: const Color(0xFF9CA3AF),
       selectedLabelStyle: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w600,
+        letterSpacing: -0.1,
       ),
       unselectedLabelStyle: GoogleFonts.inter(
         fontSize: 12,
-        fontWeight: FontWeight.normal,
+        fontWeight: FontWeight.w500,
+        letterSpacing: -0.1,
       ),
       type: BottomNavigationBarType.fixed,
-      elevation: 8,
+      elevation: 0,
+    ),
+    
+    dialogTheme: DialogThemeData(
+      backgroundColor: const Color(0xFF1F2937),
+      surfaceTintColor: const Color(0xFF1F2937),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      titleTextStyle: GoogleFonts.inter(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFFF9FAFB),
+        letterSpacing: -0.5,
+      ),
+      contentTextStyle: GoogleFonts.inter(
+        fontSize: 16,
+        fontWeight: FontWeight.normal,
+        color: const Color(0xFF9CA3AF),
+        letterSpacing: -0.1,
+      ),
+    ),
+    
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: const Color(0xFF1F2937),
+      contentTextStyle: GoogleFonts.inter(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: const Color(0xFFF9FAFB),
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      behavior: SnackBarBehavior.floating,
     ),
   );
 
-  // Blue Theme
+  // Blue Theme - Keep existing blue theme for compatibility
   static final ThemeData _blueTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
@@ -485,32 +669,32 @@ class AppTheme {
         fontWeight: FontWeight.w500,
         color: const Color(0xFF212121),
       ),
-      bodyLarge: GoogleFonts.inter(
+      bodyLarge: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.normal,
         color: const Color(0xFF212121),
       ),
-      bodyMedium: GoogleFonts.inter(
+      bodyMedium: GoogleFonts.poppins(
         fontSize: 14,
         fontWeight: FontWeight.normal,
         color: const Color(0xFF212121),
       ),
-      bodySmall: GoogleFonts.inter(
+      bodySmall: GoogleFonts.poppins(
         fontSize: 12,
         fontWeight: FontWeight.normal,
         color: const Color(0xFF757575),
       ),
-      labelLarge: GoogleFonts.inter(
+      labelLarge: GoogleFonts.poppins(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: const Color(0xFF212121),
       ),
-      labelMedium: GoogleFonts.inter(
+      labelMedium: GoogleFonts.poppins(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: const Color(0xFF212121),
       ),
-      labelSmall: GoogleFonts.inter(
+      labelSmall: GoogleFonts.poppins(
         fontSize: 10,
         fontWeight: FontWeight.w500,
         color: const Color(0xFF757575),
@@ -562,11 +746,11 @@ class AppTheme {
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Color(0xFFD32F2F), width: 1),
       ),
-      labelStyle: GoogleFonts.inter(
+      labelStyle: GoogleFonts.poppins(
         fontSize: 14,
         color: const Color(0xFF757575),
       ),
-      hintStyle: GoogleFonts.inter(
+      hintStyle: GoogleFonts.poppins(
         fontSize: 14,
         color: const Color(0xFF9E9E9E),
       ),
@@ -576,11 +760,11 @@ class AppTheme {
       backgroundColor: Colors.white,
       selectedItemColor: const Color(0xFF1976D2),
       unselectedItemColor: const Color(0xFF757575),
-      selectedLabelStyle: GoogleFonts.inter(
+      selectedLabelStyle: GoogleFonts.poppins(
         fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
-      unselectedLabelStyle: GoogleFonts.inter(
+      unselectedLabelStyle: GoogleFonts.poppins(
         fontSize: 12,
         fontWeight: FontWeight.normal,
       ),

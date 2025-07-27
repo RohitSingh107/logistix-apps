@@ -24,6 +24,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 import 'core/services/push_notification_service.dart';
+import 'core/widgets/app_lifecycle_wrapper.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
@@ -164,35 +165,37 @@ class DriverApp extends StatelessWidget {
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, themeState) {
-          return MaterialApp(
-            title: 'Logistix Driver',
-            debugShowCheckedModeBanner: false,
-            theme: themeState is ThemeLoaded 
-              ? AppTheme.getTheme(themeState.themeName)
-              : AppTheme.getTheme(AppTheme.lightTheme),
-            home: BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                if (state is AuthSuccess) {
-                  // If it's a new user, they might need to create a driver profile
-                  // The HomeScreen will handle checking for driver profile existence
-                  return const HomeScreen();
-                }
-                return const LoginScreen();
+          return AppLifecycleWrapper(
+            child: MaterialApp(
+              title: 'Logistix Driver',
+              debugShowCheckedModeBanner: false,
+              theme: themeState is ThemeLoaded 
+                ? AppTheme.getTheme(themeState.themeName)
+                : AppTheme.getTheme(AppTheme.lightTheme),
+              home: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  if (state is AuthSuccess) {
+                    // If it's a new user, they might need to create a driver profile
+                    // The HomeScreen will handle checking for driver profile existence
+                    return const HomeScreen();
+                  }
+                  return const LoginScreen();
+                },
+              ),
+              routes: {
+                '/login': (context) => const LoginScreen(),
+                '/home': (context) => const HomeScreen(),
+                '/profile/create': (context) {
+                  final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+                  return CreateProfileScreen(
+                    phone: args?['phone'] as String? ?? '',
+                  );
+                },
+                '/driver/create': (context) => const CreateDriverProfileScreen(),
+                '/settings': (context) => const SettingsScreen(),
+                '/wallet': (context) => const WalletScreen(),
               },
             ),
-            routes: {
-              '/login': (context) => const LoginScreen(),
-              '/home': (context) => const HomeScreen(),
-              '/profile/create': (context) {
-                final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-                return CreateProfileScreen(
-                  phone: args?['phone'] as String? ?? '',
-                );
-              },
-              '/driver/create': (context) => const CreateDriverProfileScreen(),
-              '/settings': (context) => const SettingsScreen(),
-              '/wallet': (context) => const WalletScreen(),
-            },
           );
         },
       ),

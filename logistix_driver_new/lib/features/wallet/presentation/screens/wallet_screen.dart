@@ -78,18 +78,18 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
         title: const Text('My Wallet'),
         centerTitle: true,
-        backgroundColor: theme.appBarTheme.backgroundColor,
-        foregroundColor: theme.appBarTheme.foregroundColor,
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.onSurface,
         elevation: 0,
         actions: [
           BlocBuilder<WalletBloc, WalletState>(
             builder: (context, state) {
               return IconButton(
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(Icons.refresh_outlined),
                 onPressed: state is WalletLoading 
                   ? null 
                   : () => context.read<WalletBloc>().add(RefreshWalletData()),
@@ -98,24 +98,7 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
           ),
         ],
       ),
-      body: BlocListener<WalletBloc, WalletState>(
-        listener: (context, state) {
-          if (state is WalletError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.error,
-              ),
-            );
-          } else if (state is AddBalanceSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.primary,
-              ),
-            );
-          }
-        },
+      body: SafeArea(
         child: BlocBuilder<WalletBloc, WalletState>(
           builder: (context, state) {
             if (state is WalletLoading) {
@@ -123,7 +106,7 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
                 child: CircularProgressIndicator(),
               );
             }
-            
+
             if (state is WalletError) {
               return Center(
                 child: Column(
@@ -132,105 +115,185 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
                     Icon(
                       Icons.error_outline,
                       size: 64,
-                      color: theme.colorScheme.error,
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
                     ),
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: 16),
                     Text(
                       'Failed to load wallet data',
-                      style: theme.textTheme.titleLarge,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      ),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: 8),
                     Text(
                       state.message,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withOpacity(0.5),
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: () => context.read<WalletBloc>().add(LoadWalletData()),
+                      onPressed: () => context.read<WalletBloc>().add(RefreshWalletData()),
                       child: const Text('Retry'),
                     ),
                   ],
                 ),
               );
             }
-            
-            if (state is WalletLoaded || state is WalletLoadingMore) {
-              final walletData = state is WalletLoaded ? state : (state as WalletLoadingMore);
-              final balance = state is WalletLoaded ? state.balance : (state as WalletLoadingMore).balance;
-              final transactions = state is WalletLoaded ? state.transactions : (state as WalletLoadingMore).transactions;
-              final isLoadingMore = state is WalletLoadingMore;
-              final hasMoreTransactions = state is WalletLoaded ? state.hasMoreTransactions : false;
-              final totalCount = state is WalletLoaded ? state.totalCount : 0;
 
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<WalletBloc>().add(RefreshWalletData());
-                },
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildBalanceCard(context, theme, balance),
-                      const SizedBox(height: AppSpacing.xl),
-                      _buildTransactionHistory(context, theme, transactions, totalCount, hasMoreTransactions, isLoadingMore),
-                    ],
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<WalletBloc>().add(RefreshWalletData());
+              },
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  // Wallet Balance Section
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildWalletBalanceCard(theme, state),
+                    ),
                   ),
-                ),
-              );
-            }
-            
-            return const SizedBox.shrink();
+                  
+                  // Quick Actions Section
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _buildQuickActionsSection(theme),
+                    ),
+                  ),
+                  
+                  // Transactions Header
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Transaction History',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Spacer(),
+                          if (state is WalletLoaded)
+                            Text(
+                              '${state.transactions.length} transactions',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Transactions List
+                  if (state is WalletLoaded && state.transactions.isNotEmpty)
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final transaction = state.transactions[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: TransactionListItem(transaction: transaction),
+                          );
+                        },
+                        childCount: state.transactions.length,
+                      ),
+                    )
+                  else
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.receipt_long_outlined,
+                              size: 64,
+                              color: theme.colorScheme.onSurface.withOpacity(0.3),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No transactions yet',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Your transaction history will appear here',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  
+                  // Loading indicator for pagination
+                  if (state is WalletLoadingMore)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ),
+                  
+                  // Bottom padding
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 32),
+                  ),
+                ],
+              ),
+            );
           },
         ),
       ),
-      floatingActionButton: BlocBuilder<WalletBloc, WalletState>(
-        builder: (context, state) {
-          if (state is AddBalanceLoading) {
-            return FloatingActionButton(
-              onPressed: null,
-              child: const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            );
-          }
-          
-          return FloatingActionButton.extended(
-            onPressed: () => _showAddBalanceModal(context),
-            icon: const Icon(Icons.add),
-            label: const Text('Add Balance'),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => const AddBalanceModal(),
           );
         },
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Money'),
       ),
     );
   }
 
-  Widget _buildBalanceCard(BuildContext context, ThemeData theme, double balance) {
+  Widget _buildWalletBalanceCard(ThemeData theme, WalletState state) {
+    final balance = state is WalletLoaded ? state.balance : 0.0;
+    final isPositive = balance >= 0;
+
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
             theme.colorScheme.primary,
             theme.colorScheme.primary.withOpacity(0.8),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.primary.withOpacity(0.3),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -239,175 +302,243 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.account_balance_wallet,
-                color: theme.colorScheme.onPrimary,
-                size: 28,
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.onPrimary.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.account_balance_wallet,
+                  color: theme.colorScheme.onPrimary,
+                  size: 24,
+                ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                'Wallet Balance',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: theme.colorScheme.onPrimary.withOpacity(0.9),
-                  fontWeight: FontWeight.w500,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Wallet Balance',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onPrimary.withOpacity(0.8),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '₹${NumberFormat('#,##0.00').format(balance)}',
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isPositive 
+                      ? Colors.green.withOpacity(0.2)
+                      : theme.colorScheme.error.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isPositive ? Colors.green : theme.colorScheme.error,
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  isPositive ? 'Positive' : 'Negative',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: isPositive ? Colors.green : theme.colorScheme.error,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            '₹${NumberFormat('#,##,###.##').format(balance)}',
-            style: theme.textTheme.headlineLarge?.copyWith(
-              color: theme.colorScheme.onPrimary,
-              fontWeight: FontWeight.bold,
-              fontSize: 36,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Available for transactions',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimary.withOpacity(0.8),
-            ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+                             Expanded(
+                 child: _buildBalanceStat(
+                   theme,
+                   'Total Added',
+                   '₹${NumberFormat('#,##0.00').format(state is WalletLoaded ? state.balance : 0)}',
+                   Icons.trending_up,
+                 ),
+               ),
+               const SizedBox(width: 16),
+               Expanded(
+                 child: _buildBalanceStat(
+                   theme,
+                   'Total Spent',
+                   '₹${NumberFormat('#,##0.00').format(0)}',
+                   Icons.trending_down,
+                 ),
+               ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTransactionHistory(BuildContext context, ThemeData theme, List<WalletTransaction> transactions, int totalCount, bool hasMoreTransactions, bool isLoadingMore) {
+  Widget _buildBalanceStat(ThemeData theme, String label, String value, IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Icon(
-              Icons.history,
-              color: theme.colorScheme.onSurface,
+              icon,
+              color: theme.colorScheme.onPrimary.withOpacity(0.7),
+              size: 16,
             ),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: 4),
             Text(
-              'Transaction History',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+              label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onPrimary.withOpacity(0.7),
               ),
             ),
-            const Spacer(),
-            if (totalCount > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                ),
-                child: Text(
-                  '$totalCount total',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
           ],
         ),
-        const SizedBox(height: AppSpacing.lg),
-        
-        if (transactions.isEmpty)
-          _buildEmptyTransactions(theme)
-        else
-          Column(
-            children: [
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: transactions.length,
-                separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, index) {
-                  return TransactionListItem(transaction: transactions[index]);
-                },
-              ),
-              if (hasMoreTransactions || isLoadingMore) ...[
-                const SizedBox(height: AppSpacing.lg),
-                if (isLoadingMore)
-                  const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                else
-                  Center(
-                    child: TextButton.icon(
-                      onPressed: () {
-                        final state = context.read<WalletBloc>().state;
-                        if (state is WalletLoaded) {
-                          context.read<WalletBloc>().add(LoadMoreTransactions(state.currentPage + 1));
-                        }
-                      },
-                      icon: const Icon(Icons.expand_more),
-                      label: const Text('Load More'),
-                    ),
-                  ),
-              ],
-            ],
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: theme.colorScheme.onPrimary,
+            fontWeight: FontWeight.w600,
           ),
+        ),
       ],
     );
   }
 
-  Widget _buildEmptyTransactions(ThemeData theme) {
+  Widget _buildQuickActionsSection(ThemeData theme) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
+          color: theme.colorScheme.outline.withOpacity(0.1),
+          width: 1,
         ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 64,
-            color: theme.colorScheme.onSurface.withOpacity(0.4),
-          ),
-          const SizedBox(height: AppSpacing.md),
           Text(
-            'No transactions yet',
+            'Quick Actions',
             style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Your transaction history will appear here',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
-            ),
-            textAlign: TextAlign.center,
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickActionButton(
+                  theme,
+                  'Add Money',
+                  Icons.add,
+                  () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => const AddBalanceModal(),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionButton(
+                  theme,
+                  'Withdraw',
+                  Icons.download,
+                  () {
+                    // TODO: Implement withdraw functionality
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Withdraw functionality coming soon'),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionButton(
+                  theme,
+                  'History',
+                  Icons.history,
+                  () {
+                    // TODO: Implement detailed history view
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Detailed history coming soon'),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  void _showAddBalanceModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.lg),
+  Widget _buildQuickActionButton(ThemeData theme, String label, IconData icon, VoidCallback onPressed) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.1),
+          width: 1,
         ),
       ),
-      builder: (BuildContext modalContext) {
-        return BlocProvider.value(
-          value: context.read<WalletBloc>(),
-          child: const AddBalanceModal(),
-        );
-      },
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: theme.colorScheme.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 } 

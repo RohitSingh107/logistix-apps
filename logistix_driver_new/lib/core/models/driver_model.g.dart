@@ -46,6 +46,8 @@ PatchedDriverRequest _$PatchedDriverRequestFromJson(
       licenseNumber: json['license_number'] as String?,
       isAvailable: json['is_available'] as bool?,
       fcmToken: json['fcm_token'] as String?,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$PatchedDriverRequestToJson(
@@ -54,4 +56,6 @@ Map<String, dynamic> _$PatchedDriverRequestToJson(
       'license_number': instance.licenseNumber,
       'is_available': instance.isAvailable,
       'fcm_token': instance.fcmToken,
+      'latitude': instance.latitude,
+      'longitude': instance.longitude,
     };
