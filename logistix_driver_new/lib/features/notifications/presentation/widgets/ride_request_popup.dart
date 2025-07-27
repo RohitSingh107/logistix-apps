@@ -355,14 +355,19 @@ class _RideRequestPopupState extends State<RideRequestPopup> {
 
     try {
       if (accepted) {
+        // Disable accept button immediately
+        setState(() {
+          _isLoading = true;
+        });
+        
         // Accept the ride
         final trip = await widget.onRideAction(bookingId, accepted);
         
         if (mounted) {
           Navigator.of(context).pop();
           
-          // Show success message with trip details
-          _showAcceptanceSuccessDialog(trip);
+          // Navigate to driver trip screen
+          Navigator.of(context).pushReplacementNamed('/driver-trip', arguments: trip);
         }
       } else {
         // Reject the ride - just close the popup
