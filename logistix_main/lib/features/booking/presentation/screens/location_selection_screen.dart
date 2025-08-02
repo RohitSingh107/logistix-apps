@@ -130,6 +130,18 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
         final location = MapLatLng(position.latitude, position.longitude);
         final address = await _locationService.getAddressFromLatLng(location);
         
+        // Create a PlaceResult for current location
+        final placeResult = PlaceResult(
+          id: 'current_location_${DateTime.now().millisecondsSinceEpoch}',
+          title: 'Current Location',
+          subtitle: address,
+          location: location,
+          placeType: PlaceType.other,
+        );
+        
+        // Add to recent searches
+        await _locationService.addToRecentSearches(placeResult);
+        
         if (mounted) {
           Navigator.pop(context, {
             'location': location,
@@ -193,8 +205,20 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
     });
   }
 
-  void _onMapLocationSelected() {
+  void _onMapLocationSelected() async {
     if (_selectedLocation != null && _selectedAddress.isNotEmpty) {
+      // Create a PlaceResult for the map-selected location
+      final placeResult = PlaceResult(
+        id: 'map_selected_${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Selected Location',
+        subtitle: _selectedAddress,
+        location: _selectedLocation!,
+        placeType: PlaceType.other,
+      );
+      
+      // Add to recent searches
+      await _locationService.addToRecentSearches(placeResult);
+      
       Navigator.pop(context, {
         'location': _selectedLocation,
         'address': _selectedAddress,
@@ -360,6 +384,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                         onResultSelected: _selectLocation,
                         onSavedPlaceSelected: _selectSavedPlace,
                         onClearRecent: () async {
+                          await _locationService.clearRecentSearches();
                           setState(() => _recentSearches.clear());
                         },
                       ),

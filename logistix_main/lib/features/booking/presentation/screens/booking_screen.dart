@@ -408,6 +408,12 @@ class _BookingScreenState extends State<BookingScreen> {
                           );
                         },
                       ),
+                      
+                      // Distance and Duration Info
+                      if (_selectedVehicle != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        _buildDistanceDurationInfo(theme, _selectedVehicle!),
+                      ],
                     ]
                     
                     // No estimates available
@@ -601,6 +607,115 @@ class _BookingScreenState extends State<BookingScreen> {
     final double km = double.parse(_calculateDistance());
     // Assuming average speed of 30 km/h in city
     return (km / 30 * 60).round();
+  }
+
+  Widget _buildDistanceDurationInfo(ThemeData theme, VehicleEstimateResponse vehicle) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.2),
+        ),
+      ),
+      child: Column(
+        children: [
+          // First Row: Distance and Pickup Time
+          Row(
+            children: [
+              // Distance Section
+              Expanded(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.straighten,
+                      color: theme.colorScheme.primary,
+                      size: 24,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      '${vehicle.estimatedDistance?.toStringAsFixed(1) ?? "0.0"} km',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      'Distance',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Vertical Divider
+              Container(
+                width: 1,
+                height: 40,
+                color: theme.colorScheme.outline.withOpacity(0.3),
+              ),
+              
+              // Pickup Time Section
+              Expanded(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: theme.colorScheme.primary,
+                      size: 24,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      '${vehicle.pickupReachTime} min',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      'Pickup Time',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          
+          // Horizontal Divider
+          Container(
+            height: 1,
+            margin: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+            color: theme.colorScheme.outline.withOpacity(0.3),
+          ),
+          
+          // Second Row: Trip Duration
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.access_time,
+                color: theme.colorScheme.secondary,
+                size: 20,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                'Trip Duration: ${vehicle.estimatedDuration ?? vehicle.pickupReachTime} min',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.secondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 

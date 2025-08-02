@@ -125,6 +125,19 @@ class _VehicleEstimateCardState extends State<VehicleEstimateCard> {
                             ),
                             const SizedBox(width: AppSpacing.md),
                             Icon(
+                              Icons.straighten,
+                              size: 14,
+                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              '${widget.estimate.estimatedDistance?.toStringAsFixed(1) ?? "0.0"} km',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Icon(
                               Icons.inventory_2_outlined,
                               size: 14,
                               color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -264,9 +277,34 @@ class _VehicleEstimateCardState extends State<VehicleEstimateCard> {
                           child: _buildSpecItem(
                             context,
                             icon: Icons.route,
+                            label: 'Trip Distance',
+                            value: '${widget.estimate.estimatedDistance?.toStringAsFixed(1) ?? "0.0"} km',
+                            color: Colors.purple,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildSpecItem(
+                            context,
+                            icon: Icons.route,
                             label: 'Base Distance',
                             value: '${widget.estimate.vehicleBaseDistance.toStringAsFixed(1)} km',
-                            color: Colors.purple,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: _buildSpecItem(
+                            context,
+                            icon: Icons.access_time,
+                            label: 'Trip Duration',
+                            value: '${widget.estimate.estimatedDuration ?? widget.estimate.pickupReachTime} min',
+                            color: Colors.teal,
                           ),
                         ),
                       ],

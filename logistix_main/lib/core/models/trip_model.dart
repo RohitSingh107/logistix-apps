@@ -18,62 +18,179 @@
  * - Uses JSON serialization with comprehensive field mapping
  */
 
-import 'base_model.dart';
-import 'booking_model.dart';
-import 'package:json_annotation/json_annotation.dart';
+import 'package:equatable/equatable.dart';
 import 'driver_model.dart';
+import 'booking_model.dart';
 
-part 'trip_model.g.dart';
+class TripModel extends Equatable {
+  final int id;
+  final DriverModel driver;
+  final BookingRequestModel bookingRequest;
+  final String status;
+  final DateTime? loadingStartTime;
+  final DateTime? loadingEndTime;
+  final DateTime? unloadingStartTime;
+  final DateTime? unloadingEndTime;
+  final DateTime? paymentTime;
+  final double finalFare;
+  final int? finalDuration; // minutes
+  final String? finalDistance; // km as string
+  final bool isPaymentDone;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const TripModel({
+    required this.id,
+    required this.driver,
+    required this.bookingRequest,
+    required this.status,
+    this.loadingStartTime,
+    this.loadingEndTime,
+    this.unloadingStartTime,
+    this.unloadingEndTime,
+    this.paymentTime,
+    required this.finalFare,
+    this.finalDuration,
+    this.finalDistance,
+    required this.isPaymentDone,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory TripModel.fromJson(Map<String, dynamic> json) {
+    return TripModel(
+      id: json['id'] as int,
+      driver: DriverModel.fromJson(json['driver'] as Map<String, dynamic>),
+      bookingRequest: BookingRequestModel.fromJson(json['booking_request'] as Map<String, dynamic>),
+      status: json['status'] as String,
+      loadingStartTime: json['loading_start_time'] != null
+          ? DateTime.parse(json['loading_start_time'] as String)
+          : null,
+      loadingEndTime: json['loading_end_time'] != null
+          ? DateTime.parse(json['loading_end_time'] as String)
+          : null,
+      unloadingStartTime: json['unloading_start_time'] != null
+          ? DateTime.parse(json['unloading_start_time'] as String)
+          : null,
+      unloadingEndTime: json['unloading_end_time'] != null
+          ? DateTime.parse(json['unloading_end_time'] as String)
+          : null,
+      paymentTime: json['payment_time'] != null
+          ? DateTime.parse(json['payment_time'] as String)
+          : null,
+      finalFare: (json['final_fare'] as num).toDouble(),
+      finalDuration: json['final_duration'] as int?,
+      finalDistance: json['final_distance'] as String?,
+      isPaymentDone: json['is_payment_done'] as bool,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'driver': driver.toJson(),
+      'booking_request': bookingRequest.toJson(),
+      'status': status,
+      'loading_start_time': loadingStartTime?.toIso8601String(),
+      'loading_end_time': loadingEndTime?.toIso8601String(),
+      'unloading_start_time': unloadingStartTime?.toIso8601String(),
+      'unloading_end_time': unloadingEndTime?.toIso8601String(),
+      'payment_time': paymentTime?.toIso8601String(),
+      'final_fare': finalFare,
+      'final_duration': finalDuration,
+      'final_distance': finalDistance,
+      'is_payment_done': isPaymentDone,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
+  TripModel copyWith({
+    int? id,
+    DriverModel? driver,
+    BookingRequestModel? bookingRequest,
+    String? status,
+    DateTime? loadingStartTime,
+    DateTime? loadingEndTime,
+    DateTime? unloadingStartTime,
+    DateTime? unloadingEndTime,
+    DateTime? paymentTime,
+    double? finalFare,
+    int? finalDuration,
+    String? finalDistance,
+    bool? isPaymentDone,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return TripModel(
+      id: id ?? this.id,
+      driver: driver ?? this.driver,
+      bookingRequest: bookingRequest ?? this.bookingRequest,
+      status: status ?? this.status,
+      loadingStartTime: loadingStartTime ?? this.loadingStartTime,
+      loadingEndTime: loadingEndTime ?? this.loadingEndTime,
+      unloadingStartTime: unloadingStartTime ?? this.unloadingStartTime,
+      unloadingEndTime: unloadingEndTime ?? this.unloadingEndTime,
+      paymentTime: paymentTime ?? this.paymentTime,
+      finalFare: finalFare ?? this.finalFare,
+      finalDuration: finalDuration ?? this.finalDuration,
+      finalDistance: finalDistance ?? this.finalDistance,
+      isPaymentDone: isPaymentDone ?? this.isPaymentDone,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        driver,
+        bookingRequest,
+        status,
+        loadingStartTime,
+        loadingEndTime,
+        unloadingStartTime,
+        unloadingEndTime,
+        paymentTime,
+        finalFare,
+        finalDuration,
+        finalDistance,
+        isPaymentDone,
+        createdAt,
+        updatedAt,
+      ];
+}
 
 enum TripStatus {
-  @JsonValue('ACCEPTED')
   accepted,
-  @JsonValue('TRIP_STARTED')
   tripStarted,
-  @JsonValue('LOADING_STARTED')
   loadingStarted,
-  @JsonValue('LOADING_DONE')
   loadingDone,
-  @JsonValue('REACHED_DESTINATION')
   reachedDestination,
-  @JsonValue('UNLOADING_STARTED')
   unloadingStarted,
-  @JsonValue('UNLOADING_DONE')
   unloadingDone,
-  @JsonValue('COMPLETED')
   completed,
-  @JsonValue('CANCELLED')
   cancelled,
 }
 
-@JsonSerializable()
-class Trip extends BaseModel {
+// Legacy classes for backward compatibility
+class Trip extends Equatable {
   final int id;
   final Driver driver;
-  @JsonKey(name: 'booking_request')
   final BookingRequest bookingRequest;
   final TripStatus status;
-  @JsonKey(name: 'loading_start_time')
   final DateTime? loadingStartTime;
-  @JsonKey(name: 'loading_end_time')
   final DateTime? loadingEndTime;
-  @JsonKey(name: 'unloading_start_time')
   final DateTime? unloadingStartTime;
-  @JsonKey(name: 'unloading_end_time')
   final DateTime? unloadingEndTime;
-  @JsonKey(name: 'payment_time')
   final DateTime? paymentTime;
-  @JsonKey(name: 'final_fare')
   final double finalFare;
-  @JsonKey(name: 'final_duration')
   final int? finalDuration;
-  @JsonKey(name: 'final_distance')
   final String? finalDistance;
-  @JsonKey(name: 'is_payment_done')
   final bool isPaymentDone;
-  @JsonKey(name: 'created_at')
   final DateTime createdAt;
-  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   const Trip({
@@ -94,9 +211,58 @@ class Trip extends BaseModel {
     required this.updatedAt,
   });
 
-  factory Trip.fromJson(Map<String, dynamic> json) => _$TripFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$TripToJson(this);
+  factory Trip.fromJson(Map<String, dynamic> json) {
+    return Trip(
+      id: json['id'] as int,
+      driver: Driver.fromJson(json['driver'] as Map<String, dynamic>),
+      bookingRequest: BookingRequest.fromJson(json['booking_request'] as Map<String, dynamic>),
+      status: TripStatus.values.firstWhere(
+        (e) => e.toString().split('.').last.toUpperCase() == json['status'],
+        orElse: () => TripStatus.accepted,
+      ),
+      loadingStartTime: json['loading_start_time'] != null
+          ? DateTime.parse(json['loading_start_time'] as String)
+          : null,
+      loadingEndTime: json['loading_end_time'] != null
+          ? DateTime.parse(json['loading_end_time'] as String)
+          : null,
+      unloadingStartTime: json['unloading_start_time'] != null
+          ? DateTime.parse(json['unloading_start_time'] as String)
+          : null,
+      unloadingEndTime: json['unloading_end_time'] != null
+          ? DateTime.parse(json['unloading_end_time'] as String)
+          : null,
+      paymentTime: json['payment_time'] != null
+          ? DateTime.parse(json['payment_time'] as String)
+          : null,
+      finalFare: (json['final_fare'] as num).toDouble(),
+      finalDuration: json['final_duration'] as int?,
+      finalDistance: json['final_distance'] as String?,
+      isPaymentDone: json['is_payment_done'] as bool,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'driver': driver.toJson(),
+      'booking_request': bookingRequest.toJson(),
+      'status': status.toString().split('.').last.toUpperCase(),
+      'loading_start_time': loadingStartTime?.toIso8601String(),
+      'loading_end_time': loadingEndTime?.toIso8601String(),
+      'unloading_start_time': unloadingStartTime?.toIso8601String(),
+      'unloading_end_time': unloadingEndTime?.toIso8601String(),
+      'payment_time': paymentTime?.toIso8601String(),
+      'final_fare': finalFare,
+      'final_duration': finalDuration,
+      'final_distance': finalDistance,
+      'is_payment_done': isPaymentDone,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
 
   @override
   List<Object?> get props => [
@@ -116,41 +282,21 @@ class Trip extends BaseModel {
         createdAt,
         updatedAt,
       ];
-
-  // Helper method to convert string distance to double
-  double? get distanceAsDouble {
-    if (finalDistance == null) return null;
-    try {
-      return double.parse(finalDistance!);
-    } catch (e) {
-      return null;
-    }
-  }
 }
 
-@JsonSerializable()
-class TripUpdateRequest {
+class TripUpdateRequest extends Equatable {
   final TripStatus status;
-  @JsonKey(name: 'loading_start_time')
   final DateTime? loadingStartTime;
-  @JsonKey(name: 'loading_end_time')
   final DateTime? loadingEndTime;
-  @JsonKey(name: 'unloading_start_time')
   final DateTime? unloadingStartTime;
-  @JsonKey(name: 'unloading_end_time')
   final DateTime? unloadingEndTime;
-  @JsonKey(name: 'payment_time')
   final DateTime? paymentTime;
-  @JsonKey(name: 'final_fare')
   final double finalFare;
-  @JsonKey(name: 'final_duration')
   final int? finalDuration;
-  @JsonKey(name: 'final_distance')
   final String? finalDistance;
-  @JsonKey(name: 'is_payment_done')
   final bool? isPaymentDone;
 
-  TripUpdateRequest({
+  const TripUpdateRequest({
     required this.status,
     this.loadingStartTime,
     this.loadingEndTime,
@@ -163,25 +309,98 @@ class TripUpdateRequest {
     this.isPaymentDone,
   });
 
-  factory TripUpdateRequest.fromJson(Map<String, dynamic> json) => _$TripUpdateRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$TripUpdateRequestToJson(this);
+  factory TripUpdateRequest.fromJson(Map<String, dynamic> json) {
+    return TripUpdateRequest(
+      status: TripStatus.values.firstWhere(
+        (e) => e.toString().split('.').last.toUpperCase() == json['status'],
+        orElse: () => TripStatus.accepted,
+      ),
+      loadingStartTime: json['loading_start_time'] != null
+          ? DateTime.parse(json['loading_start_time'] as String)
+          : null,
+      loadingEndTime: json['loading_end_time'] != null
+          ? DateTime.parse(json['loading_end_time'] as String)
+          : null,
+      unloadingStartTime: json['unloading_start_time'] != null
+          ? DateTime.parse(json['unloading_start_time'] as String)
+          : null,
+      unloadingEndTime: json['unloading_end_time'] != null
+          ? DateTime.parse(json['unloading_end_time'] as String)
+          : null,
+      paymentTime: json['payment_time'] != null
+          ? DateTime.parse(json['payment_time'] as String)
+          : null,
+      finalFare: (json['final_fare'] as num).toDouble(),
+      finalDuration: json['final_duration'] as int?,
+      finalDistance: json['final_distance'] as String?,
+      isPaymentDone: json['is_payment_done'] as bool?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status.toString().split('.').last.toUpperCase(),
+      'loading_start_time': loadingStartTime?.toIso8601String(),
+      'loading_end_time': loadingEndTime?.toIso8601String(),
+      'unloading_start_time': unloadingStartTime?.toIso8601String(),
+      'unloading_end_time': unloadingEndTime?.toIso8601String(),
+      'payment_time': paymentTime?.toIso8601String(),
+      'final_fare': finalFare,
+      'final_duration': finalDuration,
+      'final_distance': finalDistance,
+      'is_payment_done': isPaymentDone,
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+        status,
+        loadingStartTime,
+        loadingEndTime,
+        unloadingStartTime,
+        unloadingEndTime,
+        paymentTime,
+        finalFare,
+        finalDuration,
+        finalDistance,
+        isPaymentDone,
+      ];
 }
 
-@JsonSerializable()
-class PaginatedTripList {
+class PaginatedTripList extends Equatable {
   final int count;
   final String? next;
   final String? previous;
-  @JsonKey(defaultValue: [])
   final List<Trip> results;
 
-  PaginatedTripList({
+  const PaginatedTripList({
     required this.count,
     this.next,
     this.previous,
-    List<Trip>? results,
-  }) : results = results ?? [];
+    required this.results,
+  });
 
-  factory PaginatedTripList.fromJson(Map<String, dynamic> json) => _$PaginatedTripListFromJson(json);
-  Map<String, dynamic> toJson() => _$PaginatedTripListToJson(this);
+  factory PaginatedTripList.fromJson(Map<String, dynamic> json) {
+    return PaginatedTripList(
+      count: json['count'] as int,
+      next: json['next'] as String?,
+      previous: json['previous'] as String?,
+      results: (json['results'] as List<dynamic>?)
+              ?.map((e) => Trip.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'count': count,
+      'next': next,
+      'previous': previous,
+      'results': results.map((e) => e.toJson()).toList(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [count, next, previous, results];
 }

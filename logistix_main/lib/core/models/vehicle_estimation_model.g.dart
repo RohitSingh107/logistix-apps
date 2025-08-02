@@ -34,22 +34,39 @@ Map<String, dynamic> _$VehicleEstimationRequestToJson(
 
 VehicleEstimate _$VehicleEstimateFromJson(Map<String, dynamic> json) =>
     VehicleEstimate(
-      vehicleType: json['vehicle_type'] as String,
-      vehicleTypeId: (json['vehicle_type_id'] as num).toInt(),
       estimatedFare: (json['estimated_fare'] as num).toDouble(),
       pickupReachTime: (json['pickup_reach_time'] as num).toInt(),
-      estimatedDuration: (json['estimated_duration'] as num?)?.toInt(),
-      estimatedDistance: (json['estimated_distance'] as num?)?.toDouble(),
+      vehicleType: (json['vehicle_type'] as num).toInt(),
+      vehicleTitle: json['vehicle_title'] as String,
+      vehicleCapacity: (json['vehicle_capacity'] as num).toInt(),
+      vehicleBaseFare: (json['vehicle_base_fare'] as num).toDouble(),
+      vehicleBaseDistance: (json['vehicle_base_distance'] as num).toDouble(),
+      vehicleDimensionHeight:
+          (json['vehicle_dimension_height'] as num).toDouble(),
+      vehicleDimensionWeight:
+          (json['vehicle_dimension_weight'] as num).toDouble(),
+      vehicleDimensionDepth:
+          (json['vehicle_dimension_depth'] as num).toDouble(),
+      vehicleDimensionUnit: json['vehicle_dimension_unit'] as String,
+      estimatedDistance: (json['estimatedDistance'] as num?)?.toDouble(),
+      estimatedDuration: (json['estimatedDuration'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$VehicleEstimateToJson(VehicleEstimate instance) =>
     <String, dynamic>{
-      'vehicle_type': instance.vehicleType,
-      'vehicle_type_id': instance.vehicleTypeId,
       'estimated_fare': instance.estimatedFare,
       'pickup_reach_time': instance.pickupReachTime,
-      'estimated_duration': instance.estimatedDuration,
-      'estimated_distance': instance.estimatedDistance,
+      'vehicle_type': instance.vehicleType,
+      'vehicle_title': instance.vehicleTitle,
+      'vehicle_capacity': instance.vehicleCapacity,
+      'vehicle_base_fare': instance.vehicleBaseFare,
+      'vehicle_base_distance': instance.vehicleBaseDistance,
+      'vehicle_dimension_height': instance.vehicleDimensionHeight,
+      'vehicle_dimension_weight': instance.vehicleDimensionWeight,
+      'vehicle_dimension_depth': instance.vehicleDimensionDepth,
+      'vehicle_dimension_unit': instance.vehicleDimensionUnit,
+      'estimatedDistance': instance.estimatedDistance,
+      'estimatedDuration': instance.estimatedDuration,
     };
 
 VehicleEstimationResponse _$VehicleEstimationResponseFromJson(

@@ -281,4 +281,35 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       emit(WalletError('Failed to add balance: ${e.toString()}'));
     }
   }
+}
+
+// Additional wallet states for booking integration
+class WalletBalanceChecking extends WalletState {}
+
+class WalletBalanceSufficient extends WalletState {
+  final double balance;
+  final double requiredAmount;
+
+  const WalletBalanceSufficient({
+    required this.balance,
+    required this.requiredAmount,
+  });
+
+  @override
+  List<Object?> get props => [balance, requiredAmount];
+}
+
+class WalletBalanceInsufficient extends WalletState {
+  final double balance;
+  final double requiredAmount;
+
+  const WalletBalanceInsufficient({
+    required this.balance,
+    required this.requiredAmount,
+  });
+
+  double get shortfall => requiredAmount - balance;
+
+  @override
+  List<Object?> get props => [balance, requiredAmount];
 } 

@@ -17,68 +17,201 @@
  * - Includes comprehensive booking details (pickup, dropoff, goods, pricing)
  */
 
-import 'package:json_annotation/json_annotation.dart';
-import 'base_model.dart';
+import 'package:equatable/equatable.dart';
 import 'trip_model.dart';
 
-part 'booking_model.g.dart';
+class BookingRequestModel extends Equatable {
+  final int id;
+  final int? tripId;
+  final String senderName;
+  final String receiverName;
+  final String senderPhone;
+  final String receiverPhone;
+  final String pickupLocation; // Read-only string from API
+  final String dropoffLocation; // Read-only string from API
+  final DateTime pickupTime;
+  final String status;
+  final String pickupAddress;
+  final String dropoffAddress;
+  final String goodsType;
+  final String goodsQuantity;
+  final String paymentMode;
+  final double estimatedFare;
+  final String? instructions;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const BookingRequestModel({
+    required this.id,
+    this.tripId,
+    required this.senderName,
+    required this.receiverName,
+    required this.senderPhone,
+    required this.receiverPhone,
+    required this.pickupLocation,
+    required this.dropoffLocation,
+    required this.pickupTime,
+    required this.status,
+    required this.pickupAddress,
+    required this.dropoffAddress,
+    required this.goodsType,
+    required this.goodsQuantity,
+    required this.paymentMode,
+    required this.estimatedFare,
+    this.instructions,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory BookingRequestModel.fromJson(Map<String, dynamic> json) {
+    return BookingRequestModel(
+      id: json['id'] as int,
+      tripId: json['trip_id'] != null ? json['trip_id'] as int : null,
+      senderName: json['sender_name'] as String,
+      receiverName: json['receiver_name'] as String,
+      senderPhone: json['sender_phone'] as String,
+      receiverPhone: json['receiver_phone'] as String,
+      pickupLocation: json['pickup_location'] as String,
+      dropoffLocation: json['dropoff_location'] as String,
+      pickupTime: DateTime.parse(json['pickup_time'] as String),
+      status: json['status'] as String,
+      pickupAddress: json['pickup_address'] as String,
+      dropoffAddress: json['dropoff_address'] as String,
+      goodsType: json['goods_type'] as String,
+      goodsQuantity: json['goods_quantity'] as String,
+      paymentMode: json['payment_mode'] as String,
+      estimatedFare: (json['estimated_fare'] as num).toDouble(),
+      instructions: json['instructions'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'trip_id': tripId,
+      'sender_name': senderName,
+      'receiver_name': receiverName,
+      'sender_phone': senderPhone,
+      'receiver_phone': receiverPhone,
+      'pickup_location': pickupLocation,
+      'dropoff_location': dropoffLocation,
+      'pickup_time': pickupTime.toIso8601String(),
+      'status': status,
+      'pickup_address': pickupAddress,
+      'dropoff_address': dropoffAddress,
+      'goods_type': goodsType,
+      'goods_quantity': goodsQuantity,
+      'payment_mode': paymentMode,
+      'estimated_fare': estimatedFare,
+      'instructions': instructions,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+
+  BookingRequestModel copyWith({
+    int? id,
+    int? tripId,
+    String? senderName,
+    String? receiverName,
+    String? senderPhone,
+    String? receiverPhone,
+    String? pickupLocation,
+    String? dropoffLocation,
+    DateTime? pickupTime,
+    String? status,
+    String? pickupAddress,
+    String? dropoffAddress,
+    String? goodsType,
+    String? goodsQuantity,
+    String? paymentMode,
+    double? estimatedFare,
+    String? instructions,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return BookingRequestModel(
+      id: id ?? this.id,
+      tripId: tripId ?? this.tripId,
+      senderName: senderName ?? this.senderName,
+      receiverName: receiverName ?? this.receiverName,
+      senderPhone: senderPhone ?? this.senderPhone,
+      receiverPhone: receiverPhone ?? this.receiverPhone,
+      pickupLocation: pickupLocation ?? this.pickupLocation,
+      dropoffLocation: dropoffLocation ?? this.dropoffLocation,
+      pickupTime: pickupTime ?? this.pickupTime,
+      status: status ?? this.status,
+      pickupAddress: pickupAddress ?? this.pickupAddress,
+      dropoffAddress: dropoffAddress ?? this.dropoffAddress,
+      goodsType: goodsType ?? this.goodsType,
+      goodsQuantity: goodsQuantity ?? this.goodsQuantity,
+      paymentMode: paymentMode ?? this.paymentMode,
+      estimatedFare: estimatedFare ?? this.estimatedFare,
+      instructions: instructions ?? this.instructions,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        tripId,
+        senderName,
+        receiverName,
+        senderPhone,
+        receiverPhone,
+        pickupLocation,
+        dropoffLocation,
+        pickupTime,
+        status,
+        pickupAddress,
+        dropoffAddress,
+        goodsType,
+        goodsQuantity,
+        paymentMode,
+        estimatedFare,
+        instructions,
+        createdAt,
+        updatedAt,
+      ];
+}
 
 enum BookingStatus {
-  @JsonValue('REQUESTED')
   requested,
-  @JsonValue('SEARCHING')
   searching,
-  @JsonValue('ACCEPTED')
   accepted,
-  @JsonValue('CANCELLED')
   cancelled,
-  @JsonValue('DRIVERS_NOT_FOUND')
   driversNotFound,
 }
 
 enum PaymentMode {
-  @JsonValue('CASH')
   cash,
-  @JsonValue('WALLET')
   wallet,
 }
 
-@JsonSerializable()
-class BookingRequest extends BaseModel {
+// Legacy classes for backward compatibility
+class BookingRequest extends Equatable {
   final int id;
-  @JsonKey(name: 'trip_id')
   final int? tripId;
-  @JsonKey(name: 'sender_name')
   final String senderName;
-  @JsonKey(name: 'receiver_name')
   final String receiverName;
-  @JsonKey(name: 'sender_phone')
   final String senderPhone;
-  @JsonKey(name: 'receiver_phone')
   final String receiverPhone;
-  @JsonKey(name: 'pickup_location')
   final String pickupLocation;
-  @JsonKey(name: 'dropoff_location')
   final String dropoffLocation;
-  @JsonKey(name: 'pickup_time')
   final DateTime pickupTime;
-  @JsonKey(name: 'pickup_address')
   final String pickupAddress;
-  @JsonKey(name: 'dropoff_address')
   final String dropoffAddress;
-  @JsonKey(name: 'goods_type')
   final String goodsType;
-  @JsonKey(name: 'goods_quantity')
   final String goodsQuantity;
-  @JsonKey(name: 'payment_mode')
   final PaymentMode paymentMode;
-  @JsonKey(name: 'estimated_fare')
   final double estimatedFare;
   final BookingStatus status;
   final String? instructions;
-  @JsonKey(name: 'created_at')
   final DateTime createdAt;
-  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   const BookingRequest({
@@ -103,10 +236,59 @@ class BookingRequest extends BaseModel {
     required this.updatedAt,
   });
 
-  factory BookingRequest.fromJson(Map<String, dynamic> json) => _$BookingRequestFromJson(json);
+  factory BookingRequest.fromJson(Map<String, dynamic> json) {
+    return BookingRequest(
+      id: json['id'] as int,
+      tripId: json['trip_id'] as int?,
+      senderName: json['sender_name'] as String,
+      receiverName: json['receiver_name'] as String,
+      senderPhone: json['sender_phone'] as String,
+      receiverPhone: json['receiver_phone'] as String,
+      pickupLocation: json['pickup_location'] as String,
+      dropoffLocation: json['dropoff_location'] as String,
+      pickupTime: DateTime.parse(json['pickup_time'] as String),
+      pickupAddress: json['pickup_address'] as String,
+      dropoffAddress: json['dropoff_address'] as String,
+      goodsType: json['goods_type'] as String,
+      goodsQuantity: json['goods_quantity'] as String,
+      paymentMode: PaymentMode.values.firstWhere(
+        (e) => e.toString().split('.').last.toUpperCase() == json['payment_mode'],
+        orElse: () => PaymentMode.cash,
+      ),
+      estimatedFare: (json['estimated_fare'] as num).toDouble(),
+      status: BookingStatus.values.firstWhere(
+        (e) => e.toString().split('.').last.toUpperCase() == json['status'],
+        orElse: () => BookingStatus.requested,
+      ),
+      instructions: json['instructions'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
 
-  @override
-  Map<String, dynamic> toJson() => _$BookingRequestToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'trip_id': tripId,
+      'sender_name': senderName,
+      'receiver_name': receiverName,
+      'sender_phone': senderPhone,
+      'receiver_phone': receiverPhone,
+      'pickup_location': pickupLocation,
+      'dropoff_location': dropoffLocation,
+      'pickup_time': pickupTime.toIso8601String(),
+      'pickup_address': pickupAddress,
+      'dropoff_address': dropoffAddress,
+      'goods_type': goodsType,
+      'goods_quantity': goodsQuantity,
+      'payment_mode': paymentMode.toString().split('.').last.toUpperCase(),
+      'estimated_fare': estimatedFare,
+      'status': status.toString().split('.').last.toUpperCase(),
+      'instructions': instructions,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
 
   @override
   List<Object?> get props => [
@@ -132,41 +314,25 @@ class BookingRequest extends BaseModel {
       ];
 }
 
-@JsonSerializable()
-class BookingRequestRequest {
-  @JsonKey(name: 'sender_name')
+class BookingRequestRequest extends Equatable {
   final String senderName;
-  @JsonKey(name: 'receiver_name')
   final String receiverName;
-  @JsonKey(name: 'sender_phone')
   final String senderPhone;
-  @JsonKey(name: 'receiver_phone')
   final String receiverPhone;
-  @JsonKey(name: 'pickup_latitude')
   final double pickupLatitude;
-  @JsonKey(name: 'pickup_longitude')
   final double pickupLongitude;
-  @JsonKey(name: 'dropoff_latitude')
   final double dropoffLatitude;
-  @JsonKey(name: 'dropoff_longitude')
   final double dropoffLongitude;
-  @JsonKey(name: 'pickup_time')
   final DateTime pickupTime;
-  @JsonKey(name: 'pickup_address')
   final String pickupAddress;
-  @JsonKey(name: 'dropoff_address')
   final String dropoffAddress;
-  @JsonKey(name: 'vehicle_type_id')
   final int vehicleTypeId;
-  @JsonKey(name: 'goods_type')
   final String goodsType;
-  @JsonKey(name: 'goods_quantity')
   final String goodsQuantity;
-  @JsonKey(name: 'payment_mode')
   final PaymentMode paymentMode;
   final String instructions;
 
-  BookingRequestRequest({
+  const BookingRequestRequest({
     required this.senderName,
     required this.receiverName,
     required this.senderPhone,
@@ -185,46 +351,118 @@ class BookingRequestRequest {
     required this.instructions,
   });
 
-  factory BookingRequestRequest.fromJson(Map<String, dynamic> json) => _$BookingRequestRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$BookingRequestRequestToJson(this);
+  factory BookingRequestRequest.fromJson(Map<String, dynamic> json) {
+    return BookingRequestRequest(
+      senderName: json['sender_name'] as String,
+      receiverName: json['receiver_name'] as String,
+      senderPhone: json['sender_phone'] as String,
+      receiverPhone: json['receiver_phone'] as String,
+      pickupLatitude: (json['pickup_latitude'] as num).toDouble(),
+      pickupLongitude: (json['pickup_longitude'] as num).toDouble(),
+      dropoffLatitude: (json['dropoff_latitude'] as num).toDouble(),
+      dropoffLongitude: (json['dropoff_longitude'] as num).toDouble(),
+      pickupTime: DateTime.parse(json['pickup_time'] as String),
+      pickupAddress: json['pickup_address'] as String,
+      dropoffAddress: json['dropoff_address'] as String,
+      vehicleTypeId: json['vehicle_type_id'] as int,
+      goodsType: json['goods_type'] as String,
+      goodsQuantity: json['goods_quantity'] as String,
+      paymentMode: PaymentMode.values.firstWhere(
+        (e) => e.toString().split('.').last.toUpperCase() == json['payment_mode'],
+        orElse: () => PaymentMode.cash,
+      ),
+      instructions: json['instructions'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'sender_name': senderName,
+      'receiver_name': receiverName,
+      'sender_phone': senderPhone,
+      'receiver_phone': receiverPhone,
+      'pickup_latitude': pickupLatitude,
+      'pickup_longitude': pickupLongitude,
+      'dropoff_latitude': dropoffLatitude,
+      'dropoff_longitude': dropoffLongitude,
+      'pickup_time': pickupTime.toIso8601String(),
+      'pickup_address': pickupAddress,
+      'dropoff_address': dropoffAddress,
+      'vehicle_type_id': vehicleTypeId,
+      'goods_type': goodsType,
+      'goods_quantity': goodsQuantity,
+      'payment_mode': paymentMode.toString().split('.').last.toUpperCase(),
+      'instructions': instructions,
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+        senderName,
+        receiverName,
+        senderPhone,
+        receiverPhone,
+        pickupLatitude,
+        pickupLongitude,
+        dropoffLatitude,
+        dropoffLongitude,
+        pickupTime,
+        pickupAddress,
+        dropoffAddress,
+        vehicleTypeId,
+        goodsType,
+        goodsQuantity,
+        paymentMode,
+        instructions,
+      ];
 }
 
-@JsonSerializable()
-class BookingAcceptRequest {
-  @JsonKey(name: 'booking_request_id')
+class BookingAcceptRequest extends Equatable {
   final int bookingRequestId;
 
-  BookingAcceptRequest({
+  const BookingAcceptRequest({
     required this.bookingRequestId,
   });
 
-  factory BookingAcceptRequest.fromJson(Map<String, dynamic> json) => _$BookingAcceptRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$BookingAcceptRequestToJson(this);
+  factory BookingAcceptRequest.fromJson(Map<String, dynamic> json) {
+    return BookingAcceptRequest(
+      bookingRequestId: json['booking_request_id'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'booking_request_id': bookingRequestId,
+    };
+  }
+
+  @override
+  List<Object?> get props => [bookingRequestId];
 }
 
-@JsonSerializable()
-class BookingAcceptResponse {
+class BookingAcceptResponse extends Equatable {
   final String message;
   final Trip trip;
 
-  BookingAcceptResponse({
+  const BookingAcceptResponse({
     required this.message,
     required this.trip,
   });
 
-  factory BookingAcceptResponse.fromJson(Map<String, dynamic> json) => _$BookingAcceptResponseFromJson(json);
-  Map<String, dynamic> toJson() => _$BookingAcceptResponseToJson(this);
-}
+  factory BookingAcceptResponse.fromJson(Map<String, dynamic> json) {
+    return BookingAcceptResponse(
+      message: json['message'] as String,
+      trip: Trip.fromJson(json['trip'] as Map<String, dynamic>),
+    );
+  }
 
-@JsonSerializable()
-class BookingAccept {
-  @JsonKey(name: 'booking_request_id')
-  final int bookingRequestId;
+  Map<String, dynamic> toJson() {
+    return {
+      'message': message,
+      'trip': trip.toJson(),
+    };
+  }
 
-  BookingAccept({
-    required this.bookingRequestId,
-  });
-
-  factory BookingAccept.fromJson(Map<String, dynamic> json) => _$BookingAcceptFromJson(json);
-  Map<String, dynamic> toJson() => _$BookingAcceptToJson(this);
+  @override
+  List<Object?> get props => [message, trip];
 } 

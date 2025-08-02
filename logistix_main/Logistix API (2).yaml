@@ -762,10 +762,13 @@ components:
         estimated_fare:
           type: number
           format: double
+          readOnly: true
         status:
           allOf:
           - $ref: '#/components/schemas/BookingStatusEnum'
           readOnly: true
+        instructions:
+          type: string
         created_at:
           type: string
           format: date-time
@@ -849,14 +852,13 @@ components:
           maxLength: 100
         payment_mode:
           $ref: '#/components/schemas/PaymentModeEnum'
-        estimated_fare:
-          type: number
-          format: double
+        instructions:
+          type: string
+          minLength: 1
       required:
       - dropoff_address
       - dropoff_latitude
       - dropoff_longitude
-      - estimated_fare
       - goods_quantity
       - goods_type
       - pickup_address
@@ -874,12 +876,14 @@ components:
       - SEARCHING
       - ACCEPTED
       - CANCELLED
+      - DRIVERS_NOT_FOUND
       type: string
       description: |-
         * `REQUESTED` - Requested
         * `SEARCHING` - Searching for Driver
         * `ACCEPTED` - Accepted by Driver
         * `CANCELLED` - Cancelled
+        * `DRIVERS_NOT_FOUND` - Drivers Not Found
     Driver:
       type: object
       description: Serializer for the Driver model
@@ -894,8 +898,15 @@ components:
         license_number:
           type: string
           maxLength: 20
+        vehicle_type:
+          type: integer
+          nullable: true
         is_available:
           type: boolean
+        fcm_token:
+          type: string
+          nullable: true
+          maxLength: 255
         average_rating:
           type: string
           format: decimal
@@ -905,10 +916,14 @@ components:
           type: number
           format: double
           readOnly: true
+        location:
+          type: string
+          readOnly: true
       required:
       - average_rating
       - id
       - license_number
+      - location
       - total_earnings
       - user
     DriverRequest:
@@ -919,8 +934,23 @@ components:
           type: string
           minLength: 1
           maxLength: 20
+        vehicle_type:
+          type: integer
+          nullable: true
         is_available:
           type: boolean
+        fcm_token:
+          type: string
+          nullable: true
+          maxLength: 255
+        latitude:
+          type: number
+          format: double
+          writeOnly: true
+        longitude:
+          type: number
+          format: double
+          writeOnly: true
       required:
       - license_number
     Location:
@@ -1050,8 +1080,23 @@ components:
           type: string
           minLength: 1
           maxLength: 20
+        vehicle_type:
+          type: integer
+          nullable: true
         is_available:
           type: boolean
+        fcm_token:
+          type: string
+          nullable: true
+          maxLength: 255
+        latitude:
+          type: number
+          format: double
+          writeOnly: true
+        longitude:
+          type: number
+          format: double
+          writeOnly: true
     PatchedUserRequest:
       type: object
       description: Serializer for the User model

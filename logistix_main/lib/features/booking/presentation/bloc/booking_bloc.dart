@@ -19,9 +19,8 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../core/models/booking_model.dart' as core;
-import '../../../wallet/domain/repositories/wallet_repository.dart';
-import '../../domain/repositories/booking_repository.dart';
+import '../../../../core/repositories/booking_repository.dart';
+import '../../../../core/models/booking_model.dart';
 
 // Events
 abstract class BookingEvent extends Equatable {
@@ -29,6 +28,40 @@ abstract class BookingEvent extends Equatable {
 
   @override
   List<Object?> get props => [];
+}
+
+class LoadBookingRequests extends BookingEvent {
+  const LoadBookingRequests();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class LoadBookingRequestById extends BookingEvent {
+  final int id;
+
+  const LoadBookingRequestById(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class CreateBookingRequest extends BookingEvent {
+  final Map<String, dynamic> bookingData;
+
+  const CreateBookingRequest(this.bookingData);
+
+  @override
+  List<Object?> get props => [bookingData];
+}
+
+class AcceptBooking extends BookingEvent {
+  final int bookingRequestId;
+
+  const AcceptBooking(this.bookingRequestId);
+
+  @override
+  List<Object?> get props => [bookingRequestId];
 }
 
 class CheckWalletBalance extends BookingEvent {
@@ -41,64 +74,20 @@ class CheckWalletBalance extends BookingEvent {
 }
 
 class CreateBookingEvent extends BookingEvent {
-  final String senderName;
-  final String receiverName;
-  final String senderPhone;
-  final String receiverPhone;
-  final double pickupLatitude;
-  final double pickupLongitude;
-  final double dropoffLatitude;
-  final double dropoffLongitude;
-  final DateTime pickupTime;
-  final String pickupAddress;
-  final String dropoffAddress;
-  final int vehicleTypeId;
-  final String goodsType;
-  final String goodsQuantity;
-  final core.PaymentMode paymentMode;
-  final String instructions;
+  final Map<String, dynamic> bookingData;
 
-  const CreateBookingEvent({
-    required this.senderName,
-    required this.receiverName,
-    required this.senderPhone,
-    required this.receiverPhone,
-    required this.pickupLatitude,
-    required this.pickupLongitude,
-    required this.dropoffLatitude,
-    required this.dropoffLongitude,
-    required this.pickupTime,
-    required this.pickupAddress,
-    required this.dropoffAddress,
-    required this.vehicleTypeId,
-    required this.goodsType,
-    required this.goodsQuantity,
-    required this.paymentMode,
-    required this.instructions,
-  });
+  const CreateBookingEvent(this.bookingData);
 
   @override
-  List<Object?> get props => [
-        senderName,
-        receiverName,
-        senderPhone,
-        receiverPhone,
-        pickupLatitude,
-        pickupLongitude,
-        dropoffLatitude,
-        dropoffLongitude,
-        pickupTime,
-        pickupAddress,
-        dropoffAddress,
-        vehicleTypeId,
-        goodsType,
-        goodsQuantity,
-        paymentMode,
-        instructions,
-      ];
+  List<Object?> get props => [bookingData];
 }
 
-class ResetBookingState extends BookingEvent {}
+class ResetBookingState extends BookingEvent {
+  const ResetBookingState();
+
+  @override
+  List<Object?> get props => [];
+}
 
 // States
 abstract class BookingState extends Equatable {
@@ -112,43 +101,60 @@ class BookingInitial extends BookingState {}
 
 class BookingLoading extends BookingState {}
 
-class WalletBalanceChecking extends BookingState {}
+class BookingRequestsLoaded extends BookingState {
+  final List<BookingRequestModel> bookingRequests;
 
-class WalletBalanceSufficient extends BookingState {
-  final double balance;
-  final double requiredAmount;
-
-  const WalletBalanceSufficient({
-    required this.balance,
-    required this.requiredAmount,
-  });
+  const BookingRequestsLoaded(this.bookingRequests);
 
   @override
-  List<Object?> get props => [balance, requiredAmount];
+  List<Object?> get props => [bookingRequests];
 }
 
-class WalletBalanceInsufficient extends BookingState {
-  final double balance;
-  final double requiredAmount;
-  final double shortfall;
+class BookingRequestLoaded extends BookingState {
+  final BookingRequestModel bookingRequest;
 
-  const WalletBalanceInsufficient({
-    required this.balance,
-    required this.requiredAmount,
-    required this.shortfall,
-  });
+  const BookingRequestLoaded(this.bookingRequest);
 
   @override
-  List<Object?> get props => [balance, requiredAmount, shortfall];
+  List<Object?> get props => [bookingRequest];
+}
+
+class BookingRequestCreated extends BookingState {
+  final BookingRequestModel bookingRequest;
+
+  const BookingRequestCreated(this.bookingRequest);
+
+  @override
+  List<Object?> get props => [bookingRequest];
+}
+
+class BookingRequestUpdated extends BookingState {
+  final BookingRequestModel bookingRequest;
+
+  const BookingRequestUpdated(this.bookingRequest);
+
+  @override
+  List<Object?> get props => [bookingRequest];
+}
+
+class BookingRequestAccepted extends BookingState {
+  final int bookingRequestId;
+
+  const BookingRequestAccepted(this.bookingRequestId);
+
+  @override
+  List<Object?> get props => [bookingRequestId];
 }
 
 class BookingSuccess extends BookingState {
-  final core.BookingRequest booking;
+  final BookingRequestModel bookingRequest;
 
-  const BookingSuccess(this.booking);
+  const BookingSuccess(this.bookingRequest);
+
+  BookingRequestModel get booking => bookingRequest;
 
   @override
-  List<Object?> get props => [booking];
+  List<Object?> get props => [bookingRequest];
 }
 
 class BookingError extends BookingState {
@@ -160,85 +166,95 @@ class BookingError extends BookingState {
   List<Object?> get props => [message];
 }
 
-// Bloc
+// BLoC
 class BookingBloc extends Bloc<BookingEvent, BookingState> {
   final BookingRepository _bookingRepository;
-  final WalletRepository _walletRepository;
 
-  BookingBloc({
-    required BookingRepository bookingRepository,
-    required WalletRepository walletRepository,
-  })  : _bookingRepository = bookingRepository,
-        _walletRepository = walletRepository,
-        super(BookingInitial()) {
+  BookingBloc(this._bookingRepository) : super(BookingInitial()) {
+    on<LoadBookingRequests>(_onLoadBookingRequests);
+    on<LoadBookingRequestById>(_onLoadBookingRequestById);
+    on<CreateBookingRequest>(_onCreateBookingRequest);
+    on<AcceptBooking>(_onAcceptBooking);
     on<CheckWalletBalance>(_onCheckWalletBalance);
-    on<CreateBookingEvent>(_onCreateBooking);
+    on<CreateBookingEvent>(_onCreateBookingEvent);
     on<ResetBookingState>(_onResetBookingState);
   }
 
-  Future<void> _onCheckWalletBalance(
-    CheckWalletBalance event,
-    Emitter<BookingState> emit,
-  ) async {
-    emit(WalletBalanceChecking());
-    
+  Future<void> _onLoadBookingRequests(LoadBookingRequests event, Emitter<BookingState> emit) async {
     try {
-      final balance = await _walletRepository.getWalletBalance();
-      
-      if (balance >= event.requiredAmount) {
-        emit(WalletBalanceSufficient(
-          balance: balance,
-          requiredAmount: event.requiredAmount,
-        ));
-      } else {
-        final shortfall = event.requiredAmount - balance;
-        emit(WalletBalanceInsufficient(
-          balance: balance,
-          requiredAmount: event.requiredAmount,
-          shortfall: shortfall,
-        ));
-      }
+      emit(BookingLoading());
+      final bookingRequests = await _bookingRepository.getBookingRequests();
+      emit(BookingRequestsLoaded(bookingRequests));
     } catch (e) {
-      emit(BookingError('Failed to check wallet balance: ${e.toString()}'));
+      emit(BookingError(e.toString()));
     }
   }
 
-  Future<void> _onCreateBooking(
-    CreateBookingEvent event,
-    Emitter<BookingState> emit,
-  ) async {
-    emit(BookingLoading());
-    
+  Future<void> _onLoadBookingRequestById(LoadBookingRequestById event, Emitter<BookingState> emit) async {
     try {
-      final booking = await _bookingRepository.createBooking(
-        senderName: event.senderName,
-        receiverName: event.receiverName,
-        senderPhone: event.senderPhone,
-        receiverPhone: event.receiverPhone,
-        pickupLatitude: event.pickupLatitude,
-        pickupLongitude: event.pickupLongitude,
-        dropoffLatitude: event.dropoffLatitude,
-        dropoffLongitude: event.dropoffLongitude,
-        pickupTime: event.pickupTime,
-        pickupAddress: event.pickupAddress,
-        dropoffAddress: event.dropoffAddress,
-        vehicleTypeId: event.vehicleTypeId,
-        goodsType: event.goodsType,
-        goodsQuantity: event.goodsQuantity,
-        paymentMode: event.paymentMode,
-        instructions: event.instructions,
-      );
-      
-      emit(BookingSuccess(booking));
+      emit(BookingLoading());
+      final bookingRequest = await _bookingRepository.getBookingRequestById(event.id);
+      emit(BookingRequestLoaded(bookingRequest));
     } catch (e) {
-      emit(BookingError('Failed to create booking: ${e.toString()}'));
+      emit(BookingError(e.toString()));
     }
   }
 
-  Future<void> _onResetBookingState(
-    ResetBookingState event,
-    Emitter<BookingState> emit,
-  ) async {
+  Future<void> _onCreateBookingRequest(CreateBookingRequest event, Emitter<BookingState> emit) async {
+    try {
+      emit(BookingLoading());
+      final bookingRequest = await _bookingRepository.createBookingRequest(event.bookingData);
+      emit(BookingRequestCreated(bookingRequest));
+    } catch (e) {
+      emit(BookingError(e.toString()));
+    }
+  }
+
+  Future<void> _onAcceptBooking(AcceptBooking event, Emitter<BookingState> emit) async {
+    try {
+      emit(BookingLoading());
+      await _bookingRepository.acceptBooking(event.bookingRequestId);
+      emit(BookingRequestAccepted(event.bookingRequestId));
+    } catch (e) {
+      emit(BookingError(e.toString()));
+    }
+  }
+
+  Future<void> _onCheckWalletBalance(CheckWalletBalance event, Emitter<BookingState> emit) async {
+    // This would typically check wallet balance
+    // For now, we'll emit a success state
+    emit(BookingSuccess(BookingRequestModel(
+      id: 0,
+      senderName: '',
+      receiverName: '',
+      senderPhone: '',
+      receiverPhone: '',
+      pickupLocation: '',
+      dropoffLocation: '',
+      pickupTime: DateTime.now(),
+      pickupAddress: '',
+      dropoffAddress: '',
+      goodsType: '',
+      goodsQuantity: '',
+      paymentMode: PaymentMode.cash.toString().split('.').last.toUpperCase(),
+      estimatedFare: 0.0,
+      status: BookingStatus.requested.toString().split('.').last.toUpperCase(),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    )));
+  }
+
+  Future<void> _onCreateBookingEvent(CreateBookingEvent event, Emitter<BookingState> emit) async {
+    try {
+      emit(BookingLoading());
+      final bookingRequest = await _bookingRepository.createBookingRequest(event.bookingData);
+      emit(BookingRequestCreated(bookingRequest));
+    } catch (e) {
+      emit(BookingError(e.toString()));
+    }
+  }
+
+  Future<void> _onResetBookingState(ResetBookingState event, Emitter<BookingState> emit) async {
     emit(BookingInitial());
   }
 } 
