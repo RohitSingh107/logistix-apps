@@ -23,13 +23,16 @@ class GetVehicleEstimates {
     return response.estimates.map((estimate) => VehicleEstimateResponse(
       estimatedFare: estimate.estimatedFare,
       pickupReachTime: estimate.pickupReachTime,
-      vehicleType: estimate.vehicleTypeId,
-      vehicleTitle: estimate.vehicleType,
-      vehicleBaseFare: estimate.estimatedFare, // Using estimated fare as base fare
-      vehicleBaseDistance: estimate.estimatedDistance ?? 0.0,
-      vehicleDimensionHeight: 0.0, // Default value, not provided by API
-      vehicleDimensionWeight: 0.0, // Default value, not provided by API
-      vehicleDimensionDepth: 0.0, // Default value, not provided by API
+      vehicleType: estimate.vehicleType,
+      vehicleTitle: estimate.vehicleTitle,
+      vehicleBaseFare: estimate.vehicleBaseFare,
+      vehicleBaseDistance: estimate.vehicleBaseDistance,
+      vehicleDimensionHeight: estimate.vehicleDimensionHeight,
+      vehicleDimensionWeight: estimate.vehicleDimensionWeight,
+      vehicleDimensionDepth: estimate.vehicleDimensionDepth,
+      vehicleDimensionUnit: estimate.vehicleDimensionUnit,
+      estimatedDistance: estimate.estimatedDistance,
+      estimatedDuration: estimate.estimatedDuration,
     )).toList();
   }
 } 

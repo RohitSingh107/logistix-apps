@@ -41,7 +41,31 @@ class VehicleEstimationRepository implements VehicleEstimationRepositoryInterfac
       }
 
       try {
-        return VehicleEstimationResponse.fromJson(response.data);
+        print('Vehicle estimation API response: ${response.data}');
+        final responseData = VehicleEstimationResponse.fromJson(response.data);
+        
+        // Calculate distance and duration for each estimate
+        final distance = _calculateDistance(pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude);
+        final duration = _calculateDuration(distance);
+        
+        // Update estimates with calculated distance and duration
+        final updatedEstimates = responseData.estimates.map((estimate) => VehicleEstimate(
+          estimatedFare: estimate.estimatedFare,
+          pickupReachTime: estimate.pickupReachTime,
+          vehicleType: estimate.vehicleType,
+          vehicleTitle: estimate.vehicleTitle,
+          vehicleCapacity: estimate.vehicleCapacity,
+          vehicleBaseFare: estimate.vehicleBaseFare,
+          vehicleBaseDistance: estimate.vehicleBaseDistance,
+          vehicleDimensionHeight: estimate.vehicleDimensionHeight,
+          vehicleDimensionWeight: estimate.vehicleDimensionWeight,
+          vehicleDimensionDepth: estimate.vehicleDimensionDepth,
+          vehicleDimensionUnit: estimate.vehicleDimensionUnit,
+          estimatedDistance: distance,
+          estimatedDuration: duration,
+        )).toList();
+        
+        return VehicleEstimationResponse(estimates: updatedEstimates);
       } catch (e) {
         print('Error parsing vehicle estimation response: $e');
         return _getFallbackEstimates(pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude);
@@ -63,31 +87,53 @@ class VehicleEstimationRepository implements VehicleEstimationRepositoryInterfac
   ) {
     // Calculate distance for pricing
     final distance = _calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng);
+    final duration = _calculateDuration(distance);
     
     final estimates = [
       VehicleEstimate(
-        vehicleType: 'Two Wheeler',
-        vehicleTypeId: 1,
         estimatedFare: _calculateFare(distance, 40, 12), // Base 40, per km 12
         pickupReachTime: _calculatePickupTime(distance),
-        estimatedDuration: _calculateDuration(distance),
+        vehicleType: 1,
+        vehicleTitle: 'MOTORCYCLE',
+        vehicleCapacity: 200,
+        vehicleBaseFare: 40.0,
+        vehicleBaseDistance: 2.0,
+        vehicleDimensionHeight: 12.0,
+        vehicleDimensionWeight: 12.0,
+        vehicleDimensionDepth: 12.0,
+        vehicleDimensionUnit: 'cm',
         estimatedDistance: distance,
+        estimatedDuration: duration,
       ),
       VehicleEstimate(
-        vehicleType: 'Three Wheeler (Auto)',
-        vehicleTypeId: 2,
         estimatedFare: _calculateFare(distance, 60, 18), // Base 60, per km 18
         pickupReachTime: _calculatePickupTime(distance),
-        estimatedDuration: _calculateDuration(distance),
+        vehicleType: 2,
+        vehicleTitle: 'W3',
+        vehicleCapacity: 500,
+        vehicleBaseFare: 60.0,
+        vehicleBaseDistance: 2.0,
+        vehicleDimensionHeight: 24.0,
+        vehicleDimensionWeight: 24.0,
+        vehicleDimensionDepth: 24.0,
+        vehicleDimensionUnit: 'cm',
         estimatedDistance: distance,
+        estimatedDuration: duration,
       ),
       VehicleEstimate(
-        vehicleType: 'Four Wheeler (Mini Truck)',
-        vehicleTypeId: 3,
         estimatedFare: _calculateFare(distance, 100, 25), // Base 100, per km 25
         pickupReachTime: _calculatePickupTime(distance),
-        estimatedDuration: _calculateDuration(distance),
+        vehicleType: 3,
+        vehicleTitle: 'MINI TRUCK',
+        vehicleCapacity: 1000,
+        vehicleBaseFare: 100.0,
+        vehicleBaseDistance: 2.0,
+        vehicleDimensionHeight: 36.0,
+        vehicleDimensionWeight: 36.0,
+        vehicleDimensionDepth: 36.0,
+        vehicleDimensionUnit: 'cm',
         estimatedDistance: distance,
+        estimatedDuration: duration,
       ),
     ];
 

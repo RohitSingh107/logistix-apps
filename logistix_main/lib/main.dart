@@ -46,6 +46,31 @@ import 'features/booking/presentation/screens/map_test_screen.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
 import 'core/services/test_map_service.dart';
 
+// Onboarding imports
+import 'features/onboarding/presentation/screens/welcome_screen.dart';
+import 'features/onboarding/presentation/screens/app_tour_screen.dart';
+import 'features/onboarding/presentation/screens/feature_intro_screen.dart';
+import 'features/onboarding/presentation/screens/permissions_screen.dart';
+
+// Booking imports
+import 'features/booking/presentation/screens/scheduled_booking_screen.dart';
+import 'features/booking/presentation/screens/recurring_booking_screen.dart';
+import 'features/booking/presentation/screens/package_details_screen.dart';
+
+// Payment imports
+import 'features/payment/presentation/screens/payment_methods_screen.dart';
+import 'features/payment/presentation/screens/add_payment_method_screen.dart';
+import 'features/payment/presentation/screens/payment_confirmation_screen.dart';
+import 'features/payment/presentation/screens/payment_history_screen.dart';
+import 'features/payment/presentation/screens/invoice_generation_screen.dart';
+import 'features/payment/presentation/screens/refund_request_screen.dart';
+
+// Support imports
+import 'features/support/presentation/screens/support_center_screen.dart';
+
+// Tracking imports
+import 'features/tracking/presentation/screens/live_tracking_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -202,6 +227,31 @@ class MyApp extends StatelessWidget {
               '/settings': (context) => const SettingsScreen(),
               '/map-test': (context) => const MapTestScreen(),
               '/wallet': (context) => const WalletScreen(),
+              
+              // Onboarding Routes
+              '/welcome': (context) => const WelcomeScreen(),
+              '/app-tour': (context) => const AppTourScreen(),
+              '/feature-intro': (context) => const FeatureIntroScreen(),
+              '/permissions': (context) => const PermissionsScreen(),
+              
+              // Booking Routes
+              '/scheduled-booking': (context) => const ScheduledBookingScreen(),
+              '/recurring-booking': (context) => const RecurringBookingScreen(),
+              '/package-details': (context) => const PackageDetailsScreen(),
+              
+              // Payment Routes
+              '/payment-methods': (context) => const PaymentMethodsScreen(),
+              '/add-payment-method': (context) => const AddPaymentMethodScreen(),
+              '/payment-confirmation': (context) => const PaymentConfirmationScreen(),
+              '/payment-history': (context) => const PaymentHistoryScreen(),
+              '/invoice-generation': (context) => const InvoiceGenerationScreen(),
+              '/refund-request': (context) => const RefundRequestScreen(),
+              
+              // Support Routes
+              '/support-center': (context) => const SupportCenterScreen(),
+              
+              // Tracking Routes
+              '/live-tracking': (context) => const LiveTrackingScreen(),
             },
           );
         },

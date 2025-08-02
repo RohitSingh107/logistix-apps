@@ -16,24 +16,17 @@
  * - Maps API field names to Dart property names using JsonKey
  */
 
-import 'package:json_annotation/json_annotation.dart';
+import 'package:equatable/equatable.dart';
 
-part 'user_model.g.dart';
-
-@JsonSerializable()
-class User {
+class UserModel extends Equatable {
   final int id;
   final String phone;
-  @JsonKey(name: 'first_name')
   final String firstName;
-  @JsonKey(name: 'last_name')
   final String lastName;
-  @JsonKey(name: 'profile_picture')
   final String? profilePicture;
-  @JsonKey(name: 'fcm_token')
   final String? fcmToken;
 
-  User({
+  const UserModel({
     required this.id,
     required this.phone,
     required this.firstName,
@@ -42,78 +35,230 @@ class User {
     this.fcmToken,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
-  Map<String, dynamic> toJson() => _$UserToJson(this);
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] as int,
+      phone: json['phone'] as String,
+      firstName: json['first_name'] as String,
+      lastName: json['last_name'] as String,
+      profilePicture: json['profile_picture'] as String?,
+      fcmToken: json['fcm_token'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'phone': phone,
+      'first_name': firstName,
+      'last_name': lastName,
+      'profile_picture': profilePicture,
+      'fcm_token': fcmToken,
+    };
+  }
+
+  UserModel copyWith({
+    int? id,
+    String? phone,
+    String? firstName,
+    String? lastName,
+    String? profilePicture,
+    String? fcmToken,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      phone: phone ?? this.phone,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      profilePicture: profilePicture ?? this.profilePicture,
+      fcmToken: fcmToken ?? this.fcmToken,
+    );
+  }
+
+  String get fullName => '$firstName $lastName';
+
+  @override
+  List<Object?> get props => [
+        id,
+        phone,
+        firstName,
+        lastName,
+        profilePicture,
+        fcmToken,
+      ];
 }
 
-@JsonSerializable()
-class UserRequest {
-  @JsonKey(name: 'first_name')
-  final String? firstName;
-  @JsonKey(name: 'last_name')
-  final String? lastName;
-  @JsonKey(name: 'profile_picture')
+// Legacy classes for backward compatibility
+class User extends Equatable {
+  final int id;
+  final String phone;
+  final String firstName;
+  final String lastName;
   final String? profilePicture;
-  @JsonKey(name: 'fcm_token')
   final String? fcmToken;
 
-  UserRequest({
+  const User({
+    required this.id,
+    required this.phone,
+    required this.firstName,
+    required this.lastName,
+    this.profilePicture,
+    this.fcmToken,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] as int,
+      phone: json['phone'] as String,
+      firstName: json['first_name'] as String,
+      lastName: json['last_name'] as String,
+      profilePicture: json['profile_picture'] as String?,
+      fcmToken: json['fcm_token'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'phone': phone,
+      'first_name': firstName,
+      'last_name': lastName,
+      'profile_picture': profilePicture,
+      'fcm_token': fcmToken,
+    };
+  }
+
+  @override
+  List<Object?> get props => [id, phone, firstName, lastName, profilePicture, fcmToken];
+}
+
+class UserRequest extends Equatable {
+  final String? firstName;
+  final String? lastName;
+  final String? profilePicture;
+  final String? fcmToken;
+
+  const UserRequest({
     this.firstName,
     this.lastName,
     this.profilePicture,
     this.fcmToken,
   });
 
-  factory UserRequest.fromJson(Map<String, dynamic> json) => _$UserRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$UserRequestToJson(this);
+  factory UserRequest.fromJson(Map<String, dynamic> json) {
+    return UserRequest(
+      firstName: json['first_name'] as String?,
+      lastName: json['last_name'] as String?,
+      profilePicture: json['profile_picture'] as String?,
+      fcmToken: json['fcm_token'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'first_name': firstName,
+      'last_name': lastName,
+      'profile_picture': profilePicture,
+      'fcm_token': fcmToken,
+    };
+  }
+
+  @override
+  List<Object?> get props => [firstName, lastName, profilePicture, fcmToken];
 }
 
-@JsonSerializable()
-class OTPRequest {
+class OTPRequest extends Equatable {
   final String phone;
 
-  OTPRequest({
+  const OTPRequest({
     required this.phone,
   });
 
-  factory OTPRequest.fromJson(Map<String, dynamic> json) => _$OTPRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$OTPRequestToJson(this);
+  factory OTPRequest.fromJson(Map<String, dynamic> json) {
+    return OTPRequest(
+      phone: json['phone'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'phone': phone,
+    };
+  }
+
+  @override
+  List<Object?> get props => [phone];
 }
 
-@JsonSerializable()
-class OTPVerification {
+class OTPVerification extends Equatable {
   final String phone;
   final String otp;
 
-  OTPVerification({
+  const OTPVerification({
     required this.phone,
     required this.otp,
   });
 
-  factory OTPVerification.fromJson(Map<String, dynamic> json) => _$OTPVerificationFromJson(json);
-  Map<String, dynamic> toJson() => _$OTPVerificationToJson(this);
+  factory OTPVerification.fromJson(Map<String, dynamic> json) {
+    return OTPVerification(
+      phone: json['phone'] as String,
+      otp: json['otp'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'phone': phone,
+      'otp': otp,
+    };
+  }
+
+  @override
+  List<Object?> get props => [phone, otp];
 }
 
-@JsonSerializable()
-class TokenRefresh {
+class TokenRefresh extends Equatable {
   final String access;
 
-  TokenRefresh({
+  const TokenRefresh({
     required this.access,
   });
 
-  factory TokenRefresh.fromJson(Map<String, dynamic> json) => _$TokenRefreshFromJson(json);
-  Map<String, dynamic> toJson() => _$TokenRefreshToJson(this);
+  factory TokenRefresh.fromJson(Map<String, dynamic> json) {
+    return TokenRefresh(
+      access: json['access'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'access': access,
+    };
+  }
+
+  @override
+  List<Object?> get props => [access];
 }
 
-@JsonSerializable()
-class TokenRefreshRequest {
+class TokenRefreshRequest extends Equatable {
   final String refresh;
 
-  TokenRefreshRequest({
+  const TokenRefreshRequest({
     required this.refresh,
   });
 
-  factory TokenRefreshRequest.fromJson(Map<String, dynamic> json) => _$TokenRefreshRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$TokenRefreshRequestToJson(this);
+  factory TokenRefreshRequest.fromJson(Map<String, dynamic> json) {
+    return TokenRefreshRequest(
+      refresh: json['refresh'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'refresh': refresh,
+    };
+  }
+
+  @override
+  List<Object?> get props => [refresh];
 } 

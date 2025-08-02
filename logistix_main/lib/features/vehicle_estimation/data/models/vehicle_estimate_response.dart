@@ -8,6 +8,9 @@ class VehicleEstimateResponse {
   final double vehicleDimensionHeight;
   final double vehicleDimensionWeight;
   final double vehicleDimensionDepth;
+  final String vehicleDimensionUnit;
+  final double? estimatedDistance;
+  final int? estimatedDuration;
 
   VehicleEstimateResponse({
     required this.estimatedFare,
@@ -19,6 +22,9 @@ class VehicleEstimateResponse {
     required this.vehicleDimensionHeight,
     required this.vehicleDimensionWeight,
     required this.vehicleDimensionDepth,
+    required this.vehicleDimensionUnit,
+    this.estimatedDistance,
+    this.estimatedDuration,
   });
 
   factory VehicleEstimateResponse.fromJson(Map<String, dynamic> json) {
@@ -32,6 +38,7 @@ class VehicleEstimateResponse {
       vehicleDimensionHeight: (json['vehicle_dimension_height'] as num).toDouble(),
       vehicleDimensionWeight: (json['vehicle_dimension_weight'] as num).toDouble(),
       vehicleDimensionDepth: (json['vehicle_dimension_depth'] as num).toDouble(),
+      vehicleDimensionUnit: json['vehicle_dimension_unit'] as String,
     );
   }
 

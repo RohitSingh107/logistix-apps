@@ -28,7 +28,7 @@ import '../../../wallet/presentation/bloc/wallet_bloc.dart';
 import '../../../wallet/presentation/widgets/add_balance_modal.dart';
 import '../../data/models/booking_request.dart' as data_models;
 import '../../data/services/booking_service.dart';
-import '../../domain/repositories/booking_repository.dart';
+import '../../../../core/repositories/booking_repository.dart';
 import '../bloc/booking_bloc.dart';
 import '../widgets/insufficient_balance_modal.dart';
 import '../../../../core/di/service_locator.dart';
@@ -56,8 +56,7 @@ class BookingDetailsScreen extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (context) => BookingBloc(
-            bookingRepository: serviceLocator<BookingRepository>(),
-            walletRepository: serviceLocator<WalletRepository>(),
+            serviceLocator<BookingRepository>(),
           ),
         ),
         BlocProvider(
@@ -211,29 +210,35 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
   }
 
   void _createBooking() {
-    final paymentMode = _selectedPaymentMode == 'WALLET' 
-        ? core.PaymentMode.wallet 
-        : core.PaymentMode.cash;
+    // Ensure instructions is not empty as API requires minLength: 1
+    final instructions = _instructionsController.text.trim().isEmpty 
+        ? "No special instructions" 
+        : _instructionsController.text.trim();
+
+    final bookingData = {
+      'sender_name': _senderNameController.text.trim(),
+      'receiver_name': _receiverNameController.text.trim(),
+      'sender_phone': _senderPhoneController.text.trim(),
+      'receiver_phone': _receiverPhoneController.text.trim(),
+      'pickup_latitude': widget.pickupLocation.lat,
+      'pickup_longitude': widget.pickupLocation.lng,
+      'dropoff_latitude': widget.dropLocation.lat,
+      'dropoff_longitude': widget.dropLocation.lng,
+      'pickup_time': _selectedPickupTime.toIso8601String(),
+      'pickup_address': widget.pickupAddress,
+      'dropoff_address': widget.dropAddress,
+      'vehicle_type_id': widget.selectedVehicle.vehicleType,
+      'goods_type': _goodsTypeController.text.trim(),
+      'goods_quantity': _goodsQuantityController.text.trim(),
+      'payment_mode': _selectedPaymentMode,
+      'instructions': instructions,
+    };
+
+    // Debug: Print the booking data being sent
+    print('DEBUG: Booking data being sent: $bookingData');
 
     context.read<BookingBloc>().add(
-      CreateBookingEvent(
-        senderName: _senderNameController.text.trim(),
-        receiverName: _receiverNameController.text.trim(),
-        senderPhone: _senderPhoneController.text.trim(),
-        receiverPhone: _receiverPhoneController.text.trim(),
-        pickupLatitude: widget.pickupLocation.lat,
-        pickupLongitude: widget.pickupLocation.lng,
-        dropoffLatitude: widget.dropLocation.lat,
-        dropoffLongitude: widget.dropLocation.lng,
-        pickupTime: _selectedPickupTime,
-        pickupAddress: widget.pickupAddress,
-        dropoffAddress: widget.dropAddress,
-        vehicleTypeId: widget.selectedVehicle.vehicleType,
-        goodsType: _goodsTypeController.text.trim(),
-        goodsQuantity: _goodsQuantityController.text.trim(),
-        paymentMode: paymentMode,
-        instructions: _instructionsController.text.trim().isEmpty ? "No special instructions" : _instructionsController.text.trim(),
-      ),
+      CreateBookingEvent(bookingData),
     );
   }
 
@@ -282,50 +287,39 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
     );
   }
 
-  void _navigateToDriverSearch(core.BookingRequest booking) {
-    // Create the booking request for the service
-    final bookingRequest = data_models.BookingRequest(
+  void _navigateToDriverSearch(core.BookingRequestModel booking) {
+    // Convert BookingRequestModel to BookingResponse
+    final bookingResponse = data_models.BookingResponse(
+      id: booking.id,
+      tripId: booking.tripId,
       senderName: booking.senderName,
       receiverName: booking.receiverName,
       senderPhone: booking.senderPhone,
       receiverPhone: booking.receiverPhone,
-      pickupLatitude: widget.pickupLocation.lat,
-      pickupLongitude: widget.pickupLocation.lng,
-      dropoffLatitude: widget.dropLocation.lat,
-      dropoffLongitude: widget.dropLocation.lng,
       pickupTime: booking.pickupTime,
       pickupAddress: booking.pickupAddress,
       dropoffAddress: booking.dropoffAddress,
-      vehicleTypeId: widget.selectedVehicle.vehicleType,
       goodsType: booking.goodsType,
       goodsQuantity: booking.goodsQuantity,
-      paymentMode: booking.paymentMode.toString().split('.').last.toUpperCase(),
+      paymentMode: booking.paymentMode,
       estimatedFare: booking.estimatedFare,
+      status: booking.status,
+      createdAt: booking.createdAt,
+      updatedAt: booking.updatedAt,
     );
 
-    _bookingService.createBooking(bookingRequest).then((bookingResponse) {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DriverSearchScreen(
-              bookingDetails: bookingResponse,
-              selectedVehicle: widget.selectedVehicle,
-            ),
+    // Navigate to driver search screen
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DriverSearchScreen(
+            bookingDetails: bookingResponse,
+            selectedVehicle: widget.selectedVehicle,
           ),
-        );
-      }
-    }).catchError((e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create booking: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    });
+        ),
+      );
+    }
   }
 
   @override
@@ -339,13 +333,16 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
             if (state is WalletBalanceSufficient) {
               // Proceed with booking creation
               _createBooking();
-            } else if (state is WalletBalanceInsufficient) {
-              // Show insufficient balance modal
-              _showInsufficientBalanceModal(context, state);
+            } else if (state is BookingRequestCreated) {
+              // Navigate to driver search screen
+              print('DEBUG: Booking created successfully, navigating to driver search');
+              _navigateToDriverSearch(state.bookingRequest);
             } else if (state is BookingSuccess) {
               // Navigate to driver search screen
+              print('DEBUG: Booking success, navigating to driver search');
               _navigateToDriverSearch(state.booking);
             } else if (state is BookingError) {
+              print('DEBUG: Booking error: ${state.message}');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
