@@ -61,6 +61,10 @@ class BottomNavBar extends StatelessWidget {
             label: 'Orders',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.support_agent),
+            label: 'Support',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.account_circle),
             label: 'Account',
           ),

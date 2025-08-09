@@ -28,6 +28,7 @@ import '../../../booking/presentation/screens/orders_screen.dart';
 import '../../../booking/presentation/screens/trip_details_screen.dart';
 import '../../../booking/data/services/booking_service.dart';
 import '../../../booking/data/models/booking_list_response.dart';
+import '../../../support/presentation/screens/support_center_screen.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,11 +41,29 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomePage(),
-    const OrdersScreen(),
-    const ProfileScreen(),
-  ];
+  Widget _getScreen(int index) {
+    try {
+      switch (index) {
+        case 0:
+          return const HomePage();
+        case 1:
+          return const OrdersScreen();
+        case 2:
+          return const SupportCenterScreen();
+        case 3:
+          return const ProfileScreen();
+        default:
+          return const HomePage();
+      }
+    } catch (e) {
+      print('Error creating screen for index $index: $e');
+      return const Scaffold(
+        body: Center(
+          child: Text('Error loading screen'),
+        ),
+      );
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -55,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: _getScreen(_currentIndex),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onItemTapped: _onItemTapped,
@@ -269,6 +288,7 @@ class _HomePageState extends State<HomePage> {
                   subtitle: 'Fast & reliable',
                   color: Colors.orange,
                   gradient: [Colors.orange.shade400, Colors.orange.shade600],
+                  onTap: () => Navigator.pushNamed(context, '/booking'),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -280,6 +300,35 @@ class _HomePageState extends State<HomePage> {
                   subtitle: 'We buy & deliver',
                   color: Colors.green,
                   gradient: [Colors.green.shade400, Colors.green.shade600],
+                  onTap: () => Navigator.pushNamed(context, '/package-details'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: _buildServiceCard(
+                  context,
+                  icon: Icons.schedule,
+                  title: 'Scheduled Booking',
+                  subtitle: 'Plan ahead',
+                  color: Colors.blue,
+                  gradient: [Colors.blue.shade400, Colors.blue.shade600],
+                  onTap: () => Navigator.pushNamed(context, '/scheduled-booking'),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: _buildServiceCard(
+                  context,
+                  icon: Icons.repeat,
+                  title: 'Recurring Booking',
+                  subtitle: 'Regular deliveries',
+                  color: Colors.purple,
+                  gradient: [Colors.purple.shade400, Colors.purple.shade600],
+                  onTap: () => Navigator.pushNamed(context, '/recurring-booking'),
                 ),
               ),
             ],
@@ -296,9 +345,10 @@ class _HomePageState extends State<HomePage> {
     required String subtitle,
     required Color color,
     required List<Color> gradient,
+    VoidCallback? onTap,
   }) {
     return GestureDetector(
-      onTap: () {
+      onTap: onTap ?? () {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const BookingScreen()),

@@ -192,6 +192,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 _buildLinkItem(
                   context,
+                  Icons.history,
+                  'Payment History',
+                  () {
+                    Navigator.pushNamed(context, '/payment-history');
+                  },
+                ),
+                _buildLinkItem(
+                  context,
+                  Icons.receipt,
+                  'Invoice Generation',
+                  () {
+                    Navigator.pushNamed(context, '/invoice-generation');
+                  },
+                ),
+                _buildLinkItem(
+                  context,
+                  Icons.refresh,
+                  'Refund Request',
+                  () {
+                    Navigator.pushNamed(context, '/refund-request');
+                  },
+                ),
+                _buildLinkItem(
+                  context,
                   Icons.notifications,
                   'Notification Settings',
                   () {
@@ -204,6 +228,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Language',
                   () {
                     _showLanguageSelectionDialog(context);
+                  },
+                ),
+                _buildLinkItem(
+                  context,
+                  Icons.rocket_launch,
+                  'Feature Demo',
+                  () {
+                    Navigator.pushNamed(context, '/feature-demo');
                   },
                 ),
               ],
@@ -221,7 +253,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Icons.help,
                   'Help Center',
                   () {
-                    _launchURL('https://logistix.example.com/help');
+                    Navigator.pushNamed(context, '/support-center');
                   },
                 ),
                 _buildLinkItem(

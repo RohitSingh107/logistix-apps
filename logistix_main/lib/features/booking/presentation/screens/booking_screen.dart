@@ -181,6 +181,69 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              switch (value) {
+                case 'scheduled':
+                  Navigator.pushNamed(context, '/scheduled-booking');
+                  break;
+                case 'recurring':
+                  Navigator.pushNamed(context, '/recurring-booking');
+                  break;
+                case 'package':
+                  Navigator.pushNamed(context, '/package-details');
+                  break;
+                case 'support':
+                  Navigator.pushNamed(context, '/support-center');
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'scheduled',
+                child: Row(
+                  children: [
+                    Icon(Icons.schedule),
+                    SizedBox(width: 8),
+                    Text('Scheduled Booking'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'recurring',
+                child: Row(
+                  children: [
+                    Icon(Icons.repeat),
+                    SizedBox(width: 8),
+                    Text('Recurring Booking'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'package',
+                child: Row(
+                  children: [
+                    Icon(Icons.inventory),
+                    SizedBox(width: 8),
+                    Text('Package Details'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'support',
+                child: Row(
+                  children: [
+                    Icon(Icons.support_agent),
+                    SizedBox(width: 8),
+                    Text('Support'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: Column(
         children: [
