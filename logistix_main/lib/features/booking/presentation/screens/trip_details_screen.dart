@@ -381,6 +381,14 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
     
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/support-center');
+        },
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.support_agent),
+      ),
       body: CustomScrollView(
         slivers: [
           _buildAppBar(theme),

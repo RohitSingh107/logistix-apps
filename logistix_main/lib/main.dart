@@ -71,6 +71,9 @@ import 'features/support/presentation/screens/support_center_screen.dart';
 // Tracking imports
 import 'features/tracking/presentation/screens/live_tracking_screen.dart';
 
+// Demo imports
+import 'features/demo/presentation/screens/feature_demo_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -113,11 +116,18 @@ API_KEY=development_key
     await setupServiceLocator();
     print("Service locator setup complete");
     
-    // Create repositories
+    // Create repositories with error handling
     print("Creating repositories...");
-    final AuthRepository authRepository = serviceLocator<AuthRepository>();
-    final UserRepository userRepository = serviceLocator<UserRepository>();
-    print("Repositories created successfully");
+    AuthRepository authRepository;
+    UserRepository userRepository;
+    try {
+      authRepository = serviceLocator<AuthRepository>();
+      userRepository = serviceLocator<UserRepository>();
+      print("Repositories created successfully");
+    } catch (e) {
+      print("Error creating repositories: $e");
+      throw Exception("Failed to initialize repositories: $e");
+    }
     
     // Initialize Push Notifications
     print("🔔 Initializing Push Notifications...");
@@ -208,10 +218,15 @@ class MyApp extends StatelessWidget {
               : AppTheme.getTheme(AppTheme.lightTheme),
             home: BlocBuilder<AuthBloc, AuthState>(
               builder: (context, state) {
-                if (state is AuthSuccess) {
-                  return const HomeScreen();
+                try {
+                  if (state is AuthSuccess) {
+                    return const HomeScreen();
+                  }
+                  return const LoginScreen();
+                } catch (e) {
+                  print('Error in auth state builder: $e');
+                  return const LoginScreen();
                 }
-                return const LoginScreen();
               },
             ),
             routes: {
@@ -252,6 +267,9 @@ class MyApp extends StatelessWidget {
               
               // Tracking Routes
               '/live-tracking': (context) => const LiveTrackingScreen(),
+              
+              // Demo Routes
+              '/feature-demo': (context) => const FeatureDemoScreen(),
             },
           );
         },
@@ -260,17 +278,12 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Redirects to the main HomeScreen
+// Simple loading page
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Navigate to the main HomeScreen
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.of(context).pushReplacementNamed('/home');
-    });
-    
     return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(),

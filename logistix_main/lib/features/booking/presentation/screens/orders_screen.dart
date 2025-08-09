@@ -302,6 +302,15 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
     
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          _showQuickActions(context);
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Quick Actions'),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+      ),
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
         elevation: 1,
@@ -1202,5 +1211,121 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
       case OrderType.cancelled:
         return 'You haven\'t cancelled any orders.\nCancelled orders will be shown here.';
     }
+  }
+
+  void _showQuickActions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Quick Actions',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickActionCard(
+                      context,
+                      icon: Icons.add_shopping_cart,
+                      title: 'New Booking',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/booking');
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildQuickActionCard(
+                      context,
+                      icon: Icons.schedule,
+                      title: 'Scheduled',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/scheduled-booking');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickActionCard(
+                      context,
+                      icon: Icons.repeat,
+                      title: 'Recurring',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/recurring-booking');
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildQuickActionCard(
+                      context,
+                      icon: Icons.support_agent,
+                      title: 'Support',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/support-center');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickActionCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: Theme.of(context).colorScheme.primary,
+              size: 32,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 } 

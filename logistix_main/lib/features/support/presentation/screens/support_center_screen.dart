@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class SupportCenterScreen extends StatefulWidget {
   const SupportCenterScreen({Key? key}) : super(key: key);
@@ -60,9 +58,9 @@ class _SupportCenterScreenState extends State<SupportCenterScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Support Center',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -71,51 +69,41 @@ class _SupportCenterScreenState extends State<SupportCenterScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
               Text(
                 'How can we help?',
-                style: GoogleFonts.poppins(
-                  fontSize: 24.sp,
+                style: TextStyle(
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.onBackground,
                 ),
               ),
-              SizedBox(height: 8.h),
+              const SizedBox(height: 8),
               Text(
                 'Choose an option below to get the help you need',
-                style: GoogleFonts.poppins(
-                  fontSize: 16.sp,
+                style: TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.w400,
                   color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
                 ),
               ),
-              SizedBox(height: 24.h),
+              const SizedBox(height: 24),
               
               // Quick Actions
               _buildQuickActions(),
-              SizedBox(height: 24.h),
+              const SizedBox(height: 24),
               
               // Support Categories
-              Text(
-                'Support Options',
-                style: GoogleFonts.poppins(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onBackground,
-                ),
-              ),
-              SizedBox(height: 16.h),
-              
               Expanded(
                 child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 16.w,
-                    mainAxisSpacing: 16.h,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
                     childAspectRatio: 1.2,
                   ),
                   itemCount: _supportCategories.length,
@@ -132,105 +120,91 @@ class _SupportCenterScreenState extends State<SupportCenterScreen> {
   }
 
   Widget _buildQuickActions() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Actions',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onBackground,
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.phone,
-                color: Theme.of(context).colorScheme.primary,
-                size: 20.w,
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildQuickActionCard(
+                icon: Icons.phone,
+                title: 'Call Support',
+                subtitle: 'Speak with our team',
+                color: Colors.green,
+                onTap: () {
+                  // Handle call support
+                },
               ),
-              SizedBox(width: 8.w),
-              Text(
-                'Quick Contact',
-                style: GoogleFonts.poppins(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildQuickActionCard(
+                icon: Icons.email,
+                title: 'Email Support',
+                subtitle: 'Send us an email',
+                color: Colors.blue,
+                onTap: () {
+                  // Handle email support
+                },
               ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildQuickActionButton(
-                  title: 'Call Us',
-                  subtitle: '1800-123-4567',
-                  icon: Icons.call,
-                  onTap: () {
-                    // Handle call action
-                  },
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _buildQuickActionButton(
-                  title: 'Email Us',
-                  subtitle: 'support@logistix.com',
-                  icon: Icons.email,
-                  onTap: () {
-                    // Handle email action
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget _buildQuickActionButton({
+  Widget _buildQuickActionCard({
+    required IconData icon,
     required String title,
     required String subtitle,
-    required IconData icon,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12.r),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: EdgeInsets.all(12.w),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.r),
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
           ),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              color: Theme.of(context).colorScheme.primary,
-              size: 20.w,
+              color: color,
+              size: 32,
             ),
-            SizedBox(height: 8.h),
+            const SizedBox(height: 8),
             Text(
               title,
-              style: GoogleFonts.poppins(
-                fontSize: 12.sp,
+              style: TextStyle(
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Theme.of(context).colorScheme.onBackground,
               ),
+              textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 4),
             Text(
               subtitle,
-              style: GoogleFonts.poppins(
-                fontSize: 10.sp,
+              style: TextStyle(
+                fontSize: 12,
                 fontWeight: FontWeight.w400,
                 color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
               ),
@@ -247,11 +221,11 @@ class _SupportCenterScreenState extends State<SupportCenterScreen> {
       onTap: () {
         Navigator.pushNamed(context, category.route);
       },
-      borderRadius: BorderRadius.circular(16.r),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
           ),
@@ -264,43 +238,43 @@ class _SupportCenterScreenState extends State<SupportCenterScreen> {
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.all(16.w),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Icon
               Container(
-                width: 48.w,
-                height: 48.w,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: category.color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   category.icon,
                   color: category.color,
-                  size: 24.w,
+                  size: 24,
                 ),
               ),
-              SizedBox(height: 12.h),
+              const SizedBox(height: 12),
               
               // Title
               Text(
                 category.title,
-                style: GoogleFonts.poppins(
-                  fontSize: 14.sp,
+                style: TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Theme.of(context).colorScheme.onBackground,
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 4.h),
+              const SizedBox(height: 4),
               
               // Description
               Text(
                 category.description,
-                style: GoogleFonts.poppins(
-                  fontSize: 12.sp,
+                style: TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.w400,
                   color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
                 ),
