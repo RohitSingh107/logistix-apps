@@ -45,6 +45,7 @@ dependencies:
   url_launcher: ^6.2.5
   jwt_decoder: ^2.0.1
   json_annotation: ^4.8.1
+  video_player: ^2.8.6
 
   # Firebase
   firebase_core: ^2.24.2
@@ -68,3 +69,4 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/videos/

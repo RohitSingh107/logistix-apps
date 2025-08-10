@@ -51,6 +51,7 @@ import 'features/onboarding/presentation/screens/welcome_screen.dart';
 import 'features/onboarding/presentation/screens/app_tour_screen.dart';
 import 'features/onboarding/presentation/screens/feature_intro_screen.dart';
 import 'features/onboarding/presentation/screens/permissions_screen.dart';
+import 'features/onboarding/presentation/screens/splash_screen.dart';
 
 // Booking imports
 import 'features/booking/presentation/screens/scheduled_booking_screen.dart';
@@ -216,20 +217,9 @@ class MyApp extends StatelessWidget {
             theme: themeState is ThemeLoaded 
               ? AppTheme.getTheme(themeState.themeName)
               : AppTheme.getTheme(AppTheme.lightTheme),
-            home: BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                try {
-                  if (state is AuthSuccess) {
-                    return const HomeScreen();
-                  }
-                  return const LoginScreen();
-                } catch (e) {
-                  print('Error in auth state builder: $e');
-                  return const LoginScreen();
-                }
-              },
-            ),
+            home: const SplashScreen(),
             routes: {
+              '/splash': (context) => const SplashScreen(),
               '/login': (context) => const LoginScreen(),
               '/signup': (context) => const SignupScreen(),
               '/home': (context) => const HomeScreen(),
