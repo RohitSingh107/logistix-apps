@@ -204,8 +204,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildMainSearchBar(BuildContext context) {
     final theme = Theme.of(context);
-    
+
+    // reduce the height of the container to 100px
     return Container(
+      
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: GestureDetector(
         onTap: () {
@@ -232,17 +234,19 @@ class _HomePageState extends State<HomePage> {
                 size: 28,
               ),
               const SizedBox(width: AppSpacing.md),
+
+              // instead of text box 
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Where do you want to send?',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    // Text(
+                    //   'Where do you want to send?',
+                    //   style: theme.textTheme.titleMedium?.copyWith(
+                    //     color: theme.colorScheme.primary,
+                    //     fontWeight: FontWeight.w600,
+                    //   ),
+                    // ),
                     Text(
                       'Tap to select pickup and drop location',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -278,31 +282,33 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
+
+          
           Row(
             children: [
               Expanded(
                 child: _buildServiceCard(
                   context,
                   icon: Icons.flash_on,
-                  title: 'Express Delivery',
+                  title: 'Send Package',
                   subtitle: 'Fast & reliable',
                   color: Colors.orange,
                   gradient: [Colors.orange.shade400, Colors.orange.shade600],
                   onTap: () => Navigator.pushNamed(context, '/booking'),
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _buildServiceCard(
-                  context,
-                  icon: Icons.shopping_bag,
-                  title: 'Shop & Drop',
-                  subtitle: 'We buy & deliver',
-                  color: Colors.green,
-                  gradient: [Colors.green.shade400, Colors.green.shade600],
-                  onTap: () => Navigator.pushNamed(context, '/package-details'),
-                ),
-              ),
+              // const SizedBox(width: AppSpacing.md),
+              // Expanded(
+              //   child: _buildServiceCard(
+              //     context,
+              //     icon: Icons.shopping_bag,
+              //     title: 'Shop & Drop',
+              //     subtitle: 'We buy & deliver',
+              //     color: Colors.green,
+              //     gradient: [Colors.green.shade400, Colors.green.shade600],
+              //     onTap: () => Navigator.pushNamed(context, '/package-details'),
+              //   ),
+              // ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -312,25 +318,25 @@ class _HomePageState extends State<HomePage> {
                 child: _buildServiceCard(
                   context,
                   icon: Icons.schedule,
-                  title: 'Scheduled Booking',
+                  title: 'Scheduled Ride',
                   subtitle: 'Plan ahead',
                   color: Colors.blue,
                   gradient: [Colors.blue.shade400, Colors.blue.shade600],
                   onTap: () => Navigator.pushNamed(context, '/scheduled-booking'),
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _buildServiceCard(
-                  context,
-                  icon: Icons.repeat,
-                  title: 'Recurring Booking',
-                  subtitle: 'Regular deliveries',
-                  color: Colors.purple,
-                  gradient: [Colors.purple.shade400, Colors.purple.shade600],
-                  onTap: () => Navigator.pushNamed(context, '/recurring-booking'),
-                ),
-              ),
+              // const SizedBox(width: AppSpacing.md),
+              // Expanded(
+              //   child: _buildServiceCard(
+              //     context,
+              //     icon: Icons.repeat,
+              //     title: 'Recurring Booking',
+              //     subtitle: 'Regular deliveries',
+              //     color: Colors.purple,
+              //     gradient: [Colors.purple.shade400, Colors.purple.shade600],
+              //     onTap: () => Navigator.pushNamed(context, '/recurring-booking'),
+              //   ),
+              // ),
             ],
           ),
         ],
@@ -417,7 +423,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Choose Vehicle Type',
+            'Available Vehicles',
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -531,6 +537,12 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildRecentActivity(BuildContext context) {
     final theme = Theme.of(context);
+
+
+    // if the recent bookings are empty, don't show the recent activity
+    if (_recentBookings.isEmpty) {
+      return const SizedBox.shrink();
+    }
     
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -541,7 +553,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Recent Activity',
+                'Recent Bookings',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -582,34 +594,47 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // don't show the recent bookings if the list is empty
+  bool _showRecentBookings() {
+    return _recentBookings.isNotEmpty;
+  }
+    
+
   Widget _buildEmptyState(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        children: [
-          Icon(
-            Icons.history,
-            size: 64,
-            color: theme.colorScheme.onSurface.withOpacity(0.3),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'No Recent Activity',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Your recent bookings will appear here',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
+    // return empty state
+    return const SizedBox.shrink();
+    // return Container(
+    //   padding: const EdgeInsets.all(AppSpacing.xl),
+    //   child: Column(
+    //     children: [
+
+    //       // align the icon to the center and add a margin to the top
+    //       Align(
+    //         alignment: Alignment.center,
+    //         child: Icon(
+    //           Icons.history,
+    //           size: 64,
+    //           color: theme.colorScheme.onSurface.withOpacity(0.3),
+    //         ),
+    //       ),
+    //       const SizedBox(height: AppSpacing.md),
+    //       Text(
+    //         'No Bookings',
+    //         style: theme.textTheme.titleMedium?.copyWith(
+    //           color: theme.colorScheme.onSurface.withOpacity(0.6),
+    //         ),
+    //       ),
+    //       // const SizedBox(height: AppSpacing.sm),
+    //       // Text(
+    //       //   'Your recent bookings will appear here',
+    //       //   style: theme.textTheme.bodySmall?.copyWith(
+    //       //     color: theme.colorScheme.onSurface.withOpacity(0.5),
+    //       //   ),
+    //       //   textAlign: TextAlign.center,
+    //       // ),
+    //     ],
+    //   ),
+    // );
   }
 
   Widget _buildActivityItem(BuildContext context, BookingListItem booking) {

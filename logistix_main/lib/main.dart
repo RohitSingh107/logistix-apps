@@ -45,6 +45,7 @@ import 'features/settings/presentation/screens/settings_screen.dart';
 import 'features/booking/presentation/screens/map_test_screen.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
 import 'core/services/test_map_service.dart';
+import 'features/booking/presentation/screens/booking_screen.dart';
 
 // Onboarding imports
 import 'features/onboarding/presentation/screens/welcome_screen.dart';
@@ -56,6 +57,7 @@ import 'features/onboarding/presentation/screens/permissions_screen.dart';
 import 'features/booking/presentation/screens/scheduled_booking_screen.dart';
 import 'features/booking/presentation/screens/recurring_booking_screen.dart';
 import 'features/booking/presentation/screens/package_details_screen.dart';
+import 'features/booking/presentation/screens/booking_details_placeholder_screen.dart';
 
 // Payment imports
 import 'features/payment/presentation/screens/payment_methods_screen.dart';
@@ -73,6 +75,7 @@ import 'features/tracking/presentation/screens/live_tracking_screen.dart';
 
 // Demo imports
 import 'features/demo/presentation/screens/feature_demo_screen.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -210,7 +213,12 @@ class MyApp extends StatelessWidget {
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, themeState) {
-          return MaterialApp(
+          return ScreenUtilInit(
+            designSize: const Size(375, 812),
+            minTextAdapt: true,
+            splitScreenMode: true,
+            builder: (context, child) {
+              return MaterialApp(
             title: 'Logistix',
             debugShowCheckedModeBanner: false,
             theme: themeState is ThemeLoaded 
@@ -242,6 +250,7 @@ class MyApp extends StatelessWidget {
               '/settings': (context) => const SettingsScreen(),
               '/map-test': (context) => const MapTestScreen(),
               '/wallet': (context) => const WalletScreen(),
+              '/booking': (context) => const BookingScreen(),
               
               // Onboarding Routes
               '/welcome': (context) => const WelcomeScreen(),
@@ -253,6 +262,7 @@ class MyApp extends StatelessWidget {
               '/scheduled-booking': (context) => const ScheduledBookingScreen(),
               '/recurring-booking': (context) => const RecurringBookingScreen(),
               '/package-details': (context) => const PackageDetailsScreen(),
+              '/booking-details': (context) => const BookingDetailsPlaceholderScreen(),
               
               // Payment Routes
               '/payment-methods': (context) => const PaymentMethodsScreen(),
@@ -270,6 +280,8 @@ class MyApp extends StatelessWidget {
               
               // Demo Routes
               '/feature-demo': (context) => const FeatureDemoScreen(),
+            },
+              );
             },
           );
         },
