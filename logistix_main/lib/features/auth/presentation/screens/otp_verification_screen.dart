@@ -52,6 +52,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   );
   String? _errorText;
   bool _hasVerificationFailed = false;
+  bool _isVerifying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_focusNodes.isNotEmpty) {
+        _focusNodes[0].requestFocus();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -97,6 +108,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       });
       return;
     }
+    if (_isVerifying) return;
+    setState(() {
+      _isVerifying = true;
+    });
     
     context.read<AuthBloc>().add(
       VerifyOtp(
@@ -140,6 +155,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
+            setState(() {
+              _isVerifying = false;
+            });
             if (state.isNewUser) {
               Navigator.of(context).pushReplacementNamed(
                 '/profile/create',
@@ -149,6 +167,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               Navigator.of(context).pushReplacementNamed('/home');
             }
           } else if (state is AuthError) {
+            setState(() {
+              _isVerifying = false;
+            });
             _handleVerificationError(state.message);
           }
         },
@@ -193,21 +214,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               const SizedBox(height: 32),
               BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
-                  return ElevatedButton(
-                    onPressed: state is AuthLoading
-                        ? null
-                        : () {
-                            final otp = _controllers.map((c) => c.text).join();
-                            _verifyOtp(otp);
-                          },
-                    child: state is AuthLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2.0),
-                          )
-                        : const Text('Verify OTP'),
-                  );
+                  if (state is AuthLoading || _isVerifying) {
+                    return const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2.0),
+                    );
+                  }
+                  return const SizedBox.shrink();
                 },
               ),
               const SizedBox(height: 16),
