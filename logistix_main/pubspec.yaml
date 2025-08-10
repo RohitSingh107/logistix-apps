@@ -45,6 +45,7 @@ dependencies:
   url_launcher: ^6.2.5
   jwt_decoder: ^2.0.1
   json_annotation: ^4.8.1
+  lottie: ^2.7.0
 
   # Firebase
   firebase_core: ^2.24.2
@@ -68,3 +69,22 @@ flutter:
   assets:
     - .env
     - assets/images/
+    - assets/animations/
+
+flutter_native_splash:
+  android: true
+  ios: true
+  web: false
+  color: "#FFFFFF"
+  android_12:
+    color: "#FFFFFF"
+    # Note: Android 12+ shows the app icon by default. To avoid the Flutter icon,
+    # set your own launcher icon or provide a custom image here.
+    # image: assets/images/your_splash_icon.png
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_1024.png"
+  adaptive_icon_foreground: "macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_1024.png"
+  adaptive_icon_background: "#FFFFFF"
