@@ -248,10 +248,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLogout(Logout event, Emitter<AuthState> emit) async {
     try {
+      print('🚪 AuthBloc: Starting logout process');
       emit(AuthLoading());
+      
+      print('🗑️ AuthBloc: Clearing tokens and user data');
       await _authRepository.logout();
+      
+      print('✅ AuthBloc: Logout successful, emitting AuthInitial state');
       emit(AuthInitial());
     } catch (e) {
+      print('❌ AuthBloc: Logout failed: $e');
       emit(AuthError(e.toString()));
     }
   }

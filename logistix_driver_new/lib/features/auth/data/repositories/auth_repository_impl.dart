@@ -23,6 +23,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/location_service.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final ApiClient _apiClient;
@@ -76,9 +77,23 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
+      print('🗑️ AuthRepository: Starting logout process');
+      
+      // Stop location tracking
+      print('📍 AuthRepository: Stopping location tracking');
+      LocationService().stopLocationTracking();
+      
       // Clear all stored tokens locally
+      print('🗑️ AuthRepository: Clearing all stored tokens locally');
       await _authService.clearTokens();
+      
+      // Clear cached headers in ApiClient
+      print('🧹 AuthRepository: Clearing cached headers');
+      _apiClient.clearCachedHeaders();
+      
+      print('✅ AuthRepository: Logout completed successfully');
     } catch (e) {
+      print('❌ AuthRepository: Failed to logout: $e');
       throw Exception('Failed to logout: ${e.toString()}');
     }
   }

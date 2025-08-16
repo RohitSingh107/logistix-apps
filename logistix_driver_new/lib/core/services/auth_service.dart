@@ -42,7 +42,15 @@ class AuthService {
   }
 
   Future<String?> getAccessToken() async {
-    return _prefs.getString(_accessTokenKey);
+    final token = _prefs.getString(_accessTokenKey);
+    print('🔑 AuthService: getAccessToken called - token exists: ${token != null}');
+    if (token != null) {
+      print('🔑 AuthService: getAccessToken - token length: ${token.length}');
+      print('🔑 AuthService: getAccessToken - token preview: ${token.substring(0, 20)}...');
+    } else {
+      print('🔑 AuthService: getAccessToken - no token found');
+    }
+    return token;
   }
 
   Future<String?> getRefreshToken() async {
@@ -74,23 +82,46 @@ class AuthService {
   }
 
   Future<void> clearTokens() async {
-    print('DEBUG: Clearing all tokens and user data');
+    print('🗑️ AuthService: Clearing all tokens and user data');
+    
+    // Check what tokens exist before clearing
+    final accessTokenBefore = _prefs.getString(_accessTokenKey);
+    final refreshTokenBefore = _prefs.getString(_refreshTokenKey);
+    print('🗑️ AuthService: Before clearing - Access: ${accessTokenBefore != null}, Refresh: ${refreshTokenBefore != null}');
+    
     await _prefs.remove(_accessTokenKey);
     await _prefs.remove(_refreshTokenKey);
     await _prefs.remove(_tokenExpiryKey);
     await _prefs.remove(_userDataKey);
+    
+    // Verify tokens were cleared
+    final accessTokenAfter = _prefs.getString(_accessTokenKey);
+    final refreshTokenAfter = _prefs.getString(_refreshTokenKey);
+    print('🗑️ AuthService: After clearing - Access: ${accessTokenAfter != null}, Refresh: ${refreshTokenAfter != null}');
+    
+    if (accessTokenAfter == null && refreshTokenAfter == null) {
+      print('✅ AuthService: All tokens cleared successfully');
+    } else {
+      print('❌ AuthService: Failed to clear tokens completely');
+    }
   }
 
   bool _shouldRefreshToken() {
+    print('⏰ AuthService: Checking token expiry');
     final expiryTime = _prefs.getInt(_tokenExpiryKey);
-    if (expiryTime == null) return true;
+    if (expiryTime == null) {
+      print('⏰ AuthService: No expiry time found, refresh needed');
+      return true;
+    }
 
     final now = DateTime.now().millisecondsSinceEpoch;
     final timeUntilExpiry = expiryTime - now;
     final minutesUntilExpiry = timeUntilExpiry / (1000 * 60);
 
-    print('DEBUG: Token expires in ${minutesUntilExpiry.toStringAsFixed(1)} minutes');
-    return minutesUntilExpiry < _refreshThresholdMinutes;
+    print('⏰ AuthService: Token expires in ${minutesUntilExpiry.toStringAsFixed(1)} minutes');
+    final shouldRefresh = minutesUntilExpiry < _refreshThresholdMinutes;
+    print('⏰ AuthService: Should refresh token: $shouldRefresh');
+    return shouldRefresh;
   }
 
   Future<bool> refreshAccessToken() async {
@@ -136,21 +167,32 @@ class AuthService {
 
   // Check and refresh token if needed
   Future<bool> ensureValidToken() async {
+    print('🔐 AuthService: Checking if token refresh is needed');
     if (_shouldRefreshToken()) {
-      return await refreshAccessToken();
+      print('🔄 AuthService: Token refresh needed, attempting refresh');
+      final result = await refreshAccessToken();
+      print('🔄 AuthService: Token refresh result: $result');
+      return result;
     }
+    print('✅ AuthService: Token is valid, no refresh needed');
     return true;
   }
 
   // Check if user is authenticated
   Future<bool> isAuthenticated() async {
+    print('🔍 AuthService: Checking if user is authenticated');
     final token = await getAccessToken();
-    if (token == null) return false;
+    if (token == null) {
+      print('🔍 AuthService: No access token found, user not authenticated');
+      return false;
+    }
     
     try {
-      return !JwtDecoder.isExpired(token);
+      final isExpired = JwtDecoder.isExpired(token);
+      print('🔍 AuthService: Token expired: $isExpired');
+      return !isExpired;
     } catch (e) {
-      print('Error checking token expiration: $e');
+      print('❌ AuthService: Error checking token expiration: $e');
       return false;
     }
   }

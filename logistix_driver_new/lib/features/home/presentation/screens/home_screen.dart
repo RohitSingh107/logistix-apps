@@ -36,6 +36,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late final DriverAuthService _driverAuthService;
   late final LocationService _locationService;
+  late final AuthService _authService;
   Map<String, dynamic>? _driverProfile;
   bool _isAvailable = false;
   bool _isUpdatingAvailability = false;
@@ -46,7 +47,27 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _driverAuthService = serviceLocator<DriverAuthService>();
     _locationService = serviceLocator<LocationService>();
-    _fetchDriverProfile();
+    _authService = serviceLocator<AuthService>();
+    _initializeHomeScreen();
+  }
+
+  Future<void> _initializeHomeScreen() async {
+    try {
+      final isAuthenticated = await _authService.isAuthenticated();
+      
+      if (isAuthenticated) {
+        await _fetchDriverProfile();
+      } else {
+        // Navigate back to login
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed('/login');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking authentication: $e');
+      // If we can't check authentication, try to fetch profile anyway
+      await _fetchDriverProfile();
+    }
   }
 
   Future<void> _fetchDriverProfile() async {
@@ -70,7 +91,6 @@ class _HomeScreenState extends State<HomeScreen> {
         // Start location tracking if driver is already available
         if (_isAvailable) {
           await _locationService.startLocationTracking();
-          debugPrint('📍 Started location tracking for already available driver');
         }
         
         // Update driver FCM token when profile is fetched successfully
@@ -92,7 +112,6 @@ class _HomeScreenState extends State<HomeScreen> {
         
         // Handle 500 errors or profile not found - open create driver page
         if (statusCode == 500 || statusCode == 404) {
-          debugPrint('Driver profile not found or server error - opening create driver screen');
           if (mounted) {
             _navigateToCreateDriverProfile();
             return;
@@ -112,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Update driver FCM token when profile is fetched
   Future<void> _updateDriverFcmToken() async {
     try {
-      debugPrint('🚗 Updating driver FCM token on home screen load...');
       await PushNotificationService.updateDriverFcmToken();
     } catch (e) {
       debugPrint('Warning: Failed to update driver FCM token on home screen load: $e');
@@ -198,18 +216,8 @@ class _HomeScreenState extends State<HomeScreen> {
       return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.background,
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Loading...',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ],
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       );

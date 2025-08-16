@@ -33,51 +33,87 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: theme.colorScheme.surface,
-        foregroundColor: theme.colorScheme.onSurface,
-      ),
-      body: ListView(
-        children: [
-          // Account Settings Section
-          _buildSectionHeader(context, 'Account'),
-          _buildAccountSettings(context),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        print('🔄 SettingsScreen: AuthBloc state changed to ${state.runtimeType}');
+        
+        if (state is AuthInitial) {
+          print('🚪 SettingsScreen: User logged out, navigating to login');
+          // User has been logged out, show success message and navigate
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Logged out successfully'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
           
-          const Divider(height: 32),
-          
-          // Theme Settings Section
-          _buildSectionHeader(context, 'Appearance'),
-          _buildThemeSettings(context),
-          
-          const Divider(height: 32),
-          
-          // Notification Settings
-          _buildSectionHeader(context, 'Notifications'),
-          _buildNotificationSettings(context),
-          
-          const Divider(height: 32),
-          
-          // Support Section
-          _buildSectionHeader(context, 'Support'),
-          _buildSupportSettings(context),
-          
-          const Divider(height: 32),
-          
-          // About Section
-          _buildSectionHeader(context, 'About'),
-          _buildAboutSettings(context),
-          
-          const SizedBox(height: 32),
-          
-          // Logout Section
-          _buildLogoutSection(context),
-          
-          const SizedBox(height: 32),
-        ],
+          // Force navigation to login screen as fallback
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (context.mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                '/login',
+                (route) => false,
+              );
+            }
+          });
+        } else if (state is AuthError) {
+          print('❌ SettingsScreen: Logout failed: ${state.message}');
+          // Show error message if logout fails
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Logout failed: ${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Settings'),
+          centerTitle: true,
+          elevation: 0,
+          backgroundColor: theme.colorScheme.surface,
+          foregroundColor: theme.colorScheme.onSurface,
+        ),
+        body: ListView(
+          children: [
+            // Account Settings Section
+            _buildSectionHeader(context, 'Account'),
+            _buildAccountSettings(context),
+            
+            const Divider(height: 32),
+            
+            // Theme Settings Section
+            _buildSectionHeader(context, 'Appearance'),
+            _buildThemeSettings(context),
+            
+            const Divider(height: 32),
+            
+            // Notification Settings
+            _buildSectionHeader(context, 'Notifications'),
+            _buildNotificationSettings(context),
+            
+            const Divider(height: 32),
+            
+            // Support Section
+            _buildSectionHeader(context, 'Support'),
+            _buildSupportSettings(context),
+            
+            const Divider(height: 32),
+            
+            // About Section
+            _buildSectionHeader(context, 'About'),
+            _buildAboutSettings(context),
+            
+            const SizedBox(height: 32),
+            
+            // Logout Section
+            _buildLogoutSection(context),
+            
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
@@ -626,7 +662,7 @@ class SettingsScreen extends StatelessWidget {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
+                    content: const Text('Are you sure you want to logout? You will need to log in again to access your account.'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(false),
@@ -644,8 +680,35 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 );
                 if (confirm == true) {
-                  // Implement logout functionality
-                  context.read<AuthBloc>().add(Logout());
+                  try {
+                    // Show loading indicator
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Logging out...'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                    
+                    // Implement logout functionality
+                    context.read<AuthBloc>().add(Logout());
+                    
+                    // Show success message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Logged out successfully'),
+                        backgroundColor: Colors.green,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  } catch (e) {
+                    // Show error message if logout fails
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to logout: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
