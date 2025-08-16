@@ -270,8 +270,17 @@ class ApiClient {
   
   // Utility method to ensure token is valid before making a request
   Future<bool> ensureValidToken() async {
-    print('DEBUG: Ensuring valid token before request');
-    return await _authService.ensureValidToken();
+    print('🔑 ApiClient: Ensuring valid token before request');
+    final result = await _authService.ensureValidToken();
+    print('🔑 ApiClient: Token validation result: $result');
+    return result;
+  }
+  
+  // Method to clear cached headers after logout
+  void clearCachedHeaders() {
+    print('🧹 ApiClient: Clearing cached headers');
+    _dio.options.headers.remove('Authorization');
+    print('🧹 ApiClient: Authorization header cleared');
   }
 }
 

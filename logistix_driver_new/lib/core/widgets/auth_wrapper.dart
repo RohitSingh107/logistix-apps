@@ -11,10 +11,19 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
+        print('🔄 AuthWrapper: State changed to ${state.runtimeType}');
+        
         // Handle authentication state changes
         if (state is AuthInitial) {
-          // User is not authenticated, stay on login screen
+          print('🚪 AuthWrapper: User logged out, navigating to login screen');
+          // User is not authenticated, navigate to login screen
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(),
+            ),
+          );
         } else if (state is AuthSuccess) {
+          print('✅ AuthWrapper: User authenticated, navigating to main screen');
           // User is authenticated, navigate to main navigation
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -22,6 +31,7 @@ class AuthWrapper extends StatelessWidget {
             ),
           );
         } else if (state is AuthError) {
+          print('❌ AuthWrapper: Authentication error: ${state.message}');
           // Authentication failed, show error and stay on login
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
