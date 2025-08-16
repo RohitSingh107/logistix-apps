@@ -17,8 +17,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/push_notification_service.dart';
-import '../../data/repositories/driver_repository_impl.dart';
-import '../../../home/presentation/screens/home_screen.dart';
+import '../../domain/repositories/driver_repository.dart';
 
 class CreateDriverProfileScreen extends StatefulWidget {
   const CreateDriverProfileScreen({Key? key}) : super(key: key);
@@ -69,7 +68,7 @@ class _CreateDriverProfileScreenState extends State<CreateDriverProfileScreen> {
     });
 
     try {
-      final driverRepository = serviceLocator<DriverRepositoryImpl>();
+      final driverRepository = serviceLocator<DriverRepository>();
       
       // Get FCM token
       String? fcmToken;
@@ -95,9 +94,7 @@ class _CreateDriverProfileScreenState extends State<CreateDriverProfileScreen> {
         );
 
         // Navigate to home screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+        Navigator.of(context).pushReplacementNamed('/home');
       }
     } catch (e) {
       if (mounted) {

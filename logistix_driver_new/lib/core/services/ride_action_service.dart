@@ -36,13 +36,7 @@ class RideActionService {
         throw Exception('Invalid booking request ID');
       }
 
-      // Check if ride is still available before accepting
-      final isAvailable = await _checkRideAvailability(bookingRequestId);
-      if (!isAvailable) {
-        throw Exception('This ride is no longer available');
-      }
-
-      // Make API call to accept the booking
+      // Make API call to accept the booking directly
       final response = await _apiClient.post(
         '/api/booking/accept/',
         data: {
@@ -53,8 +47,32 @@ class RideActionService {
       print("✅ Ride accepted successfully: ${response.data}");
 
       // Parse the response to get trip details
-      final tripData = response.data['trip'];
+      if (response.data == null) {
+        throw Exception('Invalid response from server');
+      }
+
+      final responseData = response.data;
+      print("🔍 Response data: $responseData");
+
+      // Handle different response formats
+      Map<String, dynamic> tripData;
+      
+      if (responseData['trip'] != null) {
+        // Format: {"message": "...", "trip": {...}}
+        tripData = responseData['trip'];
+        print("🔍 Found trip data in response: $tripData");
+      } else if (responseData['id'] != null) {
+        // Format: direct trip object
+        tripData = responseData;
+        print("🔍 Found direct trip data: $tripData");
+      } else {
+        print("❌ No trip data found in response");
+        throw Exception('No trip data received from server');
+      }
+
+      // Create Trip object from JSON
       final trip = Trip.fromJson(tripData);
+      print("✅ Trip object created successfully: ${trip.id}");
 
       // Update driver availability status
       await _updateDriverAvailability(false);
@@ -74,6 +92,16 @@ class RideActionService {
         errorMessage = 'Network error. Please check your connection';
       } else if (e.toString().contains('unauthorized')) {
         errorMessage = 'Please log in again to accept rides';
+      } else if (e.toString().contains('Invalid response')) {
+        errorMessage = 'Server error. Please try again';
+      } else if (e.toString().contains('No trip data')) {
+        errorMessage = 'Booking accepted but trip data is missing';
+      } else if (e.toString().contains('403')) {
+        errorMessage = 'You are not authorized to accept this booking';
+      } else if (e.toString().contains('404')) {
+        errorMessage = 'Booking not found';
+      } else if (e.toString().contains('400')) {
+        errorMessage = 'Invalid booking request';
       }
       
       throw Exception(errorMessage);

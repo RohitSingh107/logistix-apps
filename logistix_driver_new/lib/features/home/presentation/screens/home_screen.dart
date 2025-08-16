@@ -22,11 +22,8 @@ import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/driver_auth_service.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/push_notification_service.dart';
-import '../../../driver/presentation/screens/create_driver_profile_screen.dart';
-import '../../../notifications/presentation/screens/alerts_screen.dart';
-import '../../../wallet/presentation/screens/wallet_screen.dart';
-import '../../../trip/presentation/screens/my_trips_screen.dart';
-import '../../../settings/presentation/screens/settings_screen.dart';
+import '../../../../core/config/app_theme.dart';
+import 'main_navigation_screen.dart';
 import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
@@ -54,7 +51,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchDriverProfile() async {
     try {
-      final profile = await _driverAuthService.getDriverProfile();
+      // Add timeout to prevent hanging
+      final profile = await _driverAuthService.getDriverProfile().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('Timeout fetching driver profile');
+          return null;
+        },
+      );
+      
       if (profile != null && mounted) {
         setState(() {
           _driverProfile = profile;
@@ -70,6 +75,13 @@ class _HomeScreenState extends State<HomeScreen> {
         
         // Update driver FCM token when profile is fetched successfully
         _updateDriverFcmToken();
+      } else {
+        // Profile is null - automatically navigate to create driver profile
+        debugPrint('No driver profile found - navigating to create profile screen');
+        if (mounted) {
+          _navigateToCreateDriverProfile();
+          return;
+        }
       }
     } catch (e) {
       debugPrint('Error fetching driver profile: $e');
@@ -88,8 +100,12 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
       
-      // For other errors, try to create driver profile automatically for first-time users
-      await _handleFirstTimeUserCreation();
+      // For other errors, also navigate to create driver profile
+      debugPrint('Unknown error - navigating to create driver profile');
+      if (mounted) {
+        _navigateToCreateDriverProfile();
+        return;
+      }
     }
   }
 
@@ -103,31 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _handleFirstTimeUserCreation() async {
-    try {
-      debugPrint('Attempting to create driver profile for first-time user');
-      
-      // For first-time users, we need to show the create driver profile screen
-      // since we need the license number from the user
-      if (mounted) {
-        _navigateToCreateDriverProfile();
-      }
-    } catch (e) {
-      debugPrint('Error in first-time user creation: $e');
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
-      }
-    }
-  }
-
   void _navigateToCreateDriverProfile() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const CreateDriverProfileScreen(),
-      ),
-    );
+    Navigator.of(context).pushReplacementNamed('/driver/create');
   }
 
   @override
@@ -252,30 +245,35 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Profile and Status Section
-              if (profile != null) _buildProfileSection(theme, profile),
-              const SizedBox(height: 24),
-              
-              // Earnings Section
-              if (profile != null) _buildEarningsSection(theme, profile),
-              const SizedBox(height: 24),
-              
-              // Performance Section
-              _buildPerformanceSection(theme, profile),
-              const SizedBox(height: 24),
-              
-              // Availability Toggle Section
-              _buildAvailabilitySection(theme),
-              const SizedBox(height: 24),
-              
-              // Quick Actions Section
-              _buildQuickActionsSection(theme),
-            ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await _fetchDriverProfile();
+          },
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Profile and Status Section
+                if (profile != null) _buildProfileSection(theme, profile),
+                const SizedBox(height: 24),
+                
+                // Earnings Section
+                if (profile != null) _buildEarningsSection(theme, profile),
+                const SizedBox(height: 24),
+                
+                // Performance Section
+                _buildPerformanceSection(theme, profile),
+                const SizedBox(height: 24),
+                
+                // Availability Toggle Section
+                _buildAvailabilitySection(theme),
+                const SizedBox(height: 24),
+                
+                // Quick Actions Section
+                _buildQuickActionsSection(theme),
+              ],
+            ),
           ),
         ),
       ),

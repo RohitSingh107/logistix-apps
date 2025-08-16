@@ -51,6 +51,7 @@ import 'features/trip/presentation/screens/my_trips_screen.dart';
 import 'core/services/notification_service.dart';
 import 'core/models/trip_model.dart';
 import 'features/trip/presentation/screens/driver_trip_screen.dart';
+import 'features/home/presentation/screens/demo_navigation_screen.dart';
 
 // Global navigator key for showing popups from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -227,6 +228,7 @@ class DriverApp extends StatelessWidget {
                   }
                   return const MainNavigationScreen();
                 },
+                '/demo': (context) => const DemoNavigationScreen(),
               },
               onGenerateRoute: (settings) {
                 // Handle any additional routes
