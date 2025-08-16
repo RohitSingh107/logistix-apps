@@ -10,20 +10,32 @@ Driver _$DriverFromJson(Map<String, dynamic> json) => Driver(
       id: (json['id'] as num).toInt(),
       user: User.fromJson(json['user'] as Map<String, dynamic>),
       licenseNumber: json['license_number'] as String,
+      vehicleType: (json['vehicle_type'] as num?)?.toInt(),
       isAvailable: json['is_available'] as bool,
       fcmToken: json['fcm_token'] as String?,
       averageRating: json['average_rating'] as String,
       totalEarnings: (json['total_earnings'] as num).toDouble(),
+      location: json['location'] as Map<String, dynamic>?,
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] == null
+          ? null
+          : DateTime.parse(json['updated_at'] as String),
     );
 
 Map<String, dynamic> _$DriverToJson(Driver instance) => <String, dynamic>{
       'id': instance.id,
       'user': instance.user,
       'license_number': instance.licenseNumber,
+      'vehicle_type': instance.vehicleType,
       'is_available': instance.isAvailable,
       'fcm_token': instance.fcmToken,
       'average_rating': instance.averageRating,
       'total_earnings': instance.totalEarnings,
+      'location': instance.location,
+      'created_at': instance.createdAt?.toIso8601String(),
+      'updated_at': instance.updatedAt?.toIso8601String(),
     };
 
 DriverRequest _$DriverRequestFromJson(Map<String, dynamic> json) =>

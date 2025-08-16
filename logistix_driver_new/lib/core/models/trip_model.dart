@@ -35,18 +35,30 @@ enum TripStatus {
 class Trip extends BaseModel {
   final int id;
   final Driver driver;
+  @JsonKey(name: 'booking_request')
   final Booking bookingRequest;
   final TripStatus status;
+  @JsonKey(name: 'loading_start_time')
   final DateTime? loadingStartTime;
+  @JsonKey(name: 'loading_end_time')
   final DateTime? loadingEndTime;
+  @JsonKey(name: 'unloading_start_time')
   final DateTime? unloadingStartTime;
+  @JsonKey(name: 'unloading_end_time')
   final DateTime? unloadingEndTime;
+  @JsonKey(name: 'payment_time')
   final DateTime? paymentTime;
+  @JsonKey(name: 'final_fare')
   final double? finalFare;
+  @JsonKey(name: 'final_duration')
   final double? finalDuration;
-  final double? finalDistance;
+  @JsonKey(name: 'final_distance')
+  final String? finalDistance;
+  @JsonKey(name: 'is_payment_done')
   final bool isPaymentDone;
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   const Trip({
@@ -83,7 +95,7 @@ class Trip extends BaseModel {
     DateTime? paymentTime,
     double? finalFare,
     double? finalDuration,
-    double? finalDistance,
+    String? finalDistance,
     bool? isPaymentDone,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -107,8 +119,11 @@ class Trip extends BaseModel {
     );
   }
 
-  /// Check if trip is active (accepted or started)
-  bool get isActive => status == TripStatus.accepted || status == TripStatus.started;
+  /// Check if trip is accepted
+  bool get isAccepted => status == TripStatus.accepted;
+
+  /// Check if trip is started
+  bool get isStarted => status == TripStatus.started;
 
   /// Check if trip is completed
   bool get isCompleted => status == TripStatus.completed;
@@ -116,27 +131,13 @@ class Trip extends BaseModel {
   /// Check if trip is cancelled
   bool get isCancelled => status == TripStatus.cancelled;
 
-  /// Get trip duration in minutes
-  double? get durationInMinutes {
-    if (loadingStartTime == null || loadingEndTime == null) return null;
-    return loadingEndTime!.difference(loadingStartTime!).inMinutes.toDouble();
-  }
-
-  /// Get formatted fare
-  String get formattedFare {
-    if (finalFare != null) {
-      return '₹${finalFare!.toStringAsFixed(2)}';
-    }
-    return '₹${bookingRequest.estimatedFare.toStringAsFixed(2)}';
-  }
-
   /// Get trip status display text
   String get statusText {
     switch (status) {
       case TripStatus.accepted:
         return 'Accepted';
       case TripStatus.started:
-        return 'In Progress';
+        return 'Started';
       case TripStatus.completed:
         return 'Completed';
       case TripStatus.cancelled:
@@ -144,19 +145,14 @@ class Trip extends BaseModel {
     }
   }
 
-  /// Get trip status color
-  String get statusColor {
-    switch (status) {
-      case TripStatus.accepted:
-        return '#4CAF50'; // Green
-      case TripStatus.started:
-        return '#2196F3'; // Blue
-      case TripStatus.completed:
-        return '#8BC34A'; // Light Green
-      case TripStatus.cancelled:
-        return '#F44336'; // Red
-    }
-  }
+  /// Get formatted final fare
+  String get formattedFinalFare => finalFare != null ? '₹${finalFare!.toStringAsFixed(2)}' : 'N/A';
+
+  /// Get formatted final duration
+  String get formattedFinalDuration => finalDuration != null ? '${finalDuration!.toStringAsFixed(1)} mins' : 'N/A';
+
+  /// Get formatted final distance
+  String get formattedFinalDistance => finalDistance != null ? '$finalDistance km' : 'N/A';
 }
 
 @JsonSerializable()
@@ -181,7 +177,7 @@ class TripUpdateRequest {
   @JsonKey(name: 'is_payment_done')
   final bool? isPaymentDone;
 
-  TripUpdateRequest({
+  const TripUpdateRequest({
     required this.status,
     this.loadingStartTime,
     this.loadingEndTime,

@@ -26,6 +26,8 @@ class Driver {
   final User user;
   @JsonKey(name: 'license_number')
   final String licenseNumber;
+  @JsonKey(name: 'vehicle_type')
+  final int? vehicleType;
   @JsonKey(name: 'is_available')
   final bool isAvailable;
   @JsonKey(name: 'fcm_token')
@@ -34,15 +36,24 @@ class Driver {
   final String averageRating;
   @JsonKey(name: 'total_earnings')
   final double totalEarnings;
+  final Map<String, dynamic>? location;
+  @JsonKey(name: 'created_at')
+  final DateTime? createdAt;
+  @JsonKey(name: 'updated_at')
+  final DateTime? updatedAt;
 
   Driver({
     required this.id,
     required this.user,
     required this.licenseNumber,
+    this.vehicleType,
     required this.isAvailable,
     this.fcmToken,
     required this.averageRating,
     required this.totalEarnings,
+    this.location,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Driver.fromJson(Map<String, dynamic> json) => _$DriverFromJson(json);

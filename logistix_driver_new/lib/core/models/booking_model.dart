@@ -45,23 +45,39 @@ enum PaymentMode {
 @JsonSerializable()
 class Booking extends BaseModel {
   final int id;
+  @JsonKey(name: 'trip_id')
   final int? tripId;
+  @JsonKey(name: 'sender_name')
   final String senderName;
+  @JsonKey(name: 'receiver_name')
   final String receiverName;
+  @JsonKey(name: 'sender_phone')
   final String senderPhone;
+  @JsonKey(name: 'receiver_phone')
   final String receiverPhone;
+  @JsonKey(name: 'pickup_location')
   final String pickupLocation;
+  @JsonKey(name: 'dropoff_location')
   final String dropoffLocation;
+  @JsonKey(name: 'pickup_time')
   final DateTime pickupTime;
+  @JsonKey(name: 'pickup_address')
   final String pickupAddress;
+  @JsonKey(name: 'dropoff_address')
   final String dropoffAddress;
+  @JsonKey(name: 'goods_type')
   final String goodsType;
+  @JsonKey(name: 'goods_quantity')
   final String goodsQuantity;
+  @JsonKey(name: 'payment_mode')
   final PaymentMode paymentMode;
+  @JsonKey(name: 'estimated_fare')
   final double estimatedFare;
   final BookingStatus status;
   final String? instructions;
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   const Booking({
@@ -179,25 +195,15 @@ class Booking extends BaseModel {
     }
   }
 
-  /// Get pickup time formatted
+  /// Get formatted pickup time
   String get formattedPickupTime {
-    return '${pickupTime.hour.toString().padLeft(2, '0')}:${pickupTime.minute.toString().padLeft(2, '0')}';
+    return '${pickupTime.day}/${pickupTime.month}/${pickupTime.year} at ${pickupTime.hour}:${pickupTime.minute.toString().padLeft(2, '0')}';
   }
 
-  /// Get pickup date formatted
-  String get formattedPickupDate {
-    return '${pickupTime.day}/${pickupTime.month}/${pickupTime.year}';
-  }
-
-  /// Get short pickup address (first 2 parts)
-  String get shortPickupAddress {
-    final parts = pickupAddress.split(',');
-    return parts.take(2).join(',');
-  }
-
-  /// Get short dropoff address (first 2 parts)
-  String get shortDropoffAddress {
-    final parts = dropoffAddress.split(',');
-    return parts.take(2).join(',');
+  /// Get pickup time in 12-hour format
+  String get pickupTime12Hour {
+    final hour = pickupTime.hour > 12 ? pickupTime.hour - 12 : pickupTime.hour;
+    final period = pickupTime.hour >= 12 ? 'PM' : 'AM';
+    return '${hour}:${pickupTime.minute.toString().padLeft(2, '0')} $period';
   }
 } 
