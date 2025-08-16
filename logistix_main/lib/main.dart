@@ -76,6 +76,13 @@ import 'features/tracking/presentation/screens/live_tracking_screen.dart';
 // Demo imports
 import 'features/demo/presentation/screens/feature_demo_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'core/widgets/splash_screen.dart';
+import 'core/services/splash_service.dart';
+import 'features/language/presentation/screens/language_selection_screen.dart';
+import 'core/localization/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'core/services/language_service.dart';
+import 'features/language/presentation/bloc/language_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -210,77 +217,86 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => ThemeBloc(sharedPreferences)..add(const LoadThemeEvent()),
         ),
+        BlocProvider(
+          create: (context) => LanguageBloc()..add(LoadLanguageEvent()),
+        ),
       ],
-      child: BlocBuilder<ThemeBloc, ThemeState>(
-        builder: (context, themeState) {
-          return ScreenUtilInit(
-            designSize: const Size(375, 812),
-            minTextAdapt: true,
-            splitScreenMode: true,
-            builder: (context, child) {
-              return MaterialApp(
-            title: 'Logistix',
-            debugShowCheckedModeBanner: false,
-            theme: themeState is ThemeLoaded 
-              ? AppTheme.getTheme(themeState.themeName)
-              : AppTheme.getTheme(AppTheme.lightTheme),
-            home: BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                try {
-                  if (state is AuthSuccess) {
-                    return const HomeScreen();
-                  }
-                  return const LoginScreen();
-                } catch (e) {
-                  print('Error in auth state builder: $e');
-                  return const LoginScreen();
-                }
-              },
-            ),
-            routes: {
-              '/login': (context) => const LoginScreen(),
-              '/signup': (context) => const SignupScreen(),
-              '/home': (context) => const HomeScreen(),
-              '/profile/create': (context) {
-                final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-                return CreateProfileScreen(
-                  phone: args?['phone'] as String? ?? '',
-                );
-              },
-              '/settings': (context) => const SettingsScreen(),
-              '/map-test': (context) => const MapTestScreen(),
-              '/wallet': (context) => const WalletScreen(),
-              '/booking': (context) => const BookingScreen(),
-              
-              // Onboarding Routes
-              '/welcome': (context) => const WelcomeScreen(),
-              '/app-tour': (context) => const AppTourScreen(),
-              '/feature-intro': (context) => const FeatureIntroScreen(),
-              '/permissions': (context) => const PermissionsScreen(),
-              
-              // Booking Routes
-              '/scheduled-booking': (context) => const ScheduledBookingScreen(),
-              '/recurring-booking': (context) => const RecurringBookingScreen(),
-              '/package-details': (context) => const PackageDetailsScreen(),
-              '/booking-details': (context) => const BookingDetailsPlaceholderScreen(),
-              
-              // Payment Routes
-              '/payment-methods': (context) => const PaymentMethodsScreen(),
-              '/add-payment-method': (context) => const AddPaymentMethodScreen(),
-              '/payment-confirmation': (context) => const PaymentConfirmationScreen(),
-              '/payment-history': (context) => const PaymentHistoryScreen(),
-              '/invoice-generation': (context) => const InvoiceGenerationScreen(),
-              '/refund-request': (context) => const RefundRequestScreen(),
-              
-              // Support Routes
-              '/support-center': (context) => const SupportCenterScreen(),
-              
-              // Tracking Routes
-              '/live-tracking': (context) => const LiveTrackingScreen(),
-              
-              // Demo Routes
-              '/feature-demo': (context) => const FeatureDemoScreen(),
-            },
+      child: BlocBuilder<LanguageBloc, LanguageState>(
+        builder: (context, languageState) {
+          return BlocBuilder<ThemeBloc, ThemeState>(
+            builder: (context, themeState) {
+              return ScreenUtilInit(
+                designSize: const Size(375, 812),
+                minTextAdapt: true,
+                splitScreenMode: true,
+                builder: (context, child) {
+                  return MaterialApp(
+                    locale: languageState is LanguageLoaded 
+                        ? languageState.currentLocale 
+                        : const Locale('en', 'IN'),
+                    title: 'Logistix',
+                    debugShowCheckedModeBanner: false,
+                    theme: themeState is ThemeLoaded 
+                        ? AppTheme.getTheme(themeState.themeName)
+                        : AppTheme.getTheme(AppTheme.lightTheme),
+                    localizationsDelegates: [
+                      const AppLocalizationsDelegate(),
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+                    supportedLocales: const [
+                      Locale('en', 'IN'),
+                      Locale('hi', 'IN'),
+                    ],
+                    home: const SplashScreen(),
+                    routes: {
+                      '/language-selection': (context) => const LanguageSelectionScreen(),
+                      '/login': (context) => const LoginScreen(),
+                      '/signup': (context) => const SignupScreen(),
+                      '/home': (context) => const HomeScreen(),
+                      '/profile/create': (context) {
+                        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+                        return CreateProfileScreen(
+                          phone: args?['phone'] as String? ?? '',
+                        );
+                      },
+                      '/settings': (context) => const SettingsScreen(),
+                      '/map-test': (context) => const MapTestScreen(),
+                      '/wallet': (context) => const WalletScreen(),
+                      '/booking': (context) => const BookingScreen(),
+                      
+                      // Onboarding Routes
+                      '/welcome': (context) => const WelcomeScreen(),
+                      '/app-tour': (context) => const AppTourScreen(),
+                      '/feature-intro': (context) => const FeatureIntroScreen(),
+                      '/permissions': (context) => const PermissionsScreen(),
+                      
+                      // Booking Routes
+                      '/scheduled-booking': (context) => const ScheduledBookingScreen(),
+                      '/recurring-booking': (context) => const RecurringBookingScreen(),
+                      '/package-details': (context) => const PackageDetailsScreen(),
+                      '/booking-details': (context) => const BookingDetailsPlaceholderScreen(),
+                      
+                      // Payment Routes
+                      '/payment-methods': (context) => const PaymentMethodsScreen(),
+                      '/add-payment-method': (context) => const AddPaymentMethodScreen(),
+                      '/payment-confirmation': (context) => const PaymentConfirmationScreen(),
+                      '/payment-history': (context) => const PaymentHistoryScreen(),
+                      '/invoice-generation': (context) => const InvoiceGenerationScreen(),
+                      '/refund-request': (context) => const RefundRequestScreen(),
+                      
+                      // Support Routes
+                      '/support-center': (context) => const SupportCenterScreen(),
+                      
+                      // Tracking Routes
+                      '/live-tracking': (context) => const LiveTrackingScreen(),
+                      
+                      // Demo Routes
+                      '/feature-demo': (context) => const FeatureDemoScreen(),
+                    },
+                  );
+                },
               );
             },
           );
