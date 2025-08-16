@@ -17,7 +17,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/push_notification_service.dart';
-import '../../data/repositories/driver_repository_impl.dart';
+import '../../domain/repositories/driver_repository.dart';
 import '../../../home/presentation/screens/home_screen.dart';
 
 class CreateDriverProfileScreen extends StatefulWidget {
@@ -69,19 +69,25 @@ class _CreateDriverProfileScreenState extends State<CreateDriverProfileScreen> {
     });
 
     try {
-      final driverRepository = serviceLocator<DriverRepositoryImpl>();
+      print('🚗 Starting driver profile creation...');
+      final driverRepository = serviceLocator<DriverRepository>();
+      print('✅ DriverRepository obtained from service locator');
       
       // Get FCM token
       String? fcmToken;
       try {
         fcmToken = await PushNotificationService.getCurrentToken();
+        print('📱 FCM token obtained: ${fcmToken != null ? 'Yes' : 'No'}');
       } catch (e) {
-        print('Warning: Failed to get FCM token: $e');
+        print('⚠️ Warning: Failed to get FCM token: $e');
       }
+
+      final licenseNumber = _licenseNumberController.text.trim();
+      print('📝 Creating driver profile with license: $licenseNumber');
 
       // Create driver profile
       await driverRepository.createDriverProfile(
-        licenseNumber: _licenseNumberController.text.trim(),
+        licenseNumber: licenseNumber,
         isAvailable: true,
         fcmToken: fcmToken,
       );
@@ -105,9 +111,26 @@ class _CreateDriverProfileScreenState extends State<CreateDriverProfileScreen> {
           _isLoading = false;
         });
         
+        String errorMessage = 'Failed to create driver profile';
+        
+        // Provide more specific error messages
+        if (e.toString().contains('GetIt')) {
+          errorMessage = 'Configuration error. Please restart the app.';
+        } else if (e.toString().contains('network') || e.toString().contains('connection')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else if (e.toString().contains('401') || e.toString().contains('unauthorized')) {
+          errorMessage = 'Authentication error. Please log in again.';
+        } else if (e.toString().contains('400') || e.toString().contains('bad request')) {
+          errorMessage = 'Invalid license number. Please check and try again.';
+        } else if (e.toString().contains('500') || e.toString().contains('server')) {
+          errorMessage = 'Server error. Please try again later.';
+        } else {
+          errorMessage = 'Failed to create driver profile: ${e.toString()}';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create driver profile: ${e.toString()}'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );

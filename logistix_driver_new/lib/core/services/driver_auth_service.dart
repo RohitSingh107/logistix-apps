@@ -24,17 +24,26 @@ class DriverAuthService {
   /// Get the current driver's profile information
   Future<Map<String, dynamic>?> getDriverProfile() async {
     try {
-      // Ensure we have a valid token
-      await _apiClient.ensureValidToken();
+      print('🔍 DriverAuthService: Starting getDriverProfile');
       
+      // Ensure we have a valid token
+      print('🔑 DriverAuthService: Ensuring valid token...');
+      await _apiClient.ensureValidToken();
+      print('✅ DriverAuthService: Token validation complete');
+      
+      print('📡 DriverAuthService: Making API call to ${ApiEndpoints.driverProfile}');
       final response = await _apiClient.get(ApiEndpoints.driverProfile);
+      print('📥 DriverAuthService: Received response with status ${response.statusCode}');
       
       if (response.statusCode == 200) {
+        print('✅ DriverAuthService: Successfully fetched driver profile');
         return response.data;
+      } else {
+        print('❌ DriverAuthService: API returned status ${response.statusCode}');
+        return null;
       }
-      return null;
     } catch (e) {
-      print('Error fetching driver profile: $e');
+      print('❌ DriverAuthService: Error fetching driver profile: $e');
       return null;
     }
   }

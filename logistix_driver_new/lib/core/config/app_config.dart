@@ -32,9 +32,9 @@ class AppConfig {
       if (kIsWeb) {
         result = '/api'; // relative URL for web
       } else {
-        // For mobile, use 10.0.2.2 which maps to host machine's localhost when using emulator
-        // or use your computer's actual local network IP for real devices
-        result = 'http://192.168.210.156:8000';
+              // For mobile, use 10.0.2.2 which maps to host machine's localhost when using emulator
+      // or use your computer's actual local network IP for real devices
+      result = 'http://10.0.2.2:8000';
       }
     }
     
