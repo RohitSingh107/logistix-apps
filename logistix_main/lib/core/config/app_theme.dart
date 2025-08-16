@@ -19,6 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'app_colors.dart';
 
 class AppTheme {
   // Theme identifiers
@@ -46,26 +47,28 @@ class AppTheme {
     
     // Color Scheme
     colorScheme: const ColorScheme.light(
-      primary: Color(0xFFD4A574), // Golden/Orange color from the screenshot
-      secondary: Color(0xFF4CAF50), // Green for success
-      tertiary: Color(0xFF2196F3), // Blue for info
-      error: Color(0xFFE91E63),
-      surface: Color(0xFFF5F5F5),
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,
-      onSurface: Color(0xFF1A1A1A),
+      primary: AppColors.primaryOrange, // Vibrant orange for main branding
+      secondary: AppColors.darkGreen, // Dark green for success states
+      tertiary: AppColors.secondaryOrange, // Secondary orange for accents
+      error: AppColors.error,
+      surface: AppColors.surface,
+      background: AppColors.background,
+      onPrimary: AppColors.textOnPrimary,
+      onSecondary: AppColors.textOnPrimary,
+      onSurface: AppColors.textPrimary,
+      onBackground: AppColors.textPrimary,
     ),
     
     // App Bar Theme
     appBarTheme: AppBarTheme(
-      backgroundColor: Colors.white,
-      foregroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: AppColors.surface,
+      foregroundColor: AppColors.textPrimary,
       elevation: 0,
       centerTitle: false,
       titleTextStyle: GoogleFonts.poppins(
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
     ),
     
@@ -75,92 +78,92 @@ class AppTheme {
       displayLarge: GoogleFonts.poppins(
         fontSize: 32,
         fontWeight: FontWeight.bold,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       displayMedium: GoogleFonts.poppins(
         fontSize: 28,
         fontWeight: FontWeight.bold,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       displaySmall: GoogleFonts.poppins(
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       
       // Headline styles
       headlineLarge: GoogleFonts.poppins(
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       headlineMedium: GoogleFonts.poppins(
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       headlineSmall: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       
       // Title styles
       titleLarge: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       titleMedium: GoogleFonts.poppins(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       titleSmall: GoogleFonts.poppins(
         fontSize: 12,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       
       // Body styles
       bodyLarge: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       bodyMedium: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       bodySmall: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFF757575),
+        color: AppColors.textSecondary,
       ),
       
       // Label styles
       labelLarge: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       labelMedium: GoogleFonts.inter(
         fontSize: 12,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF1A1A1A),
+        color: AppColors.textPrimary,
       ),
       labelSmall: GoogleFonts.inter(
         fontSize: 10,
         fontWeight: FontWeight.w500,
-        color: const Color(0xFF757575),
+        color: AppColors.textSecondary,
       ),
     ),
     
     // Card Theme
     cardTheme: CardThemeData(
-      color: Colors.white,
-      surfaceTintColor: Colors.white,
+      color: AppColors.surface,
+      surfaceTintColor: AppColors.surface,
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -170,8 +173,8 @@ class AppTheme {
     // Elevated Button Theme
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFD4A574),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primaryOrange,
+        foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         shape: RoundedRectangleBorder(
@@ -187,7 +190,7 @@ class AppTheme {
     // Input Decoration Theme
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFFF5F5F5),
+      fillColor: AppColors.backgroundSecondary,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
