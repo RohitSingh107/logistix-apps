@@ -104,7 +104,7 @@ class _SupportCenterScreenState extends State<SupportCenterScreen> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 1.2,
+                    childAspectRatio: 0.9,
                   ),
                   itemCount: _supportCategories.length,
                   itemBuilder: (context, index) {
@@ -238,49 +238,53 @@ class _SupportCenterScreenState extends State<SupportCenterScreen> {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Icon
               Container(
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: category.color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   category.icon,
                   color: category.color,
-                  size: 24,
+                  size: 20,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               
               // Title
               Text(
                 category.title,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Theme.of(context).colorScheme.onBackground,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               
               // Description
-              Text(
-                category.description,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+              Flexible(
+                child: Text(
+                  category.description,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
