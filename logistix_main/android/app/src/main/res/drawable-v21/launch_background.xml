@@ -2,11 +2,4 @@
 <!-- Logistix Launch Background -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/logistix_orange" />
-
-    <!-- LOGISTIX Text -->
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@mipmap/logistix_text" />
-    </item>
 </layer-list>
