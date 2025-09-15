@@ -19,11 +19,10 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/di/service_locator.dart';
-import '../../../../core/services/driver_auth_service.dart';
+import '../../../../features/driver/domain/repositories/driver_repository.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/push_notification_service.dart';
-import '../../../../core/config/app_theme.dart';
-import 'main_navigation_screen.dart';
+import '../../../../core/services/auth_service.dart';
 import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
@@ -34,7 +33,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late final DriverAuthService _driverAuthService;
+  late final DriverRepository _driverRepository;
   late final LocationService _locationService;
   late final AuthService _authService;
   Map<String, dynamic>? _driverProfile;
@@ -45,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _driverAuthService = serviceLocator<DriverAuthService>();
+    _driverRepository = serviceLocator<DriverRepository>();
     _locationService = serviceLocator<LocationService>();
     _authService = serviceLocator<AuthService>();
     _initializeHomeScreen();
@@ -73,15 +72,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchDriverProfile() async {
     try {
       // Add timeout to prevent hanging
-      final profile = await _driverAuthService.getDriverProfile().timeout(
+      final driver = await _driverRepository.getDriverProfile().timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           debugPrint('Timeout fetching driver profile');
-          return null;
+          throw Exception('Timeout fetching driver profile');
         },
       );
       
-      if (profile != null && mounted) {
+      final profile = driver.toJson();
+      
+      if (mounted) {
         setState(() {
           _driverProfile = profile;
           _isAvailable = profile['is_available'] ?? false;
@@ -157,12 +158,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final newAvailability = !_isAvailable;
-      final result = await _driverAuthService.updateDriverAvailability(newAvailability);
+      final updatedDriver = await _driverRepository.updateDriverProfile(
+        isAvailable: newAvailability,
+      );
       
-      if (result != null && mounted) {
+      if (mounted) {
         setState(() {
-          _driverProfile = result;
-          _isAvailable = result['is_available'] ?? false;
+          _driverProfile = updatedDriver.toJson();
+          _isAvailable = updatedDriver.isAvailable;
         });
         
         // Handle location tracking based on availability
