@@ -1,20 +1,18 @@
-/**
- * trip_repository_impl.dart - Trip Repository Implementation
- * 
- * Purpose:
- * - Implements the TripRepository interface for trip lifecycle management
- * - Provides API communication for trip-related operations
- * - Handles data transformation between API and domain models
- * 
- * Key Logic:
- * - getTripDetails: Retrieves detailed trip information by ID
- * - getTripList: Fetches paginated trip history with filtering options
- * - updateTripStatus: Updates trip status (in progress, completed, cancelled)
- * - getActiveTripForUser: Retrieves currently active trip for user
- * - Supports both driver and customer trip perspectives
- * - Handles trip status transitions and validation
- * - Maps API responses to Trip domain models
- */
+/// trip_repository_impl.dart - Trip Repository Implementation
+/// 
+/// Purpose:
+/// - Implements the TripRepository interface for trip lifecycle management
+/// - Provides API communication for trip-related operations
+/// - Handles data transformation between API and domain models
+/// 
+/// Key Logic:
+/// - getTripDetails: Retrieves detailed trip information by ID
+/// - getTripList: Fetches paginated trip history with filtering options
+/// - updateTripStatus: Updates trip status (in progress, completed, cancelled)
+/// - getActiveTripForUser: Retrieves currently active trip for user
+/// - Supports both driver and customer trip perspectives
+/// - Handles trip status transitions and validation
+/// - Maps API responses to Trip domain models
 
 import '../../../../core/models/trip_model.dart';
 import '../../../../core/network/api_client.dart';

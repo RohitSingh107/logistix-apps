@@ -3,7 +3,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:logistix_driver/models/notification_model.dart';
-import 'package:logistix_driver/screens/home_screen.dart';
 import 'package:logistix_driver/services/auth_service.dart';
 
 class NotificationService {

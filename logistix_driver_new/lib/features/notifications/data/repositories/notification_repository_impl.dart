@@ -1,20 +1,19 @@
-/**
- * notification_repository_impl.dart - Notification Repository Implementation
- * 
- * Purpose:
- * - Implements the NotificationRepository interface
- * - Handles notification storage, retrieval, and management
- * - Provides both local and remote notification operations
- * - Manages notification state and persistence
- * 
- * Key Logic:
- * - Uses SharedPreferences for local notification storage
- * - Implements API client for remote notification operations
- * - Handles notification serialization and deserialization
- * - Provides offline-first notification management
- * - Supports notification filtering and pagination
- * - Manages notification read/unread status
- */
+/// notification_repository_impl.dart - Notification Repository Implementation
+/// 
+/// Purpose:
+/// - Implements the NotificationRepository interface
+/// - Handles notification storage, retrieval, and management
+/// - Provides both local and remote notification operations
+/// - Manages notification state and persistence
+/// 
+/// Key Logic:
+/// - Uses SharedPreferences for local notification storage
+/// - Implements API client for remote notification operations
+/// - Handles notification serialization and deserialization
+/// - Provides offline-first notification management
+/// - Supports notification filtering and pagination
+/// - Manages notification read/unread status
+library;
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -1,21 +1,20 @@
-/**
- * main.dart - Driver Application Entry Point
- * 
- * Purpose:
- * - Main entry point for the Logistix Driver Flutter application
- * - Handles app initialization, dependency injection, and error handling
- * - Sets up the root widget with BLoC providers and theme management
- * 
- * Key Logic:
- * - Initializes environment configuration (.env file)
- * - Sets up service locator for dependency injection
- * - Creates repository instances (AuthRepository, UserRepository)
- * - Provides comprehensive error handling with fallback UI
- * - Configures app routing and navigation for driver-specific screens
- * - Integrates BLoC state management (AuthBloc, UserBloc, ThemeBloc)
- * - Implements theme switching with persistent storage
- * - Handles authentication state and navigation flow for drivers
- */
+/// main.dart - Driver Application Entry Point
+/// 
+/// Purpose:
+/// - Main entry point for the Logistix Driver Flutter application
+/// - Handles app initialization, dependency injection, and error handling
+/// - Sets up the root widget with BLoC providers and theme management
+/// 
+/// Key Logic:
+/// - Initializes environment configuration (.env file)
+/// - Sets up service locator for dependency injection
+/// - Creates repository instances (AuthRepository, UserRepository)
+/// - Provides comprehensive error handling with fallback UI
+/// - Configures app routing and navigation for driver-specific screens
+/// - Integrates BLoC state management (AuthBloc, UserBloc, ThemeBloc)
+/// - Implements theme switching with persistent storage
+/// - Handles authentication state and navigation flow for drivers
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -170,11 +169,11 @@ class DriverApp extends StatelessWidget {
   final SharedPreferences sharedPreferences;
   
   const DriverApp({
-    Key? key,
+    super.key,
     required this.authRepository,
     required this.userRepository,
     required this.sharedPreferences,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -250,7 +249,7 @@ class DriverApp extends StatelessWidget {
 
 // Redirects to the main HomeScreen
 class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {

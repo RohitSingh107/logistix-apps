@@ -1,20 +1,19 @@
-/**
- * vehicle_estimation_model.dart - Vehicle Estimation Data Models
- * 
- * Purpose:
- * - Defines data models for vehicle estimation and fare calculation
- * - Handles location data and estimation requests/responses
- * - Manages vehicle type selection and pricing estimates
- * 
- * Key Logic:
- * - Location: Represents geographical coordinates (latitude, longitude)
- * - LocationRequest: Request payload for location data
- * - VehicleEstimationRequest: Request for vehicle estimation quotes
- * - VehicleEstimationRequestRequest: Request payload for estimation
- * - Uses JSON serialization with snake_case field mapping
- * - Supports location-based fare estimation
- * - Handles coordinate precision and validation
- */
+/// vehicle_estimation_model.dart - Vehicle Estimation Data Models
+/// 
+/// Purpose:
+/// - Defines data models for vehicle estimation and fare calculation
+/// - Handles location data and estimation requests/responses
+/// - Manages vehicle type selection and pricing estimates
+/// 
+/// Key Logic:
+/// - Location: Represents geographical coordinates (latitude, longitude)
+/// - LocationRequest: Request payload for location data
+/// - VehicleEstimationRequest: Request for vehicle estimation quotes
+/// - VehicleEstimationRequestRequest: Request payload for estimation
+/// - Uses JSON serialization with snake_case field mapping
+/// - Supports location-based fare estimation
+/// - Handles coordinate precision and validation
+library;
 
 import 'package:json_annotation/json_annotation.dart';
 

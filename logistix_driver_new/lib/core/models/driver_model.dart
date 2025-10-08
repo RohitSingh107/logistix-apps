@@ -1,19 +1,18 @@
-/**
- * driver_model.dart - Driver Data Models and Serialization
- * 
- * Purpose:
- * - Defines data models for driver-related entities
- * - Provides JSON serialization/deserialization for API communication
- * - Handles driver profile management and availability status
- * 
- * Key Logic:
- * - Driver model: Core driver entity with profile and rating information
- * - DriverRequest model: Driver creation/update request payload
- * - PatchedDriverRequest model: Partial update request payload
- * - Uses json_annotation for automatic JSON serialization
- * - Maps API field names to Dart property names using JsonKey
- * - Includes driver-specific fields like license number and availability
- */
+/// driver_model.dart - Driver Data Models and Serialization
+/// 
+/// Purpose:
+/// - Defines data models for driver-related entities
+/// - Provides JSON serialization/deserialization for API communication
+/// - Handles driver profile management and availability status
+/// 
+/// Key Logic:
+/// - Driver model: Core driver entity with profile and rating information
+/// - DriverRequest model: Driver creation/update request payload
+/// - PatchedDriverRequest model: Partial update request payload
+/// - Uses json_annotation for automatic JSON serialization
+/// - Maps API field names to Dart property names using JsonKey
+/// - Includes driver-specific fields like license number and availability
+library;
 
 import 'package:json_annotation/json_annotation.dart';
 import 'user_model.dart';

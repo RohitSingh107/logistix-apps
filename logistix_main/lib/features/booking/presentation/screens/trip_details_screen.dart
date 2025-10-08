@@ -1,21 +1,19 @@
-/**
- * trip_details_screen.dart - Trip Details Display
- * 
- * Purpose:
- * - Displays comprehensive information about active or completed trips
- * - Provides real-time trip tracking and status updates
- * - Handles trip-related actions and user interactions
- * 
- * Key Logic:
- * - Real-time trip status monitoring and updates
- * - Live driver location tracking with map visualization
- * - Trip timeline with pickup, transit, and delivery phases
- * - Driver information display with contact options
- * - Trip route visualization on interactive map
- * - Status-specific action buttons (cancel, contact, rate)
- * - Integration with trip repository for live data updates
- * - Push notification handling for trip status changes
- */
+/// trip_details_screen.dart - Trip Details Display
+/// 
+/// Purpose:
+/// - Displays comprehensive information about active or completed trips
+/// - Provides real-time trip tracking and status updates
+/// - Handles trip-related actions and user interactions
+/// 
+/// Key Logic:
+/// - Real-time trip status monitoring and updates
+/// - Live driver location tracking with map visualization
+/// - Trip timeline with pickup, transit, and delivery phases
+/// - Driver information display with contact options
+/// - Trip route visualization on interactive map
+/// - Status-specific action buttons (cancel, contact, rate)
+/// - Integration with trip repository for live data updates
+/// - Push notification handling for trip status changes
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -380,7 +378,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, '/support-center');
@@ -685,7 +683,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.star,
                           color: Colors.amber,
                           size: 16,
@@ -788,7 +786,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
                   Container(
                     width: 12,
                     height: 12,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.green,
                     ),
@@ -830,7 +828,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
               Container(
                 width: 12,
                 height: 12,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.red,
                 ),
@@ -1020,7 +1018,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.pending,
                     color: Colors.orange,
                     size: 16,

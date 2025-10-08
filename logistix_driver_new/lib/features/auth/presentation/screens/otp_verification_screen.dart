@@ -1,22 +1,21 @@
-/**
- * otp_verification_screen.dart - OTP Verification Interface
- * 
- * Purpose:
- * - Provides user interface for OTP verification during authentication
- * - Handles 6-digit OTP input with automatic field progression
- * - Manages verification process for both login and registration flows
- * 
- * Key Logic:
- * - Implements 6-digit OTP input with individual text fields
- * - Automatic focus progression between OTP input fields
- * - Auto-verification when all 6 digits are entered
- * - Handles different verification error scenarios with specific messages
- * - Supports both login and registration flows through isLogin parameter
- * - Navigates to appropriate screens based on authentication result
- * - Provides error feedback with field clearing for failed attempts
- * - Real-time error state management with visual feedback
- * - Supports retry functionality for failed verifications
- */
+/// otp_verification_screen.dart - OTP Verification Interface
+/// 
+/// Purpose:
+/// - Provides user interface for OTP verification during authentication
+/// - Handles 6-digit OTP input with automatic field progression
+/// - Manages verification process for both login and registration flows
+/// 
+/// Key Logic:
+/// - Implements 6-digit OTP input with individual text fields
+/// - Automatic focus progression between OTP input fields
+/// - Auto-verification when all 6 digits are entered
+/// - Handles different verification error scenarios with specific messages
+/// - Supports both login and registration flows through isLogin parameter
+/// - Navigates to appropriate screens based on authentication result
+/// - Provides error feedback with field clearing for failed attempts
+/// - Real-time error state management with visual feedback
+/// - Supports retry functionality for failed verifications
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

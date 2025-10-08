@@ -84,7 +84,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.background,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             appBar: AppBar(
               title: Text(
                 'Payment Methods',
@@ -118,7 +118,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onBackground,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     SizedBox(height: 8.h),
@@ -127,7 +127,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w400,
-                        color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                     SizedBox(height: 24.h),
@@ -188,7 +188,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                   ? SizedBox(
                                       width: 20.w,
                                       height: 20.w,
-                                      child: CircularProgressIndicator(
+                                      child: const CircularProgressIndicator(
                                         strokeWidth: 2,
                                         valueColor: AlwaysStoppedAnimation<Color>(
                                           Colors.white,
@@ -273,7 +273,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         if (method.isDefault) ...[
@@ -302,7 +302,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w400,
-                        color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                   ],

@@ -1,23 +1,21 @@
-/**
- * map_demo_screen.dart - Map Features Demo Screen
- * 
- * Purpose:
- * - Demonstrates all Uber-like map features in an interactive demo
- * - Shows zoom in/out, pan, location tracking, and real-time updates
- * - Provides a comprehensive test environment for map functionality
- * 
- * Key Features Demonstrated:
- * - Interactive map with pinch-to-zoom and pan gestures
- * - Real-time location tracking with GPS
- * - Smooth camera animations between locations
- * - Dynamic marker positioning and updates
- * - Uber-style location button with GPS access
- * - Interactive tap detection for location selection
- * - Real-time address updates as you move
- * - Zoom controls (+ and - buttons)
- * - Location info overlay
- * - Performance optimizations for smooth interactions
- */
+/// map_demo_screen.dart - Map Features Demo Screen
+/// 
+/// Purpose:
+/// - Demonstrates all Uber-like map features in an interactive demo
+/// - Shows zoom in/out, pan, location tracking, and real-time updates
+/// - Provides a comprehensive test environment for map functionality
+/// 
+/// Key Features Demonstrated:
+/// - Interactive map with pinch-to-zoom and pan gestures
+/// - Real-time location tracking with GPS
+/// - Smooth camera animations between locations
+/// - Dynamic marker positioning and updates
+/// - Uber-style location button with GPS access
+/// - Interactive tap detection for location selection
+/// - Real-time address updates as you move
+/// - Zoom controls (+ and - buttons)
+/// - Location info overlay
+/// - Performance optimizations for smooth interactions
 
 import 'package:flutter/material.dart';
 import '../../../../core/services/map_service_interface.dart';
@@ -37,7 +35,7 @@ class _MapDemoScreenState extends State<MapDemoScreen> {
   final LocationService _locationService = LocationService();
   
   MapLatLng _currentCenter = MapLatLng(13.0827, 80.2707);
-  double _currentZoom = 17.0; // Optimal zoom for street detail without rate limiting
+  final double _currentZoom = 17.0; // Optimal zoom for street detail without rate limiting
   MapLatLng? _userLocation;
   String _currentAddress = '';
   bool _isLoading = false;
@@ -419,7 +417,7 @@ class _MapDemoScreenState extends State<MapDemoScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    const Text(
                       'Debug Info',
                       style: TextStyle(
                         color: Colors.white,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logistix_driver/services/auth_service.dart';
 import 'package:logistix_driver/screens/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';

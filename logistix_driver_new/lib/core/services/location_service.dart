@@ -1,20 +1,19 @@
-/**
- * location_service.dart - Background Location Service
- * 
- * Purpose:
- * - Manages real-time location tracking for drivers
- * - Updates driver location every 3 seconds when available
- * - Handles location permissions and GPS accuracy
- * - Provides efficient background location updates
- * 
- * Key Logic:
- * - Periodic location updates every 3 seconds
- * - Automatic location permission handling
- * - GPS accuracy validation and filtering
- * - Network error handling and retry logic
- * - Battery optimization with smart update intervals
- * - Location change detection to avoid unnecessary API calls
- */
+/// location_service.dart - Background Location Service
+/// 
+/// Purpose:
+/// - Manages real-time location tracking for drivers
+/// - Updates driver location every 3 seconds when available
+/// - Handles location permissions and GPS accuracy
+/// - Provides efficient background location updates
+/// 
+/// Key Logic:
+/// - Periodic location updates every 3 seconds
+/// - Automatic location permission handling
+/// - GPS accuracy validation and filtering
+/// - Network error handling and retry logic
+/// - Battery optimization with smart update intervals
+/// - Location change detection to avoid unnecessary API calls
+library;
 
 import 'dart:async';
 import 'dart:io';

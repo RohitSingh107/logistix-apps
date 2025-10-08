@@ -1,22 +1,20 @@
-/**
- * home_screen.dart - Main Application Home Interface
- * 
- * Purpose:
- * - Provides the main home screen with bottom navigation
- * - Serves as the primary dashboard for the logistics application
- * - Integrates multiple feature screens through bottom navigation
- * 
- * Key Logic:
- * - HomeScreen: Main container with bottom navigation bar
- * - HomePage: Dashboard with quick service access and recent activity
- * - Displays greeting message and booking call-to-action
- * - Shows quick service access buttons for common actions
- * - Lists vehicle categories for booking selection
- * - Displays recent booking activity with status information
- * - Provides navigation to booking screen via search bar tap
- * - Loads and displays recent bookings from BookingService
- * - Implements responsive design with proper spacing and theming
- */
+/// home_screen.dart - Main Application Home Interface
+/// 
+/// Purpose:
+/// - Provides the main home screen with bottom navigation
+/// - Serves as the primary dashboard for the logistics application
+/// - Integrates multiple feature screens through bottom navigation
+/// 
+/// Key Logic:
+/// - HomeScreen: Main container with bottom navigation bar
+/// - HomePage: Dashboard with quick service access and recent activity
+/// - Displays greeting message and booking call-to-action
+/// - Shows quick service access buttons for common actions
+/// - Lists vehicle categories for booking selection
+/// - Displays recent booking activity with status information
+/// - Provides navigation to booking screen via search bar tap
+/// - Loads and displays recent bookings from BookingService
+/// - Implements responsive design with proper spacing and theming
 
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/bottom_navbar.dart';

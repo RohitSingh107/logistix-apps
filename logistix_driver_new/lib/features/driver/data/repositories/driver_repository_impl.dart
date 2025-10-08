@@ -1,19 +1,18 @@
-/**
- * driver_repository_impl.dart - Driver Repository Implementation
- * 
- * Purpose:
- * - Implements the DriverRepository interface
- * - Handles driver profile CRUD operations
- * - Manages driver availability and location updates
- * - Provides driver-specific API calls
- * 
- * Key Logic:
- * - Uses ApiClient for HTTP requests with authentication
- * - Handles driver profile creation and updates
- * - Manages driver availability status
- * - Updates driver location for real-time tracking
- * - Includes FCM token management for push notifications
- */
+/// driver_repository_impl.dart - Driver Repository Implementation
+/// 
+/// Purpose:
+/// - Implements the DriverRepository interface
+/// - Handles driver profile CRUD operations
+/// - Manages driver availability and location updates
+/// - Provides driver-specific API calls
+/// 
+/// Key Logic:
+/// - Uses ApiClient for HTTP requests with authentication
+/// - Handles driver profile creation and updates
+/// - Manages driver availability status
+/// - Updates driver location for real-time tracking
+/// - Includes FCM token management for push notifications
+library;
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';

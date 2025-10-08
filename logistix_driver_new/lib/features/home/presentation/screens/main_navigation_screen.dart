@@ -28,7 +28,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
@@ -39,8 +39,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         },
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
-        child: const Icon(Icons.developer_mode),
         tooltip: 'Demo Navigation',
+        child: const Icon(Icons.developer_mode),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(

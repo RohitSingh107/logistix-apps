@@ -1,21 +1,19 @@
-/**
- * vehicle_estimation_model.dart - Vehicle Estimation Data Models
- * 
- * Purpose:
- * - Defines data models for vehicle estimation and fare calculation
- * - Handles serialization for vehicle estimation API communication
- * - Manages location data and estimation request/response structures
- * 
- * Key Logic:
- * - Location: Geographic coordinates for pickup and dropoff points
- * - VehicleEstimationRequest: Payload for requesting fare estimates
- * - VehicleEstimate: Individual vehicle type estimate with fare and timing
- * - VehicleEstimationResponse: Complete response with multiple vehicle options
- * - Includes fare estimation, duration, distance, and pickup reach time
- * - Uses JSON serialization with snake_case field mapping
- * - Provides nullable fields for optional estimation data
- * - Supports multiple vehicle types in single response
- */
+/// vehicle_estimation_model.dart - Vehicle Estimation Data Models
+/// 
+/// Purpose:
+/// - Defines data models for vehicle estimation and fare calculation
+/// - Handles serialization for vehicle estimation API communication
+/// - Manages location data and estimation request/response structures
+/// 
+/// Key Logic:
+/// - Location: Geographic coordinates for pickup and dropoff points
+/// - VehicleEstimationRequest: Payload for requesting fare estimates
+/// - VehicleEstimate: Individual vehicle type estimate with fare and timing
+/// - VehicleEstimationResponse: Complete response with multiple vehicle options
+/// - Includes fare estimation, duration, distance, and pickup reach time
+/// - Uses JSON serialization with snake_case field mapping
+/// - Provides nullable fields for optional estimation data
+/// - Supports multiple vehicle types in single response
 
 import 'package:json_annotation/json_annotation.dart';
 

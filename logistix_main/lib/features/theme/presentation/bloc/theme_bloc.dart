@@ -1,21 +1,19 @@
-/**
- * theme_bloc.dart - Theme Management Business Logic Component
- * 
- * Purpose:
- * - Manages application theme state and persistence using BLoC pattern
- * - Handles theme loading from storage and theme switching functionality
- * - Provides centralized theme management across the application
- * 
- * Key Logic:
- * - LoadThemeEvent: Loads saved theme preference from SharedPreferences
- * - ChangeThemeEvent: Updates current theme and persists selection
- * - Uses SharedPreferences for theme persistence across app sessions
- * - Defaults to light theme when no saved preference exists
- * - Provides error handling with fallback to default theme
- * - Supports multiple theme variants through AppTheme configuration
- * - Emits ThemeLoaded state with current theme selection
- * - Handles theme persistence failures gracefully
- */
+/// theme_bloc.dart - Theme Management Business Logic Component
+/// 
+/// Purpose:
+/// - Manages application theme state and persistence using BLoC pattern
+/// - Handles theme loading from storage and theme switching functionality
+/// - Provides centralized theme management across the application
+/// 
+/// Key Logic:
+/// - LoadThemeEvent: Loads saved theme preference from SharedPreferences
+/// - ChangeThemeEvent: Updates current theme and persists selection
+/// - Uses SharedPreferences for theme persistence across app sessions
+/// - Defaults to light theme when no saved preference exists
+/// - Provides error handling with fallback to default theme
+/// - Supports multiple theme variants through AppTheme configuration
+/// - Emits ThemeLoaded state with current theme selection
+/// - Handles theme persistence failures gracefully
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';

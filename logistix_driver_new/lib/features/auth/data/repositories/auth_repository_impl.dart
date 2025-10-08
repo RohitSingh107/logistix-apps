@@ -1,22 +1,21 @@
-/**
- * auth_repository_impl.dart - Authentication Repository Implementation
- * 
- * Purpose:
- * - Concrete implementation of AuthRepository interface
- * - Handles HTTP API communication for authentication operations
- * - Integrates with ApiClient and AuthService for complete auth flow
- * 
- * Key Logic:
- * - Implements OTP-based authentication via API endpoints
- * - Handles OTP request and verification through HTTP calls
- * - Manages token operations (refresh, save) via AuthService
- * - Provides comprehensive error handling for API failures
- * - Extracts meaningful error messages from API responses
- * - Handles DioException errors with user-friendly messages
- * - Delegates token storage to AuthService for consistency
- * - Implements logout by clearing local token storage
- * - Uses structured error handling with Exception wrapping
- */
+/// auth_repository_impl.dart - Authentication Repository Implementation
+/// 
+/// Purpose:
+/// - Concrete implementation of AuthRepository interface
+/// - Handles HTTP API communication for authentication operations
+/// - Integrates with ApiClient and AuthService for complete auth flow
+/// 
+/// Key Logic:
+/// - Implements OTP-based authentication via API endpoints
+/// - Handles OTP request and verification through HTTP calls
+/// - Manages token operations (refresh, save) via AuthService
+/// - Provides comprehensive error handling for API failures
+/// - Extracts meaningful error messages from API responses
+/// - Handles DioException errors with user-friendly messages
+/// - Delegates token storage to AuthService for consistency
+/// - Implements logout by clearing local token storage
+/// - Uses structured error handling with Exception wrapping
+library;
 
 import 'package:dio/dio.dart';
 import '../../domain/repositories/auth_repository.dart';

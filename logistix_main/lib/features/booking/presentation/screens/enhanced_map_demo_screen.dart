@@ -1,25 +1,23 @@
-/**
- * enhanced_map_demo_screen.dart - Enhanced Map Demo with Search
- * 
- * Purpose:
- * - Demonstrates the optimized, lag-free map with search functionality
- * - Shows all Uber-like features including search and dynamic markers
- * - Provides a comprehensive test environment for map functionality
- * 
- * Key Features Demonstrated:
- * - Optimized performance with minimal lag
- * - Interactive map with pinch-to-zoom and pan gestures
- * - Real-time location tracking with GPS
- * - Smooth camera animations between locations
- * - Dynamic marker positioning and updates
- * - Uber-style location button with GPS access
- * - Interactive tap detection for location selection
- * - Real-time address updates as you move
- * - Zoom controls (+ and - buttons)
- * - Location info overlay
- * - Search functionality with dynamic markers
- * - Performance optimizations for smooth interactions
- */
+/// enhanced_map_demo_screen.dart - Enhanced Map Demo with Search
+/// 
+/// Purpose:
+/// - Demonstrates the optimized, lag-free map with search functionality
+/// - Shows all Uber-like features including search and dynamic markers
+/// - Provides a comprehensive test environment for map functionality
+/// 
+/// Key Features Demonstrated:
+/// - Optimized performance with minimal lag
+/// - Interactive map with pinch-to-zoom and pan gestures
+/// - Real-time location tracking with GPS
+/// - Smooth camera animations between locations
+/// - Dynamic marker positioning and updates
+/// - Uber-style location button with GPS access
+/// - Interactive tap detection for location selection
+/// - Real-time address updates as you move
+/// - Zoom controls (+ and - buttons)
+/// - Location info overlay
+/// - Search functionality with dynamic markers
+/// - Performance optimizations for smooth interactions
 
 import 'package:flutter/material.dart';
 import '../../../../core/services/map_service_interface.dart';
@@ -39,7 +37,7 @@ class _EnhancedMapDemoScreenState extends State<EnhancedMapDemoScreen> {
   final LocationService _locationService = LocationService();
   
   MapLatLng _currentCenter = MapLatLng(13.0827, 80.2707);
-  double _currentZoom = 17.0; // Optimal zoom for street detail without rate limiting
+  final double _currentZoom = 17.0; // Optimal zoom for street detail without rate limiting
   MapLatLng? _userLocation;
   String _currentAddress = '';
   bool _isLoading = false;
@@ -442,7 +440,7 @@ class _EnhancedMapDemoScreenState extends State<EnhancedMapDemoScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    const Text(
                       'Performance Info',
                       style: TextStyle(
                         color: Colors.white,

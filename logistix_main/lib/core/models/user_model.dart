@@ -1,20 +1,18 @@
-/**
- * user_model.dart - User Data Models and Serialization
- * 
- * Purpose:
- * - Defines data models for user-related entities
- * - Provides JSON serialization/deserialization for API communication
- * - Handles OTP authentication request/response models
- * 
- * Key Logic:
- * - User model: Core user entity with profile information
- * - UserRequest model: User creation/update request payload
- * - OTPRequest model: OTP generation request structure
- * - OTPVerification model: OTP validation request structure
- * - TokenRefresh models: JWT token refresh functionality
- * - Uses json_annotation for automatic JSON serialization
- * - Maps API field names to Dart property names using JsonKey
- */
+/// user_model.dart - User Data Models and Serialization
+/// 
+/// Purpose:
+/// - Defines data models for user-related entities
+/// - Provides JSON serialization/deserialization for API communication
+/// - Handles OTP authentication request/response models
+/// 
+/// Key Logic:
+/// - User model: Core user entity with profile information
+/// - UserRequest model: User creation/update request payload
+/// - OTPRequest model: OTP generation request structure
+/// - OTPVerification model: OTP validation request structure
+/// - TokenRefresh models: JWT token refresh functionality
+/// - Uses json_annotation for automatic JSON serialization
+/// - Maps API field names to Dart property names using JsonKey
 
 import 'package:equatable/equatable.dart';
 

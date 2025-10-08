@@ -1,20 +1,19 @@
-/**
- * booking_repository_impl.dart - Booking Repository Implementation
- * 
- * Purpose:
- * - Concrete implementation of BookingRepository interface
- * - Handles HTTP API communication for booking operations
- * - Manages booking creation, acceptance, and listing functionality
- * 
- * Key Logic:
- * - Implements BookingRepository interface with ApiClient integration
- * - Creates new booking requests with proper request serialization
- * - Handles booking acceptance for drivers with response parsing
- * - Fetches booking details and lists with error handling
- * - Uses structured data models for all booking operations
- * - Provides comprehensive error propagation for API failures
- * - Manages JSON serialization for API communication
- */
+/// booking_repository_impl.dart - Booking Repository Implementation
+/// 
+/// Purpose:
+/// - Concrete implementation of BookingRepository interface
+/// - Handles HTTP API communication for booking operations
+/// - Manages booking creation, acceptance, and listing functionality
+/// 
+/// Key Logic:
+/// - Implements BookingRepository interface with ApiClient integration
+/// - Creates new booking requests with proper request serialization
+/// - Handles booking acceptance for drivers with response parsing
+/// - Fetches booking details and lists with error handling
+/// - Uses structured data models for all booking operations
+/// - Provides comprehensive error propagation for API failures
+/// - Manages JSON serialization for API communication
+library;
 
 import '../../../../core/models/booking_model.dart';
 import '../../../../core/models/trip_model.dart';

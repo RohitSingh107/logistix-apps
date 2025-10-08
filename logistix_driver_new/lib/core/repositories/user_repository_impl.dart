@@ -1,21 +1,20 @@
-/**
- * user_repository_impl.dart - User Repository Implementation
- * 
- * Purpose:
- * - Concrete implementation of UserRepository interface
- * - Handles HTTP API communication for user operations
- * - Provides comprehensive error handling and user-friendly error messages
- * 
- * Key Logic:
- * - Implements UserRepository interface with ApiClient integration
- * - Ensures authentication tokens are valid before API calls
- * - Provides detailed error message extraction from API responses
- * - Handles various DioException types (connection, timeout, response errors)
- * - Maps HTTP status codes to meaningful error messages
- * - Preserves existing user data during partial profile updates
- * - Uses JSON serialization for API communication
- * - Implements proper error propagation with Exception wrapping
- */
+/// user_repository_impl.dart - User Repository Implementation
+/// 
+/// Purpose:
+/// - Concrete implementation of UserRepository interface
+/// - Handles HTTP API communication for user operations
+/// - Provides comprehensive error handling and user-friendly error messages
+/// 
+/// Key Logic:
+/// - Implements UserRepository interface with ApiClient integration
+/// - Ensures authentication tokens are valid before API calls
+/// - Provides detailed error message extraction from API responses
+/// - Handles various DioException types (connection, timeout, response errors)
+/// - Maps HTTP status codes to meaningful error messages
+/// - Preserves existing user data during partial profile updates
+/// - Uses JSON serialization for API communication
+/// - Implements proper error propagation with Exception wrapping
+library;
 
 import 'package:dio/dio.dart';
 import '../network/api_client.dart';

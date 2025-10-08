@@ -1,20 +1,18 @@
-/**
- * location_selection_screen.dart - Location Selection Interface
- * 
- * Purpose:
- * - Provides interactive map interface for selecting pickup and dropoff locations
- * - Handles location search, map interaction, and address selection
- * - Integrates with map services for geocoding and place suggestions
- * 
- * Key Logic:
- * - Interactive map with draggable markers for precise location selection
- * - Search functionality with autocomplete suggestions
- * - Current location detection and GPS integration
- * - Address validation and confirmation workflow
- * - Real-time reverse geocoding for selected coordinates
- * - Navigation between pickup and dropoff location selection
- * - Integration with booking flow for location data passing
- */
+/// location_selection_screen.dart - Location Selection Interface
+/// 
+/// Purpose:
+/// - Provides interactive map interface for selecting pickup and dropoff locations
+/// - Handles location search, map interaction, and address selection
+/// - Integrates with map services for geocoding and place suggestions
+/// 
+/// Key Logic:
+/// - Interactive map with draggable markers for precise location selection
+/// - Search functionality with autocomplete suggestions
+/// - Current location detection and GPS integration
+/// - Address validation and confirmation workflow
+/// - Real-time reverse geocoding for selected coordinates
+/// - Navigation between pickup and dropoff location selection
+/// - Integration with booking flow for location data passing
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';

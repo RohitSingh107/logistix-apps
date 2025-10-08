@@ -1,22 +1,20 @@
-/**
- * wallet_model.dart - Wallet and Transaction Data Models
- * 
- * Purpose:
- * - Defines data models for wallet functionality and transaction management
- * - Handles wallet balance, topup operations, and transaction history
- * - Manages financial transaction records and pagination
- * 
- * Key Logic:
- * - WalletTransaction: Individual transaction record with amount and type
- * - WalletTopupResponse: Response for successful wallet topup operations
- * - WalletTopupRequest: Payload for requesting wallet balance additions
- * - WalletBalanceResponse: Current wallet balance information
- * - PaginatedWalletTransactionList: Paginated transaction history
- * - Extends BaseModel for consistent behavior and equality comparison
- * - Uses JSON serialization with snake_case field mapping
- * - Supports transaction types, remarks, and timestamps
- * - Handles nullable fields for optional transaction details
- */
+/// wallet_model.dart - Wallet and Transaction Data Models
+/// 
+/// Purpose:
+/// - Defines data models for wallet functionality and transaction management
+/// - Handles wallet balance, topup operations, and transaction history
+/// - Manages financial transaction records and pagination
+/// 
+/// Key Logic:
+/// - WalletTransaction: Individual transaction record with amount and type
+/// - WalletTopupResponse: Response for successful wallet topup operations
+/// - WalletTopupRequest: Payload for requesting wallet balance additions
+/// - WalletBalanceResponse: Current wallet balance information
+/// - PaginatedWalletTransactionList: Paginated transaction history
+/// - Extends BaseModel for consistent behavior and equality comparison
+/// - Uses JSON serialization with snake_case field mapping
+/// - Supports transaction types, remarks, and timestamps
+/// - Handles nullable fields for optional transaction details
 
 import 'package:equatable/equatable.dart';
 

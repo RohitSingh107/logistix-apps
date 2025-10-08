@@ -69,7 +69,7 @@ class CountrySelectionDialog extends StatelessWidget {
                       ),
                     ),
                     trailing: isSelected
-                        ? Icon(
+                        ? const Icon(
                             Icons.check,
                             color: AppColors.primaryOrange,
                             size: 20,

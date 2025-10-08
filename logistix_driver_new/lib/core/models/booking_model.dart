@@ -1,17 +1,16 @@
-/**
- * booking_model.dart - Booking Model
- * 
- * Purpose:
- * - Represents a booking request in the system
- * - Contains booking details, sender/receiver info, and trip details
- * - Used for ride requests and booking management
- * 
- * Key Logic:
- * - Booking request creation and management
- * - Booking status tracking
- * - Sender and receiver information
- * - Payment and timing details
- */
+/// booking_model.dart - Booking Model
+/// 
+/// Purpose:
+/// - Represents a booking request in the system
+/// - Contains booking details, sender/receiver info, and trip details
+/// - Used for ride requests and booking management
+/// 
+/// Key Logic:
+/// - Booking request creation and management
+/// - Booking status tracking
+/// - Sender and receiver information
+/// - Payment and timing details
+library;
 
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
@@ -103,6 +102,7 @@ class Booking extends BaseModel {
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) => _$BookingFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$BookingToJson(this);
 
   /// Create a copy of this booking with updated fields
@@ -204,6 +204,6 @@ class Booking extends BaseModel {
   String get pickupTime12Hour {
     final hour = pickupTime.hour > 12 ? pickupTime.hour - 12 : pickupTime.hour;
     final period = pickupTime.hour >= 12 ? 'PM' : 'AM';
-    return '${hour}:${pickupTime.minute.toString().padLeft(2, '0')} $period';
+    return '$hour:${pickupTime.minute.toString().padLeft(2, '0')} $period';
   }
 } 

@@ -1,22 +1,20 @@
-/**
- * wallet_bloc.dart - Wallet Management Business Logic Component
- * 
- * Purpose:
- * - Manages wallet operations and state using BLoC pattern
- * - Handles balance retrieval, transaction history, and balance addition
- * - Provides paginated transaction loading and filtering capabilities
- * 
- * Key Logic:
- * - LoadWalletData: Fetches wallet balance and initial transaction history
- * - RefreshWalletData: Refreshes wallet data for pull-to-refresh functionality
- * - LoadMoreTransactions: Implements paginated loading for transaction history
- * - FilterTransactions: Supports transaction filtering by type and date range
- * - AddBalance: Handles wallet topup operations with success feedback
- * - Complex state management with loading, loaded, and error states
- * - Supports infinite scrolling with hasMoreTransactions tracking
- * - Manages current page and total count for pagination
- * - Provides comprehensive error handling for all wallet operations
- */
+/// wallet_bloc.dart - Wallet Management Business Logic Component
+/// 
+/// Purpose:
+/// - Manages wallet operations and state using BLoC pattern
+/// - Handles balance retrieval, transaction history, and balance addition
+/// - Provides paginated transaction loading and filtering capabilities
+/// 
+/// Key Logic:
+/// - LoadWalletData: Fetches wallet balance and initial transaction history
+/// - RefreshWalletData: Refreshes wallet data for pull-to-refresh functionality
+/// - LoadMoreTransactions: Implements paginated loading for transaction history
+/// - FilterTransactions: Supports transaction filtering by type and date range
+/// - AddBalance: Handles wallet topup operations with success feedback
+/// - Complex state management with loading, loaded, and error states
+/// - Supports infinite scrolling with hasMoreTransactions tracking
+/// - Manages current page and total count for pagination
+/// - Provides comprehensive error handling for all wallet operations
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';

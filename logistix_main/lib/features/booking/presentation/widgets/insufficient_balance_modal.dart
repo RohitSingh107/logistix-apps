@@ -57,7 +57,7 @@ class InsufficientBalanceModal extends StatelessWidget {
               color: Colors.orange.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.account_balance_wallet_outlined,
               size: 40,
               color: Colors.orange,

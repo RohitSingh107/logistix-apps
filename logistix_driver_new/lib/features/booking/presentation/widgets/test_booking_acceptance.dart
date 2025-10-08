@@ -1,17 +1,16 @@
-/**
- * test_booking_acceptance.dart - Test Booking Acceptance Widget
- * 
- * Purpose:
- * - Provides a simple interface to test booking acceptance functionality
- * - Allows developers to input a booking ID and test the accept flow
- * - Shows detailed logs and error messages for debugging
- * 
- * Key Logic:
- * - Input field for booking ID
- * - Test button to trigger acceptance
- * - Real-time status updates and error handling
- * - Detailed logging for debugging purposes
- */
+/// test_booking_acceptance.dart - Test Booking Acceptance Widget
+/// 
+/// Purpose:
+/// - Provides a simple interface to test booking acceptance functionality
+/// - Allows developers to input a booking ID and test the accept flow
+/// - Shows detailed logs and error messages for debugging
+/// 
+/// Key Logic:
+/// - Input field for booking ID
+/// - Test button to trigger acceptance
+/// - Real-time status updates and error handling
+/// - Detailed logging for debugging purposes
+library;
 
 import 'package:flutter/material.dart';
 import '../../../../core/services/ride_action_service.dart';
@@ -20,7 +19,7 @@ import '../../../../core/models/trip_model.dart';
 import '../../../../core/network/api_client.dart';
 
 class TestBookingAcceptance extends StatefulWidget {
-  const TestBookingAcceptance({Key? key}) : super(key: key);
+  const TestBookingAcceptance({super.key});
 
   @override
   State<TestBookingAcceptance> createState() => _TestBookingAcceptanceState();

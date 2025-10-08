@@ -1,15 +1,14 @@
-/**
- * location_service_test.dart - Location Service Tests
- * 
- * Purpose:
- * - Tests the location service functionality
- * - Verifies basic location service operations
- * - Tests distance calculation functionality
- */
+/// location_service_test.dart - Location Service Tests
+/// 
+/// Purpose:
+/// - Tests the location service functionality
+/// - Verifies basic location service operations
+/// - Tests distance calculation functionality
+library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
-import '../lib/core/services/location_service.dart';
+import 'package:logistix_driver/core/services/location_service.dart';
 
 void main() {
   group('LocationService Tests', () {

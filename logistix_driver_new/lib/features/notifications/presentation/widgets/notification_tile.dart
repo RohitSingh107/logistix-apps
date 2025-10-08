@@ -1,20 +1,19 @@
-/**
- * notification_tile.dart - Notification Tile Widget
- * 
- * Purpose:
- * - Displays individual notification items in a list
- * - Shows notification content, type, and status
- * - Provides actions for notification management
- * - Handles notification interactions
- * 
- * Key Logic:
- * - Shows notification icon based on type
- * - Displays read/unread status with visual indicators
- * - Provides swipe actions for quick actions
- * - Shows notification timestamp and priority
- * - Handles notification tap and long press
- * - Supports notification actions (mark as read, delete)
- */
+/// notification_tile.dart - Notification Tile Widget
+/// 
+/// Purpose:
+/// - Displays individual notification items in a list
+/// - Shows notification content, type, and status
+/// - Provides actions for notification management
+/// - Handles notification interactions
+/// 
+/// Key Logic:
+/// - Shows notification icon based on type
+/// - Displays read/unread status with visual indicators
+/// - Provides swipe actions for quick actions
+/// - Shows notification timestamp and priority
+/// - Handles notification tap and long press
+/// - Supports notification actions (mark as read, delete)
+library;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

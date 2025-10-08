@@ -180,7 +180,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                            ),
                          ),
                          const SizedBox(width: 8),
-                         Icon(
+                         const Icon(
                            Icons.keyboard_arrow_down,
                            color: AppColors.pureBlack,
                            size: 20,

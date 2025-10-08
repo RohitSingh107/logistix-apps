@@ -1,23 +1,21 @@
-/**
- * location_service.dart - Location and Places Service
- * 
- * Purpose:
- * - Provides location services including current position and place search
- * - Manages GPS permissions and location streaming
- * - Integrates with map services for geocoding and place autocomplete
- * 
- * Key Logic:
- * - Singleton pattern for consistent location service access
- * - GPS location retrieval with permission handling
- * - Real-time location updates via stream
- * - Place search with caching and location-aware results
- * - Recent searches and saved places management
- * - Geocoding and reverse geocoding through map service integration
- * - Fallback to default location (Chennai) when GPS unavailable
- * - Search result caching for performance optimization
- * - Place type determination from map service responses
- * - Persistent storage of user preferences and search history
- */
+/// location_service.dart - Location and Places Service
+/// 
+/// Purpose:
+/// - Provides location services including current position and place search
+/// - Manages GPS permissions and location streaming
+/// - Integrates with map services for geocoding and place autocomplete
+/// 
+/// Key Logic:
+/// - Singleton pattern for consistent location service access
+/// - GPS location retrieval with permission handling
+/// - Real-time location updates via stream
+/// - Place search with caching and location-aware results
+/// - Recent searches and saved places management
+/// - Geocoding and reverse geocoding through map service integration
+/// - Fallback to default location (Chennai) when GPS unavailable
+/// - Search result caching for performance optimization
+/// - Place type determination from map service responses
+/// - Persistent storage of user preferences and search history
 
 import 'dart:async';
 import 'dart:math' as math;

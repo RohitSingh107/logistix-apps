@@ -1,13 +1,12 @@
-/**
- * push_notification_service.dart - Push Notification Service
- * 
- * Purpose:
- * - Handles Firebase Cloud Messaging (FCM) initialization
- * - Manages FCM token retrieval and printing
- * - Configures notification permissions and settings
- * - Handles foreground and background notifications
- * - Integrates with enhanced notification service
- */
+/// push_notification_service.dart - Push Notification Service
+/// 
+/// Purpose:
+/// - Handles Firebase Cloud Messaging (FCM) initialization
+/// - Manages FCM token retrieval and printing
+/// - Configures notification permissions and settings
+/// - Handles foreground and background notifications
+/// - Integrates with enhanced notification service
+library;
 
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';

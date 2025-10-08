@@ -1,21 +1,19 @@
-/**
- * app_theme.dart - Application Theme Configuration
- * 
- * Purpose:
- * - Defines comprehensive theme configurations for the application
- * - Provides multiple theme variants (light, dark, blue)
- * - Standardizes UI appearance across the entire application
- * 
- * Key Logic:
- * - Uses Material 3 design system for modern UI components
- * - Implements custom color schemes with brand-specific colors
- * - Configures typography using Google Fonts (Poppins for headers, Inter for body)
- * - Defines consistent spacing, elevation, and border radius values
- * - Sets up component-specific themes (AppBar, Card, Button, Input)
- * - Provides theme switching capability through theme name selection
- * - Ensures accessibility with proper contrast ratios
- * - Includes bottom navigation bar styling and dialog themes
- */
+/// app_theme.dart - Application Theme Configuration
+/// 
+/// Purpose:
+/// - Defines comprehensive theme configurations for the application
+/// - Provides multiple theme variants (light, dark, blue)
+/// - Standardizes UI appearance across the entire application
+/// 
+/// Key Logic:
+/// - Uses Material 3 design system for modern UI components
+/// - Implements custom color schemes with brand-specific colors
+/// - Configures typography using Google Fonts (Poppins for headers, Inter for body)
+/// - Defines consistent spacing, elevation, and border radius values
+/// - Sets up component-specific themes (AppBar, Card, Button, Input)
+/// - Provides theme switching capability through theme name selection
+/// - Ensures accessibility with proper contrast ratios
+/// - Includes bottom navigation bar styling and dialog themes
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -52,11 +50,9 @@ class AppTheme {
       tertiary: AppColors.secondaryOrange, // Secondary orange for accents
       error: AppColors.error,
       surface: AppColors.surface,
-      background: AppColors.background,
       onPrimary: AppColors.textOnPrimary,
       onSecondary: AppColors.textOnPrimary,
       onSurface: AppColors.textPrimary,
-      onBackground: AppColors.textPrimary,
     ),
     
     // App Bar Theme

@@ -1,21 +1,20 @@
-/**
- * notification_bloc.dart - Notification BLoC
- * 
- * Purpose:
- * - Manages notification state and business logic
- * - Handles notification loading, filtering, and status updates
- * - Provides reactive notification management
- * - Supports pagination and real-time updates
- * 
- * Key Logic:
- * - NotificationEvent: Defines all notification-related actions
- * - NotificationState: Represents different notification states
- * - Handles notification loading with pagination support
- * - Manages notification read/unread status
- * - Supports notification filtering by type and status
- * - Provides error handling and loading states
- * - Implements notification count tracking
- */
+/// notification_bloc.dart - Notification BLoC
+/// 
+/// Purpose:
+/// - Manages notification state and business logic
+/// - Handles notification loading, filtering, and status updates
+/// - Provides reactive notification management
+/// - Supports pagination and real-time updates
+/// 
+/// Key Logic:
+/// - NotificationEvent: Defines all notification-related actions
+/// - NotificationState: Represents different notification states
+/// - Handles notification loading with pagination support
+/// - Manages notification read/unread status
+/// - Supports notification filtering by type and status
+/// - Provides error handling and loading states
+/// - Implements notification count tracking
+library;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';

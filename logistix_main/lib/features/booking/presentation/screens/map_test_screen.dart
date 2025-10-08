@@ -13,7 +13,7 @@ class MapTestScreen extends StatefulWidget {
 class _MapTestScreenState extends State<MapTestScreen> {
   late MapServiceInterface _mapService;
   bool _isLoading = false;
-  List<String> _testResults = [];
+  final List<String> _testResults = [];
 
   @override
   void initState() {

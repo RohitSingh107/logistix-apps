@@ -1,17 +1,16 @@
-/**
- * app_lifecycle_wrapper.dart - App Lifecycle Management
- * 
- * Purpose:
- * - Handles app lifecycle changes (foreground/background)
- * - Manages background location tracking based on app state
- * - Provides seamless location tracking across app states
- * 
- * Key Logic:
- * - Listens to app lifecycle changes
- * - Starts/stops background location tracking appropriately
- * - Manages driver availability state
- * - Handles location permissions across app states
- */
+/// app_lifecycle_wrapper.dart - App Lifecycle Management
+/// 
+/// Purpose:
+/// - Handles app lifecycle changes (foreground/background)
+/// - Manages background location tracking based on app state
+/// - Provides seamless location tracking across app states
+/// 
+/// Key Logic:
+/// - Listens to app lifecycle changes
+/// - Starts/stops background location tracking appropriately
+/// - Manages driver availability state
+/// - Handles location permissions across app states
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,9 +24,9 @@ class AppLifecycleWrapper extends StatefulWidget {
   final Widget child;
   
   const AppLifecycleWrapper({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   State<AppLifecycleWrapper> createState() => _AppLifecycleWrapperState();

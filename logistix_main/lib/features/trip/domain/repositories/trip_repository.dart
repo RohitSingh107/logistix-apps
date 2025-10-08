@@ -1,21 +1,19 @@
-/**
- * trip_repository.dart - Trip Repository Interface
- * 
- * Purpose:
- * - Defines the contract for trip-related data operations
- * - Provides abstract methods for trip lifecycle management
- * - Establishes consistent interface for trip data access across layers
- * 
- * Key Logic:
- * - Abstract methods for trip CRUD operations (create, read, update, delete)
- * - Trip status management interface (pending, active, completed, cancelled)
- * - Pagination support for trip history and listing
- * - Real-time trip tracking and status updates interface
- * - Driver-customer trip relationship management
- * - Trip filtering and search capabilities
- * - Integration points for location tracking and route management
- * - Error handling contracts for trip operation failures
- */
+/// trip_repository.dart - Trip Repository Interface
+/// 
+/// Purpose:
+/// - Defines the contract for trip-related data operations
+/// - Provides abstract methods for trip lifecycle management
+/// - Establishes consistent interface for trip data access across layers
+/// 
+/// Key Logic:
+/// - Abstract methods for trip CRUD operations (create, read, update, delete)
+/// - Trip status management interface (pending, active, completed, cancelled)
+/// - Pagination support for trip history and listing
+/// - Real-time trip tracking and status updates interface
+/// - Driver-customer trip relationship management
+/// - Trip filtering and search capabilities
+/// - Integration points for location tracking and route management
+/// - Error handling contracts for trip operation failures
 
 import '../../../../core/models/trip_model.dart';
 

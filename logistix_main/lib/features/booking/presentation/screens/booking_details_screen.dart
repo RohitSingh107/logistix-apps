@@ -1,21 +1,19 @@
-/**
- * booking_details_screen.dart - Booking Details Display
- * 
- * Purpose:
- * - Displays detailed information about booking requests and confirmations
- * - Provides booking management and modification capabilities
- * - Handles booking status updates and user actions
- * 
- * Key Logic:
- * - Comprehensive booking information display (locations, timing, pricing)
- * - Booking status tracking (pending, confirmed, assigned, completed)
- * - Driver assignment information and contact details
- * - Vehicle details and estimated arrival times
- * - Booking modification options (reschedule, cancel, update details)
- * - Payment information and transaction history
- * - Integration with booking repository for data retrieval
- * - Real-time updates via WebSocket or polling mechanisms
- */
+/// booking_details_screen.dart - Booking Details Display
+/// 
+/// Purpose:
+/// - Displays detailed information about booking requests and confirmations
+/// - Provides booking management and modification capabilities
+/// - Handles booking status updates and user actions
+/// 
+/// Key Logic:
+/// - Comprehensive booking information display (locations, timing, pricing)
+/// - Booking status tracking (pending, confirmed, assigned, completed)
+/// - Driver assignment information and contact details
+/// - Vehicle details and estimated arrival times
+/// - Booking modification options (reschedule, cancel, update details)
+/// - Payment information and transaction history
+/// - Integration with booking repository for data retrieval
+/// - Real-time updates via WebSocket or polling mechanisms
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -264,7 +262,7 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
           },
           onCancel: () {
             Navigator.pop(modalContext);
-            context.read<BookingBloc>().add(ResetBookingState());
+            context.read<BookingBloc>().add(const ResetBookingState());
           },
         ),
       ),
@@ -365,7 +363,7 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
         ),
       ],
       child: Scaffold(
-        backgroundColor: theme.colorScheme.background,
+        backgroundColor: theme.colorScheme.surface,
         appBar: AppBar(
           backgroundColor: theme.colorScheme.surface,
           elevation: 0,
@@ -740,7 +738,7 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
     return Column(
       children: [
         DropdownButtonFormField<String>(
-          value: _goodsTypeController.text.isEmpty ? null : _goodsTypeController.text,
+          initialValue: _goodsTypeController.text.isEmpty ? null : _goodsTypeController.text,
           decoration: const InputDecoration(
             labelText: 'Goods Type',
             prefixIcon: Icon(Icons.inventory_2),

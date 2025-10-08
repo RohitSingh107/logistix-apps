@@ -1,21 +1,20 @@
-/**
- * auth_bloc.dart - Authentication Business Logic Component
- * 
- * Purpose:
- * - Manages authentication state and business logic using BLoC pattern
- * - Handles OTP-based authentication flow for login and registration
- * - Provides centralized authentication state management
- * 
- * Key Logic:
- * - Implements OTP request and verification events
- * - Manages authentication states (loading, success, error, etc.)
- * - Handles both login and registration flows with OTP
- * - Stores user registration data temporarily during signup
- * - Manages token storage and retrieval
- * - Provides authentication status checking
- * - Handles logout functionality with token cleanup
- * - Integrates with AuthRepository and AuthService
- */
+/// auth_bloc.dart - Authentication Business Logic Component
+/// 
+/// Purpose:
+/// - Manages authentication state and business logic using BLoC pattern
+/// - Handles OTP-based authentication flow for login and registration
+/// - Provides centralized authentication state management
+/// 
+/// Key Logic:
+/// - Implements OTP request and verification events
+/// - Manages authentication states (loading, success, error, etc.)
+/// - Handles both login and registration flows with OTP
+/// - Stores user registration data temporarily during signup
+/// - Manages token storage and retrieval
+/// - Provides authentication status checking
+/// - Handles logout functionality with token cleanup
+/// - Integrates with AuthRepository and AuthService
+library;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';

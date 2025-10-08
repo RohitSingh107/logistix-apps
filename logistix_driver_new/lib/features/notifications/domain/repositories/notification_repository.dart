@@ -1,20 +1,19 @@
-/**
- * notification_repository.dart - Notification Repository Interface
- * 
- * Purpose:
- * - Defines the contract for notification-related data operations
- * - Provides abstraction layer for notification management
- * - Ensures consistent notification data access patterns across the application
- * 
- * Key Logic:
- * - Abstract repository interface following domain-driven design
- * - Manages notification retrieval, storage, and status updates
- * - Supports paginated notification listing and filtering
- * - Handles notification read/unread status management
- * - Returns structured notification models for type safety
- * - Follows async/await pattern for all notification operations
- * - Supports comprehensive notification management functionality
- */
+/// notification_repository.dart - Notification Repository Interface
+/// 
+/// Purpose:
+/// - Defines the contract for notification-related data operations
+/// - Provides abstraction layer for notification management
+/// - Ensures consistent notification data access patterns across the application
+/// 
+/// Key Logic:
+/// - Abstract repository interface following domain-driven design
+/// - Manages notification retrieval, storage, and status updates
+/// - Supports paginated notification listing and filtering
+/// - Handles notification read/unread status management
+/// - Returns structured notification models for type safety
+/// - Follows async/await pattern for all notification operations
+/// - Supports comprehensive notification management functionality
+library;
 
 import '../../../../core/models/notification_model.dart';
 
