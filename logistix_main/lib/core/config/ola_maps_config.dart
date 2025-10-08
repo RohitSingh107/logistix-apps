@@ -1,20 +1,18 @@
-/**
- * ola_maps_config.dart - Ola Maps Service Configuration
- * 
- * Purpose:
- * - Provides configuration constants for Ola Maps integration
- * - Manages API settings, timeouts, and default map parameters
- * - Centralizes Ola Maps-specific configuration values
- * 
- * Key Logic:
- * - API key and base URL configuration for Ola Maps service
- * - Default location coordinates (Chennai, India) for map initialization
- * - Map zoom level settings (min, max, default) for user experience
- * - Network timeout configurations for API reliability
- * - Search functionality settings (max results, debounce delay)
- * - Recent searches configuration for user convenience
- * - All settings are compile-time constants for performance
- */
+/// ola_maps_config.dart - Ola Maps Service Configuration
+/// 
+/// Purpose:
+/// - Provides configuration constants for Ola Maps integration
+/// - Manages API settings, timeouts, and default map parameters
+/// - Centralizes Ola Maps-specific configuration values
+/// 
+/// Key Logic:
+/// - API key and base URL configuration for Ola Maps service
+/// - Default location coordinates (Chennai, India) for map initialization
+/// - Map zoom level settings (min, max, default) for user experience
+/// - Network timeout configurations for API reliability
+/// - Search functionality settings (max results, debounce delay)
+/// - Recent searches configuration for user convenience
+/// - All settings are compile-time constants for performance
 
 class OlaMapsConfig {
   // Replace with your actual Ola Maps API key

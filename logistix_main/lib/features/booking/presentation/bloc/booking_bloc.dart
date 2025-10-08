@@ -1,21 +1,19 @@
-/**
- * booking_bloc.dart - Booking Business Logic Component
- * 
- * Purpose:
- * - Manages booking creation and validation business logic using BLoC pattern
- * - Handles wallet balance verification before booking creation
- * - Coordinates between booking repository and wallet repository
- * 
- * Key Logic:
- * - CheckWalletBalance: Verifies sufficient funds for payment mode
- * - CreateBookingEvent: Handles complete booking creation with all parameters
- * - ResetBookingState: Clears booking state for new operations
- * - Wallet balance checking with sufficient/insufficient states
- * - Comprehensive booking validation and error handling
- * - Integrates pickup/dropoff coordinates and timing information
- * - Supports multiple payment modes (cash, wallet)
- * - Provides detailed booking success/error feedback
- */
+/// booking_bloc.dart - Booking Business Logic Component
+/// 
+/// Purpose:
+/// - Manages booking creation and validation business logic using BLoC pattern
+/// - Handles wallet balance verification before booking creation
+/// - Coordinates between booking repository and wallet repository
+/// 
+/// Key Logic:
+/// - CheckWalletBalance: Verifies sufficient funds for payment mode
+/// - CreateBookingEvent: Handles complete booking creation with all parameters
+/// - ResetBookingState: Clears booking state for new operations
+/// - Wallet balance checking with sufficient/insufficient states
+/// - Comprehensive booking validation and error handling
+/// - Integrates pickup/dropoff coordinates and timing information
+/// - Supports multiple payment modes (cash, wallet)
+/// - Provides detailed booking success/error feedback
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';

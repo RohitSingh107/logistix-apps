@@ -1,20 +1,18 @@
-/**
- * test_map_service.dart - Test Map Service Implementation
- * 
- * Purpose:
- * - Provides mock implementation of MapServiceInterface for testing
- * - Enables development and testing without external map service dependencies
- * - Implements all map service methods with mock data and responses
- * 
- * Key Logic:
- * - Mock geocoding with hardcoded location responses
- * - Simulated distance calculations using basic formulas
- * - Fake place suggestions for testing autocomplete functionality
- * - Configurable delays to simulate network latency in tests
- * - Deterministic responses for predictable testing scenarios
- * - Error simulation capabilities for testing error handling
- * - Supports unit testing and integration testing workflows
- */
+/// test_map_service.dart - Test Map Service Implementation
+/// 
+/// Purpose:
+/// - Provides mock implementation of MapServiceInterface for testing
+/// - Enables development and testing without external map service dependencies
+/// - Implements all map service methods with mock data and responses
+/// 
+/// Key Logic:
+/// - Mock geocoding with hardcoded location responses
+/// - Simulated distance calculations using basic formulas
+/// - Fake place suggestions for testing autocomplete functionality
+/// - Configurable delays to simulate network latency in tests
+/// - Deterministic responses for predictable testing scenarios
+/// - Error simulation capabilities for testing error handling
+/// - Supports unit testing and integration testing workflows
 
 import 'package:flutter/foundation.dart';
 import 'map_service_factory.dart';

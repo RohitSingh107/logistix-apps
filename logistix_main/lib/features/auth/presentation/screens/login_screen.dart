@@ -1,21 +1,19 @@
-/**
- * login_screen.dart - User Login Interface
- * 
- * Purpose:
- * - Provides user interface for login functionality
- * - Handles phone number input and OTP request flow
- * - Manages login-specific user interactions and error states
- * 
- * Key Logic:
- * - Implements phone number input validation using PhoneInput widget
- * - Triggers OTP request through AuthBloc for login flow
- * - Handles different error scenarios (user not found, validation errors)
- * - Shows user-friendly error messages via SnackBar and dialogs
- * - Navigates to OTP verification screen upon successful request
- * - Provides signup redirection for unregistered users
- * - Manages loading states during OTP request
- * - Implements proper error handling with context-specific messages
- */
+/// login_screen.dart - User Login Interface
+/// 
+/// Purpose:
+/// - Provides user interface for login functionality
+/// - Handles phone number input and OTP request flow
+/// - Manages login-specific user interactions and error states
+/// 
+/// Key Logic:
+/// - Implements phone number input validation using PhoneInput widget
+/// - Triggers OTP request through AuthBloc for login flow
+/// - Handles different error scenarios (user not found, validation errors)
+/// - Shows user-friendly error messages via SnackBar and dialogs
+/// - Navigates to OTP verification screen upon successful request
+/// - Provides signup redirection for unregistered users
+/// - Manages loading states during OTP request
+/// - Implements proper error handling with context-specific messages
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -110,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
             foregroundColor: AppColors.textPrimary,
             elevation: 0,
             leading: IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.arrow_back,
                 color: AppColors.textPrimary,
               ),
@@ -160,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Text(
                     AppLocalizations.of(context).get('welcomeBack'),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,

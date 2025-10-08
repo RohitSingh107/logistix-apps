@@ -1,22 +1,21 @@
-/**
- * profile_screen.dart - User Profile Management Interface
- * 
- * Purpose:
- * - Provides comprehensive user profile management interface
- * - Displays user information, preferences, and account settings
- * - Manages profile updates and account-related operations
- * 
- * Key Logic:
- * - Uses UserBloc instance provided at app level
- * - Displays user profile information
- * - Provides profile editing capabilities
- * - Manages account settings and preferences
- * - Handles profile picture upload and management
- * - Implements logout functionality
- * - Provides navigation to related screens
- * - Manages loading states and error handling
- * - Uses responsive design with proper theme integration
- */
+/// profile_screen.dart - User Profile Management Interface
+/// 
+/// Purpose:
+/// - Provides comprehensive user profile management interface
+/// - Displays user information, preferences, and account settings
+/// - Manages profile updates and account-related operations
+/// 
+/// Key Logic:
+/// - Uses UserBloc instance provided at app level
+/// - Displays user profile information
+/// - Provides profile editing capabilities
+/// - Manages account settings and preferences
+/// - Handles profile picture upload and management
+/// - Implements logout functionality
+/// - Provides navigation to related screens
+/// - Manages loading states and error handling
+/// - Uses responsive design with proper theme integration
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -48,7 +47,7 @@ class _ProfileScreenContent extends StatelessWidget {
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         title: const Text('Profile'),
         centerTitle: true,

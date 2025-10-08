@@ -1,21 +1,20 @@
-/**
- * app_theme.dart - Application Theme Configuration
- * 
- * Purpose:
- * - Defines comprehensive theme configurations for the application
- * - Provides multiple theme variants (light, dark, blue)
- * - Standardizes UI appearance across the entire application
- * 
- * Key Logic:
- * - Uses Material 3 design system for modern UI components
- * - Implements custom color schemes with brand-specific colors
- * - Configures typography using Google Fonts (Poppins for headers, Inter for body)
- * - Defines consistent spacing, elevation, and border radius values
- * - Sets up component-specific themes (AppBar, Card, Button, Input)
- * - Provides theme switching capability through theme name selection
- * - Ensures accessibility with proper contrast ratios
- * - Includes bottom navigation bar styling and dialog themes
- */
+/// app_theme.dart - Application Theme Configuration
+/// 
+/// Purpose:
+/// - Defines comprehensive theme configurations for the application
+/// - Provides multiple theme variants (light, dark, blue)
+/// - Standardizes UI appearance across the entire application
+/// 
+/// Key Logic:
+/// - Uses Material 3 design system for modern UI components
+/// - Implements custom color schemes with brand-specific colors
+/// - Configures typography using Google Fonts (Poppins for headers, Inter for body)
+/// - Defines consistent spacing, elevation, and border radius values
+/// - Sets up component-specific themes (AppBar, Card, Button, Input)
+/// - Provides theme switching capability through theme name selection
+/// - Ensures accessibility with proper contrast ratios
+/// - Includes bottom navigation bar styling and dialog themes
+library;
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -50,12 +49,10 @@ class AppTheme {
       secondary: Color(0xFF1A1A1A), // Dark gray
       tertiary: Color(0xFF4CAF50), // Green for success
       error: Color(0xFFE53E3E), // Red for errors
-      surface: Color(0xFFFFFFFF), // Pure white
-      background: Color(0xFFF8F9FA), // Light gray background
+      surface: Color(0xFFFFFFFF), // Light gray background
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: Color(0xFF1A1A1A),
-      onBackground: Color(0xFF1A1A1A),
     ),
     
     // App Bar Theme - Clean and minimal
@@ -337,12 +334,10 @@ class AppTheme {
       secondary: Color(0xFFE5E7EB), // Light gray
       tertiary: Color(0xFF4CAF50), // Green for success
       error: Color(0xFFEF4444), // Red for errors
-      surface: Color(0xFF1F2937), // Dark surface
-      background: Color(0xFF111827), // Dark background
+      surface: Color(0xFF1F2937), // Dark background
       onPrimary: Color(0xFF000000),
       onSecondary: Color(0xFF000000),
       onSurface: Color(0xFFF9FAFB),
-      onBackground: Color(0xFFF9FAFB),
     ),
     
     appBarTheme: AppBarTheme(

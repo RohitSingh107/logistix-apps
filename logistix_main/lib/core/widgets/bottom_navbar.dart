@@ -1,21 +1,19 @@
-/**
- * bottom_navbar.dart - Bottom Navigation Bar Widget
- * 
- * Purpose:
- * - Provides consistent bottom navigation across the application
- * - Handles tab switching and navigation state management
- * - Implements branded design with proper theming
- * 
- * Key Logic:
- * - Stateless widget that receives current index and callback function
- * - Uses BottomNavigationBar with fixed type for consistent appearance
- * - Applies custom styling with shadow effects and theme colors
- * - Three main navigation items: Home, Orders, Account
- * - Integrates with app theme for consistent color scheme
- * - Responsive to theme changes (light/dark mode support)
- * - Handles tap events through callback function
- * - Uses Material Design icons for intuitive navigation
- */
+/// bottom_navbar.dart - Bottom Navigation Bar Widget
+/// 
+/// Purpose:
+/// - Provides consistent bottom navigation across the application
+/// - Handles tab switching and navigation state management
+/// - Implements branded design with proper theming
+/// 
+/// Key Logic:
+/// - Stateless widget that receives current index and callback function
+/// - Uses BottomNavigationBar with fixed type for consistent appearance
+/// - Applies custom styling with shadow effects and theme colors
+/// - Three main navigation items: Home, Orders, Account
+/// - Integrates with app theme for consistent color scheme
+/// - Responsive to theme changes (light/dark mode support)
+/// - Handles tap events through callback function
+/// - Uses Material Design icons for intuitive navigation
 
 import 'package:flutter/material.dart';
 

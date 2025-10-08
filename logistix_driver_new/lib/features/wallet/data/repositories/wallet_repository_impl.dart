@@ -1,21 +1,20 @@
-/**
- * wallet_repository_impl.dart - Wallet Repository Implementation
- * 
- * Purpose:
- * - Concrete implementation of WalletRepository interface
- * - Handles HTTP API communication for wallet operations
- * - Manages wallet balance, transactions, and topup functionality
- * 
- * Key Logic:
- * - Implements WalletRepository interface with ApiClient integration
- * - Retrieves wallet balance with proper type conversion
- * - Fetches paginated wallet transaction history with filtering
- * - Handles wallet topup operations with request/response serialization
- * - Supports transaction filtering by type, date range, and pagination
- * - Uses structured data models for all wallet operations
- * - Provides comprehensive error propagation for API failures
- * - Manages JSON serialization for API communication
- */
+/// wallet_repository_impl.dart - Wallet Repository Implementation
+/// 
+/// Purpose:
+/// - Concrete implementation of WalletRepository interface
+/// - Handles HTTP API communication for wallet operations
+/// - Manages wallet balance, transactions, and topup functionality
+/// 
+/// Key Logic:
+/// - Implements WalletRepository interface with ApiClient integration
+/// - Retrieves wallet balance with proper type conversion
+/// - Fetches paginated wallet transaction history with filtering
+/// - Handles wallet topup operations with request/response serialization
+/// - Supports transaction filtering by type, date range, and pagination
+/// - Uses structured data models for all wallet operations
+/// - Provides comprehensive error propagation for API failures
+/// - Manages JSON serialization for API communication
+library;
 
 import '../../../../core/models/wallet_model.dart';
 import '../../../../core/network/api_client.dart';

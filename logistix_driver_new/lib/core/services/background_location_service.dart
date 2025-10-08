@@ -1,19 +1,18 @@
-/**
- * background_location_service.dart - Background Location Service
- * 
- * Purpose:
- * - Handles location tracking when app is in background
- * - Manages background location permissions and settings
- * - Provides efficient background location updates
- * - Handles app lifecycle changes
- * 
- * Key Logic:
- * - Background location tracking with proper permissions
- * - App lifecycle management (foreground/background)
- * - Battery optimization with adaptive update intervals
- * - Network connectivity monitoring
- * - Error handling and retry mechanisms
- */
+/// background_location_service.dart - Background Location Service
+/// 
+/// Purpose:
+/// - Handles location tracking when app is in background
+/// - Manages background location permissions and settings
+/// - Provides efficient background location updates
+/// - Handles app lifecycle changes
+/// 
+/// Key Logic:
+/// - Background location tracking with proper permissions
+/// - App lifecycle management (foreground/background)
+/// - Battery optimization with adaptive update intervals
+/// - Network connectivity monitoring
+/// - Error handling and retry mechanisms
+library;
 
 import 'dart:async';
 import 'dart:io';

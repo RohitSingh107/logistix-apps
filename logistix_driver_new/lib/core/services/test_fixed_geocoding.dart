@@ -1,21 +1,20 @@
-/**
- * test_fixed_geocoding.dart - Fixed Geocoding Test Service
- * 
- * Purpose:
- * - Provides deterministic geocoding responses for testing scenarios
- * - Eliminates external API dependencies during development and testing
- * - Ensures consistent and predictable geocoding behavior in tests
- * 
- * Key Logic:
- * - Hardcoded geocoding responses for common test addresses
- * - Fixed coordinate-to-address mappings for reverse geocoding
- * - Simulated network delays to test loading states
- * - Configurable error responses to test error handling
- * - Deterministic results for automated testing scenarios
- * - Supports both forward geocoding (address to coordinates)
- * - Supports reverse geocoding (coordinates to address)
- * - Integration with test map service for complete test coverage
- */
+/// test_fixed_geocoding.dart - Fixed Geocoding Test Service
+/// 
+/// Purpose:
+/// - Provides deterministic geocoding responses for testing scenarios
+/// - Eliminates external API dependencies during development and testing
+/// - Ensures consistent and predictable geocoding behavior in tests
+/// 
+/// Key Logic:
+/// - Hardcoded geocoding responses for common test addresses
+/// - Fixed coordinate-to-address mappings for reverse geocoding
+/// - Simulated network delays to test loading states
+/// - Configurable error responses to test error handling
+/// - Deterministic results for automated testing scenarios
+/// - Supports both forward geocoding (address to coordinates)
+/// - Supports reverse geocoding (coordinates to address)
+/// - Integration with test map service for complete test coverage
+library;
 
 import 'package:flutter/foundation.dart';
 import 'map_service_factory.dart';

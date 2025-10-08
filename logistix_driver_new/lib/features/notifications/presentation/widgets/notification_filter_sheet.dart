@@ -1,19 +1,18 @@
-/**
- * notification_filter_sheet.dart - Notification Filter Sheet
- * 
- * Purpose:
- * - Provides filtering options for notifications
- * - Allows filtering by notification type and read status
- * - Shows filter controls in a bottom sheet
- * - Handles filter state management
- * 
- * Key Logic:
- * - Shows notification type filter options
- * - Provides read/unread status filter
- * - Handles filter application and reset
- * - Uses bottom sheet for filter UI
- * - Supports multiple filter combinations
- */
+/// notification_filter_sheet.dart - Notification Filter Sheet
+/// 
+/// Purpose:
+/// - Provides filtering options for notifications
+/// - Allows filtering by notification type and read status
+/// - Shows filter controls in a bottom sheet
+/// - Handles filter state management
+/// 
+/// Key Logic:
+/// - Shows notification type filter options
+/// - Provides read/unread status filter
+/// - Handles filter application and reset
+/// - Uses bottom sheet for filter UI
+/// - Supports multiple filter combinations
+library;
 
 import 'package:flutter/material.dart';
 import '../../../../core/models/notification_model.dart' as app_notification;

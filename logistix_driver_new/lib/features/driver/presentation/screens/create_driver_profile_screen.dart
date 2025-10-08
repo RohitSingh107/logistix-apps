@@ -1,18 +1,17 @@
-/**
- * create_driver_profile_screen.dart - Driver Profile Creation Screen
- * 
- * Purpose:
- * - Provides interface for creating driver profile for first-time users
- * - Handles license number input and validation
- * - Integrates with driver repository for profile creation
- * 
- * Key Logic:
- * - Collects driver license information
- * - Automatically sets driver as available
- * - Includes FCM token for push notifications
- * - Handles form validation and error display
- * - Navigates to home screen on success
- */
+/// create_driver_profile_screen.dart - Driver Profile Creation Screen
+/// 
+/// Purpose:
+/// - Provides interface for creating driver profile for first-time users
+/// - Handles license number input and validation
+/// - Integrates with driver repository for profile creation
+/// 
+/// Key Logic:
+/// - Collects driver license information
+/// - Automatically sets driver as available
+/// - Includes FCM token for push notifications
+/// - Handles form validation and error display
+/// - Navigates to home screen on success
+library;
 
 import 'package:flutter/material.dart';
 import '../../../../core/di/service_locator.dart';
@@ -21,7 +20,7 @@ import '../../domain/repositories/driver_repository.dart';
 import '../../../home/presentation/screens/home_screen.dart';
 
 class CreateDriverProfileScreen extends StatefulWidget {
-  const CreateDriverProfileScreen({Key? key}) : super(key: key);
+  const CreateDriverProfileScreen({super.key});
 
   @override
   State<CreateDriverProfileScreen> createState() => _CreateDriverProfileScreenState();

@@ -1,21 +1,19 @@
-/**
- * user_bloc.dart - User Profile Business Logic Component
- * 
- * Purpose:
- * - Manages user profile state and business logic using BLoC pattern
- * - Handles user profile loading and updating operations
- * - Provides centralized user data management across the application
- * 
- * Key Logic:
- * - LoadUserProfile: Fetches current user profile from repository
- * - UpdateUserProfile: Handles profile updates with optional parameters
- * - Manages user state transitions (loading, loaded, error)
- * - Provides comprehensive error handling for profile operations
- * - Supports partial profile updates (phone, name, profile picture)
- * - Integrates with UserRepository for data persistence
- * - Emits appropriate states for UI consumption
- * - Follows BLoC pattern for reactive state management
- */
+/// user_bloc.dart - User Profile Business Logic Component
+/// 
+/// Purpose:
+/// - Manages user profile state and business logic using BLoC pattern
+/// - Handles user profile loading and updating operations
+/// - Provides centralized user data management across the application
+/// 
+/// Key Logic:
+/// - LoadUserProfile: Fetches current user profile from repository
+/// - UpdateUserProfile: Handles profile updates with optional parameters
+/// - Manages user state transitions (loading, loaded, error)
+/// - Provides comprehensive error handling for profile operations
+/// - Supports partial profile updates (phone, name, profile picture)
+/// - Integrates with UserRepository for data persistence
+/// - Emits appropriate states for UI consumption
+/// - Follows BLoC pattern for reactive state management
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';

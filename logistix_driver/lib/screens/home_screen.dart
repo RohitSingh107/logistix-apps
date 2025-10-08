@@ -268,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Switch(
                   value: _isAvailable,
                   onChanged: _isUpdatingAvailability ? null : (value) => _toggleAvailability(),
-                  activeColor: Colors.white,
+                  activeThumbColor: Colors.white,
                   activeTrackColor: Colors.green,
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: Colors.grey.shade400,

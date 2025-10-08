@@ -1,21 +1,20 @@
-/**
- * driver_repository.dart - Driver Repository Interface
- * 
- * Purpose:
- * - Defines the contract for driver-related data operations
- * - Provides abstract methods for driver profile and status management
- * - Establishes consistent interface for driver data access across layers
- * 
- * Key Logic:
- * - Abstract methods for driver profile CRUD operations
- * - Driver availability and status management interface
- * - Real-time location tracking and updates for drivers
- * - Trip assignment and driver-customer matching interface
- * - Driver performance metrics and rating management
- * - Vehicle information and driver verification data access
- * - Integration points for location services and trip management
- * - Error handling contracts for driver operation failures
- */
+/// driver_repository.dart - Driver Repository Interface
+/// 
+/// Purpose:
+/// - Defines the contract for driver-related data operations
+/// - Provides abstract methods for driver profile and status management
+/// - Establishes consistent interface for driver data access across layers
+/// 
+/// Key Logic:
+/// - Abstract methods for driver profile CRUD operations
+/// - Driver availability and status management interface
+/// - Real-time location tracking and updates for drivers
+/// - Trip assignment and driver-customer matching interface
+/// - Driver performance metrics and rating management
+/// - Vehicle information and driver verification data access
+/// - Integration points for location services and trip management
+/// - Error handling contracts for driver operation failures
+library;
 
 import '../../../../core/models/driver_model.dart';
 

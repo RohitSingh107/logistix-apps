@@ -1,19 +1,18 @@
-/**
- * ride_action_service.dart - Professional Ride Action Service
- * 
- * Purpose:
- * - Handles ride accept/reject actions with professional API integration
- * - Manages ride state and driver availability
- * - Provides real-time feedback and status updates
- * - Implements Uber-like ride acceptance flow
- * 
- * Key Logic:
- * - Accepts rides with proper API integration
- * - Updates driver availability status
- * - Handles ride state transitions
- * - Provides comprehensive error handling
- * - Manages trip creation and status updates
- */
+/// ride_action_service.dart - Professional Ride Action Service
+/// 
+/// Purpose:
+/// - Handles ride accept/reject actions with professional API integration
+/// - Manages ride state and driver availability
+/// - Provides real-time feedback and status updates
+/// - Implements Uber-like ride acceptance flow
+/// 
+/// Key Logic:
+/// - Accepts rides with proper API integration
+/// - Updates driver availability status
+/// - Handles ride state transitions
+/// - Provides comprehensive error handling
+/// - Manages trip creation and status updates
+library;
 
 import 'package:dio/dio.dart';
 import '../network/api_client.dart';

@@ -11,9 +11,9 @@ class LiveTrackingScreen extends StatefulWidget {
 
 class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   bool _isTracking = true;
-  String _currentStatus = 'On the way';
-  String _estimatedTime = '15 mins';
-  double _progress = 0.7;
+  final String _currentStatus = 'On the way';
+  final String _estimatedTime = '15 mins';
+  final double _progress = 0.7;
 
   final List<TrackingStep> _trackingSteps = [
     TrackingStep(
@@ -56,7 +56,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(
           'Live Tracking',
@@ -100,7 +100,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 16.h),
@@ -254,7 +254,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
           LinearProgressIndicator(
             value: _progress,
             backgroundColor: Colors.white.withOpacity(0.3),
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
           ),
         ],
       ),
@@ -306,7 +306,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -315,7 +315,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -324,7 +324,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -409,7 +409,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -418,7 +418,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,
-                          color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                         ),
                       ),
                     ],
@@ -429,7 +429,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
-                      color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                     ),
                   ),
                 ],

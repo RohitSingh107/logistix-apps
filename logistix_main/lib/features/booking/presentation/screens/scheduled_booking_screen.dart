@@ -57,7 +57,7 @@ class _ScheduledBookingScreenState extends State<ScheduledBookingScreen> {
         listener: (context, state) {
           if (state is BookingRequestCreated) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
+              const SnackBar(
                 content: Text('Booking created successfully!'),
                 backgroundColor: Colors.green,
               ),
@@ -80,7 +80,7 @@ class _ScheduledBookingScreenState extends State<ScheduledBookingScreen> {
         },
         builder: (context, state) {
           return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(
           'Schedule Booking',
@@ -103,7 +103,7 @@ class _ScheduledBookingScreenState extends State<ScheduledBookingScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 24.sp,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 8.h),
@@ -112,7 +112,7 @@ class _ScheduledBookingScreenState extends State<ScheduledBookingScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w400,
-                  color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
               SizedBox(height: 24.h),
@@ -261,7 +261,7 @@ class _ScheduledBookingScreenState extends State<ScheduledBookingScreen> {
       style: GoogleFonts.poppins(
         fontSize: 16.sp,
         fontWeight: FontWeight.w600,
-        color: Theme.of(context).colorScheme.onBackground,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
@@ -295,8 +295,8 @@ class _ScheduledBookingScreenState extends State<ScheduledBookingScreen> {
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                   color: _selectedDate != null
-                      ? Theme.of(context).colorScheme.onBackground
-                      : Theme.of(context).colorScheme.onBackground.withOpacity(0.5),
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                 ),
               ),
             ),
@@ -335,8 +335,8 @@ class _ScheduledBookingScreenState extends State<ScheduledBookingScreen> {
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                   color: _selectedTime != null
-                      ? Theme.of(context).colorScheme.onBackground
-                      : Theme.of(context).colorScheme.onBackground.withOpacity(0.5),
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                 ),
               ),
             ),
@@ -365,7 +365,7 @@ class _ScheduledBookingScreenState extends State<ScheduledBookingScreen> {
           hintText: hint,
           hintStyle: GoogleFonts.poppins(
             fontSize: 14.sp,
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
           ),
           prefixIcon: Icon(
             icon,
@@ -438,7 +438,7 @@ class _ScheduledBookingScreenState extends State<ScheduledBookingScreen> {
           hintText: 'Describe your package (optional)',
           hintStyle: GoogleFonts.poppins(
             fontSize: 14.sp,
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.all(16.w),

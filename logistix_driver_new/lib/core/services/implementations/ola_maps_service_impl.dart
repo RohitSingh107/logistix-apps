@@ -1,20 +1,19 @@
-/**
- * ola_maps_service_impl.dart - Ola Maps Service Implementation
- * 
- * Purpose:
- * - Implements the MapServiceInterface for Ola Maps integration
- * - Provides location services, geocoding, and mapping functionality
- * - Handles Ola Maps API communication and response processing
- * 
- * Key Logic:
- * - geocodeAddress: Converts addresses to coordinates using Ola Maps API
- * - reverseGeocode: Converts coordinates to human-readable addresses
- * - calculateDistance: Computes distance and duration between locations
- * - getPlaceSuggestions: Provides autocomplete suggestions for places
- * - Implements authentication and rate limiting for Ola Maps API
- * - Handles API key management and request headers
- * - Transforms Ola Maps responses to standardized map data models
- */
+/// ola_maps_service_impl.dart - Ola Maps Service Implementation
+/// 
+/// Purpose:
+/// - Implements the MapServiceInterface for Ola Maps integration
+/// - Provides location services, geocoding, and mapping functionality
+/// - Handles Ola Maps API communication and response processing
+/// 
+/// Key Logic:
+/// - geocodeAddress: Converts addresses to coordinates using Ola Maps API
+/// - reverseGeocode: Converts coordinates to human-readable addresses
+/// - calculateDistance: Computes distance and duration between locations
+/// - getPlaceSuggestions: Provides autocomplete suggestions for places
+/// - Implements authentication and rate limiting for Ola Maps API
+/// - Handles API key management and request headers
+/// - Transforms Ola Maps responses to standardized map data models
+library;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';

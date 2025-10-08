@@ -1,19 +1,18 @@
-/**
- * app_config.dart - Application Configuration Manager
- * 
- * Purpose:
- * - Manages application-wide configuration settings
- * - Handles environment variable loading and fallback configurations
- * - Provides centralized access to API URLs and keys
- * 
- * Key Logic:
- * - Loads configuration from .env file using flutter_dotenv
- * - Provides platform-specific API base URL defaults
- * - Uses 10.0.2.2 for Android emulator (maps to host localhost)
- * - Uses relative URLs for web platform
- * - Falls back to hardcoded IP for development when .env is missing
- * - Exposes API key configuration for authentication
- */
+/// app_config.dart - Application Configuration Manager
+/// 
+/// Purpose:
+/// - Manages application-wide configuration settings
+/// - Handles environment variable loading and fallback configurations
+/// - Provides centralized access to API URLs and keys
+/// 
+/// Key Logic:
+/// - Loads configuration from .env file using flutter_dotenv
+/// - Provides platform-specific API base URL defaults
+/// - Uses 10.0.2.2 for Android emulator (maps to host localhost)
+/// - Uses relative URLs for web platform
+/// - Falls back to hardcoded IP for development when .env is missing
+/// - Exposes API key configuration for authentication
+library;
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';

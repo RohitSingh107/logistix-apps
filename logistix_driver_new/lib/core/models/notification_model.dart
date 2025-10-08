@@ -1,20 +1,19 @@
-/**
- * notification_model.dart - Notification Data Models
- * 
- * Purpose:
- * - Defines data models for push notifications and in-app alerts
- * - Handles notification storage, display, and management
- * - Provides scalable notification system for production
- * 
- * Key Logic:
- * - NotificationType enum: Categorizes different notification types
- * - Notification model: Core notification entity with all necessary fields
- * - NotificationRequest: API request model for notification operations
- * - PaginatedNotificationList: Handles paginated notification responses
- * - Uses JSON serialization with proper field mapping
- * - Supports notification status tracking (read/unread)
- * - Includes notification actions and deep linking
- */
+/// notification_model.dart - Notification Data Models
+/// 
+/// Purpose:
+/// - Defines data models for push notifications and in-app alerts
+/// - Handles notification storage, display, and management
+/// - Provides scalable notification system for production
+/// 
+/// Key Logic:
+/// - NotificationType enum: Categorizes different notification types
+/// - Notification model: Core notification entity with all necessary fields
+/// - NotificationRequest: API request model for notification operations
+/// - PaginatedNotificationList: Handles paginated notification responses
+/// - Uses JSON serialization with proper field mapping
+/// - Supports notification status tracking (read/unread)
+/// - Includes notification actions and deep linking
+library;
 
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';

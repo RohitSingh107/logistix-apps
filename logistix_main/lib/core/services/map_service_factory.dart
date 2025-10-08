@@ -1,21 +1,19 @@
-/**
- * map_service_factory.dart - Map Service Provider Factory
- * 
- * Purpose:
- * - Factory pattern implementation for map service creation
- * - Enables dynamic switching between different map providers
- * - Provides singleton access to map service instances
- * 
- * Key Logic:
- * - Singleton pattern with lazy initialization for map service instance
- * - Creates appropriate service implementation based on MapProviderConfig
- * - Supports multiple providers (Ola Maps, Google Maps, Mapbox, OSM)
- * - Provides instance reset functionality for provider switching
- * - Uses factory method pattern for service instantiation
- * - Handles unimplemented providers with meaningful error messages
- * - Ensures single instance per application lifecycle
- * - Integrates with configuration system for provider selection
- */
+/// map_service_factory.dart - Map Service Provider Factory
+/// 
+/// Purpose:
+/// - Factory pattern implementation for map service creation
+/// - Enables dynamic switching between different map providers
+/// - Provides singleton access to map service instances
+/// 
+/// Key Logic:
+/// - Singleton pattern with lazy initialization for map service instance
+/// - Creates appropriate service implementation based on MapProviderConfig
+/// - Supports multiple providers (Ola Maps, Google Maps, Mapbox, OSM)
+/// - Provides instance reset functionality for provider switching
+/// - Uses factory method pattern for service instantiation
+/// - Handles unimplemented providers with meaningful error messages
+/// - Ensures single instance per application lifecycle
+/// - Integrates with configuration system for provider selection
 
 import 'map_service_interface.dart';
 import 'implementations/ola_maps_service_impl.dart';

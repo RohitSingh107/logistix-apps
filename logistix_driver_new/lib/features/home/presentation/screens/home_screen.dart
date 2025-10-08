@@ -1,20 +1,19 @@
-/**
- * home_screen.dart - Driver Application Dashboard
- * 
- * Purpose:
- * - Provides the main dashboard screen for drivers
- * - Shows driver profile, earnings, performance, and availability
- * - Provides quick navigation to other screens
- * 
- * Key Logic:
- * - Displays driver availability toggle and profile information
- * - Shows driver earnings, rating, and status
- * - Provides quick actions to navigate to other screens
- * - Implements availability management for accepting/declining bookings
- * - Loads and displays driver profile information
- * - Handles first-time user driver profile creation
- * - Manages 500 errors by opening create driver profile screen
- */
+/// home_screen.dart - Driver Application Dashboard
+/// 
+/// Purpose:
+/// - Provides the main dashboard screen for drivers
+/// - Shows driver profile, earnings, performance, and availability
+/// - Provides quick navigation to other screens
+/// 
+/// Key Logic:
+/// - Displays driver availability toggle and profile information
+/// - Shows driver earnings, rating, and status
+/// - Provides quick actions to navigate to other screens
+/// - Implements availability management for accepting/declining bookings
+/// - Loads and displays driver profile information
+/// - Handles first-time user driver profile creation
+/// - Manages 500 errors by opening create driver profile screen
+library;
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
@@ -217,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     if (!_isInitialized) {
       return Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: Center(
           child: CircularProgressIndicator(
             color: Theme.of(context).colorScheme.primary,
@@ -230,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final profile = _driverProfile;
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         title: const Text('Dashboard'),
         centerTitle: true,
@@ -692,7 +691,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onChanged: _isUpdatingAvailability 
                       ? null 
                       : (value) => _toggleAvailability(),
-                  activeColor: Colors.white,
+                  activeThumbColor: Colors.white,
                   activeTrackColor: theme.colorScheme.primary,
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: theme.colorScheme.onSurface.withOpacity(0.3),

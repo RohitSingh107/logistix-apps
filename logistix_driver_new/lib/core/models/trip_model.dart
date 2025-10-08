@@ -1,17 +1,16 @@
-/**
- * trip_model.dart - Trip Model
- * 
- * Purpose:
- * - Represents a trip/ride in the system
- * - Contains trip details, driver info, and booking info
- * - Used for ride acceptance and trip management
- * 
- * Key Logic:
- * - Trip creation after ride acceptance
- * - Trip status management
- * - Driver and booking information
- * - Payment and timing details
- */
+/// trip_model.dart - Trip Model
+/// 
+/// Purpose:
+/// - Represents a trip/ride in the system
+/// - Contains trip details, driver info, and booking info
+/// - Used for ride acceptance and trip management
+/// 
+/// Key Logic:
+/// - Trip creation after ride acceptance
+/// - Trip status management
+/// - Driver and booking information
+/// - Payment and timing details
+library;
 
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
@@ -80,6 +79,7 @@ class Trip extends BaseModel {
   });
 
   factory Trip.fromJson(Map<String, dynamic> json) => _$TripFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$TripToJson(this);
 
   /// Create a copy of this trip with updated fields

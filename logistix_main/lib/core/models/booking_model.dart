@@ -1,21 +1,19 @@
-/**
- * booking_model.dart - Booking and Trip Request Data Models
- * 
- * Purpose:
- * - Defines data models for booking and trip request functionality
- * - Handles serialization for booking-related API communication
- * - Manages booking states and payment modes through enums
- * 
- * Key Logic:
- * - BookingRequest: Core booking entity with complete booking information
- * - BookingRequestRequest: Payload for creating new booking requests
- * - BookingAcceptRequest/Response: Models for driver accepting bookings
- * - BookingStatus enum: Tracks booking lifecycle (requested, searching, accepted, cancelled)
- * - PaymentMode enum: Defines payment options (cash, wallet)
- * - Uses JSON serialization with snake_case field mapping
- * - Extends BaseModel for consistent model behavior
- * - Includes comprehensive booking details (pickup, dropoff, goods, pricing)
- */
+/// booking_model.dart - Booking and Trip Request Data Models
+/// 
+/// Purpose:
+/// - Defines data models for booking and trip request functionality
+/// - Handles serialization for booking-related API communication
+/// - Manages booking states and payment modes through enums
+/// 
+/// Key Logic:
+/// - BookingRequest: Core booking entity with complete booking information
+/// - BookingRequestRequest: Payload for creating new booking requests
+/// - BookingAcceptRequest/Response: Models for driver accepting bookings
+/// - BookingStatus enum: Tracks booking lifecycle (requested, searching, accepted, cancelled)
+/// - PaymentMode enum: Defines payment options (cash, wallet)
+/// - Uses JSON serialization with snake_case field mapping
+/// - Extends BaseModel for consistent model behavior
+/// - Includes comprehensive booking details (pickup, dropoff, goods, pricing)
 
 import 'package:equatable/equatable.dart';
 import 'trip_model.dart';

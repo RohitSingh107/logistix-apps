@@ -1,17 +1,16 @@
-/**
- * demo_navigation_screen.dart - Demo Navigation Screen
- * 
- * Purpose:
- * - Provides a centralized navigation hub for development and testing
- * - Allows developers to quickly access any screen in the app
- * - Useful for demo purposes and feature testing
- * 
- * Key Logic:
- * - Grid layout with navigation cards for each feature
- * - Each card navigates to a specific screen or feature
- * - Includes sample data creation for testing
- * - Provides quick access to all major app features
- */
+/// demo_navigation_screen.dart - Demo Navigation Screen
+/// 
+/// Purpose:
+/// - Provides a centralized navigation hub for development and testing
+/// - Allows developers to quickly access any screen in the app
+/// - Useful for demo purposes and feature testing
+/// 
+/// Key Logic:
+/// - Grid layout with navigation cards for each feature
+/// - Each card navigates to a specific screen or feature
+/// - Includes sample data creation for testing
+/// - Provides quick access to all major app features
+library;
 
 import 'package:flutter/material.dart';
 import '../../../../core/models/trip_model.dart';
@@ -28,7 +27,7 @@ import '../../../trip/presentation/screens/my_trips_screen.dart';
 import '../../../booking/presentation/widgets/test_booking_acceptance.dart';
 
 class DemoNavigationScreen extends StatelessWidget {
-  const DemoNavigationScreen({Key? key}) : super(key: key);
+  const DemoNavigationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +173,7 @@ class DemoNavigationScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceVariant,
+                color: theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
               ),

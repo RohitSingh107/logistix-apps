@@ -1,22 +1,20 @@
-/**
- * driver_search_screen.dart - Driver Assignment and Search Interface
- * 
- * Purpose:
- * - Displays real-time driver search and assignment process
- * - Provides animated feedback during booking acceptance and driver assignment
- * - Manages transition from booking request to active trip
- * 
- * Key Logic:
- * - Polls booking status using BookingService for real-time updates
- * - Displays animated search indicators with pulse and rotation effects
- * - Shows booking details including vehicle selection and fare information
- * - Transitions through booking states: REQUESTED → SEARCHING → ACCEPTED
- * - Navigates to trip details screen once driver is assigned
- * - Provides cancel booking functionality during search phase
- * - Implements comprehensive animation controllers for visual feedback
- * - Handles error states and retry mechanisms for failed bookings
- * - Shows estimated wait times and search progress
- */
+/// driver_search_screen.dart - Driver Assignment and Search Interface
+/// 
+/// Purpose:
+/// - Displays real-time driver search and assignment process
+/// - Provides animated feedback during booking acceptance and driver assignment
+/// - Manages transition from booking request to active trip
+/// 
+/// Key Logic:
+/// - Polls booking status using BookingService for real-time updates
+/// - Displays animated search indicators with pulse and rotation effects
+/// - Shows booking details including vehicle selection and fare information
+/// - Transitions through booking states: REQUESTED → SEARCHING → ACCEPTED
+/// - Navigates to trip details screen once driver is assigned
+/// - Provides cancel booking functionality during search phase
+/// - Implements comprehensive animation controllers for visual feedback
+/// - Handles error states and retry mechanisms for failed bookings
+/// - Shows estimated wait times and search progress
 
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -296,7 +294,7 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: _buildCurrentView(theme),
       ),
@@ -451,7 +449,7 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
                               ),
                             ],
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.search,
                             color: Colors.white,
                             size: 50,
@@ -504,7 +502,7 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 side: BorderSide(color: Colors.red.withOpacity(0.5)),
               ),
-              child: Text(
+              child: const Text(
                 'Cancel Booking',
                 style: TextStyle(
                   color: Colors.red,
@@ -603,7 +601,7 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
                           const SizedBox(height: AppSpacing.xs),
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.star,
                                 color: Colors.amber,
                                 size: 20,

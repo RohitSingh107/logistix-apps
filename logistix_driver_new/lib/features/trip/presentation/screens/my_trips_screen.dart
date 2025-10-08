@@ -13,7 +13,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         title: const Text('My Trips'),
         centerTitle: true,

@@ -1,17 +1,15 @@
-/**
- * feature_demo_screen.dart - Feature Demo and Navigation Hub
- * 
- * Purpose:
- * - Showcases all new features and screens created for the app
- * - Provides easy navigation to test all functionality
- * - Serves as a development and testing hub
- * 
- * Key Logic:
- * - Grid layout of feature cards with descriptions
- * - Navigation to all new screens and features
- * - Categorized sections for different feature types
- * - Visual indicators for feature status and complexity
- */
+/// feature_demo_screen.dart - Feature Demo and Navigation Hub
+/// 
+/// Purpose:
+/// - Showcases all new features and screens created for the app
+/// - Provides easy navigation to test all functionality
+/// - Serves as a development and testing hub
+/// 
+/// Key Logic:
+/// - Grid layout of feature cards with descriptions
+/// - Navigation to all new screens and features
+/// - Categorized sections for different feature types
+/// - Visual indicators for feature status and complexity
 
 import 'package:flutter/material.dart';
 import '../../../../core/config/app_theme.dart';
@@ -24,7 +22,7 @@ class FeatureDemoScreen extends StatelessWidget {
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         title: const Text('Feature Demo'),
         backgroundColor: theme.colorScheme.surface,

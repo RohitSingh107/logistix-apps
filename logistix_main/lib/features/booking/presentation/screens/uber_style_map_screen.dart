@@ -1,23 +1,21 @@
-/**
- * uber_style_map_screen.dart - Uber-Style Map Screen
- * 
- * Purpose:
- * - Demonstrates all Uber-like map features in a comprehensive screen
- * - Shows zoom in/out, pan, location tracking, and real-time updates
- * - Provides a complete Uber-like map experience
- * 
- * Key Features:
- * - Interactive map with pinch-to-zoom and pan gestures
- * - Real-time location tracking with GPS
- * - Smooth camera animations between locations
- * - Dynamic marker positioning and updates
- * - Uber-style location button with GPS access
- * - Interactive tap detection for location selection
- * - Real-time address updates as you move
- * - Zoom controls (+ and - buttons)
- * - Location info overlay
- * - Performance optimizations for smooth interactions
- */
+/// uber_style_map_screen.dart - Uber-Style Map Screen
+/// 
+/// Purpose:
+/// - Demonstrates all Uber-like map features in a comprehensive screen
+/// - Shows zoom in/out, pan, location tracking, and real-time updates
+/// - Provides a complete Uber-like map experience
+/// 
+/// Key Features:
+/// - Interactive map with pinch-to-zoom and pan gestures
+/// - Real-time location tracking with GPS
+/// - Smooth camera animations between locations
+/// - Dynamic marker positioning and updates
+/// - Uber-style location button with GPS access
+/// - Interactive tap detection for location selection
+/// - Real-time address updates as you move
+/// - Zoom controls (+ and - buttons)
+/// - Location info overlay
+/// - Performance optimizations for smooth interactions
 
 import 'package:flutter/material.dart';
 import '../../../../core/services/map_service_interface.dart';
@@ -74,9 +72,7 @@ class _UberStyleMapScreenState extends State<UberStyleMapScreen> {
       if (position != null) {
         setState(() {
           _userLocation = MapLatLng(position.latitude, position.longitude);
-          if (_selectedLocation == null) {
-            _selectedLocation = _userLocation;
-          }
+          _selectedLocation ??= _userLocation;
         });
         
         // Get initial address
@@ -309,7 +305,7 @@ class _UberStyleMapScreenState extends State<UberStyleMapScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
           onTap: _getCurrentLocation,
-          child: Container(
+          child: SizedBox(
             width: 40,
             height: 40,
             child: _isLoading

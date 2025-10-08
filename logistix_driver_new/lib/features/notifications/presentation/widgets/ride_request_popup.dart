@@ -1,19 +1,18 @@
-/**
- * ride_request_popup.dart - Ride Request Popup Widget
- * 
- * Purpose:
- * - Shows ride request details in a popup dialog
- * - Allows drivers to accept or reject rides
- * - Displays booking information clearly
- * - Handles ride request actions
- * 
- * Key Logic:
- * - Shows pickup and dropoff locations
- * - Displays fare and goods information
- * - Provides accept/reject buttons
- * - Handles booking actions
- * - Shows loading states during actions
- */
+/// ride_request_popup.dart - Ride Request Popup Widget
+/// 
+/// Purpose:
+/// - Shows ride request details in a popup dialog
+/// - Allows drivers to accept or reject rides
+/// - Displays booking information clearly
+/// - Handles ride request actions
+/// 
+/// Key Logic:
+/// - Shows pickup and dropoff locations
+/// - Displays fare and goods information
+/// - Provides accept/reject buttons
+/// - Handles booking actions
+/// - Shows loading states during actions
+library;
 
 import 'package:flutter/material.dart';
 import '../../../../core/models/notification_model.dart' as app_notification;

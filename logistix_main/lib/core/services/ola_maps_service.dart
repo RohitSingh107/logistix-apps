@@ -1,20 +1,18 @@
-/**
- * ola_maps_service.dart - Ola Maps Service Interface
- * 
- * Purpose:
- * - Defines the contract for Ola Maps service operations
- * - Provides abstract methods for map-related functionality
- * - Establishes standardized interface for Ola Maps integration
- * 
- * Key Logic:
- * - Abstract methods for geocoding and reverse geocoding
- * - Distance calculation and route planning interfaces
- * - Place search and autocomplete functionality contracts
- * - Standardized error handling for map service operations
- * - Defines data models for location and mapping responses
- * - Provides consistent API for different map service implementations
- * - Supports dependency injection through abstract interface
- */
+/// ola_maps_service.dart - Ola Maps Service Interface
+/// 
+/// Purpose:
+/// - Defines the contract for Ola Maps service operations
+/// - Provides abstract methods for map-related functionality
+/// - Establishes standardized interface for Ola Maps integration
+/// 
+/// Key Logic:
+/// - Abstract methods for geocoding and reverse geocoding
+/// - Distance calculation and route planning interfaces
+/// - Place search and autocomplete functionality contracts
+/// - Standardized error handling for map service operations
+/// - Defines data models for location and mapping responses
+/// - Provides consistent API for different map service implementations
+/// - Supports dependency injection through abstract interface
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';

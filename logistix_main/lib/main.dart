@@ -1,22 +1,20 @@
-/**
- * main.dart - Application Entry Point
- * 
- * Purpose:
- * - Main entry point for the Logistix Flutter application
- * - Handles app initialization, dependency injection, and error handling
- * - Sets up the root widget with BLoC providers and theme management
- * 
- * Key Logic:
- * - Initializes environment configuration (.env file)
- * - Sets up service locator for dependency injection
- * - Creates repository instances (AuthRepository, UserRepository)
- * - Tests map service configuration
- * - Provides comprehensive error handling with fallback UI
- * - Configures app routing and navigation
- * - Integrates BLoC state management (AuthBloc, UserBloc, ThemeBloc)
- * - Implements theme switching with persistent storage
- * - Handles authentication state and navigation flow
- */
+/// main.dart - Application Entry Point
+/// 
+/// Purpose:
+/// - Main entry point for the Logistix Flutter application
+/// - Handles app initialization, dependency injection, and error handling
+/// - Sets up the root widget with BLoC providers and theme management
+/// 
+/// Key Logic:
+/// - Initializes environment configuration (.env file)
+/// - Sets up service locator for dependency injection
+/// - Creates repository instances (AuthRepository, UserRepository)
+/// - Tests map service configuration
+/// - Provides comprehensive error handling with fallback UI
+/// - Configures app routing and navigation
+/// - Integrates BLoC state management (AuthBloc, UserBloc, ThemeBloc)
+/// - Implements theme switching with persistent storage
+/// - Handles authentication state and navigation flow
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -239,8 +237,8 @@ class MyApp extends StatelessWidget {
                     theme: themeState is ThemeLoaded 
                         ? AppTheme.getTheme(themeState.themeName)
                         : AppTheme.getTheme(AppTheme.lightTheme),
-                    localizationsDelegates: [
-                      const AppLocalizationsDelegate(),
+                    localizationsDelegates: const [
+                      AppLocalizationsDelegate(),
                       GlobalMaterialLocalizations.delegate,
                       GlobalWidgetsLocalizations.delegate,
                       GlobalCupertinoLocalizations.delegate,

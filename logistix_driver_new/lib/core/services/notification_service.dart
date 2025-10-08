@@ -1,21 +1,20 @@
-/**
- * notification_service.dart - Enhanced Notification Service
- * 
- * Purpose:
- * - Handles in-app notifications and popup displays
- * - Integrates with Firebase Cloud Messaging
- * - Manages notification storage and retrieval
- * - Provides scalable notification system for production
- * 
- * Key Logic:
- * - Shows in-app notification popups when app is in foreground
- * - Stores notifications locally for offline access
- * - Integrates with NotificationBloc for state management
- * - Handles different notification types and priorities
- * - Provides notification sound and vibration
- * - Supports notification actions and deep linking
- * - Manages notification badges and counts
- */
+/// notification_service.dart - Enhanced Notification Service
+/// 
+/// Purpose:
+/// - Handles in-app notifications and popup displays
+/// - Integrates with Firebase Cloud Messaging
+/// - Manages notification storage and retrieval
+/// - Provides scalable notification system for production
+/// 
+/// Key Logic:
+/// - Shows in-app notification popups when app is in foreground
+/// - Stores notifications locally for offline access
+/// - Integrates with NotificationBloc for state management
+/// - Handles different notification types and priorities
+/// - Provides notification sound and vibration
+/// - Supports notification actions and deep linking
+/// - Manages notification badges and counts
+library;
 
 import 'dart:async';
 import 'dart:convert';

@@ -712,7 +712,7 @@ class _TripScreenState extends State<TripScreen> {
                           onChanged: (_isUpdatingPayment || isCompleted) 
                               ? null 
                               : (value) => _updatePaymentStatus(value),
-                          activeColor: Colors.white,
+                          activeThumbColor: Colors.white,
                           activeTrackColor: Colors.green,
                           inactiveThumbColor: Colors.white,
                           inactiveTrackColor: Colors.orange.shade400,

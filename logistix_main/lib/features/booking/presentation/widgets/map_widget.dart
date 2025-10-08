@@ -1,21 +1,19 @@
-/**
- * map_widget.dart - Generic Map Widget Component
- * 
- * Purpose:
- * - Provides reusable map component for location display and interaction
- * - Abstracts map implementation details from parent screens
- * - Supports multiple map providers through unified interface
- * 
- * Key Logic:
- * - Generic map widget supporting different map service providers
- * - Marker management for pickup/dropoff locations and driver tracking
- * - User interaction handling (tap, drag, zoom) with callback support
- * - Real-time location updates and map centering functionality
- * - Route visualization and polyline drawing capabilities
- * - Map state management (loading, error, ready states)
- * - Integration with location services for GPS and geocoding
- * - Responsive design adapting to different screen sizes
- */
+/// map_widget.dart - Generic Map Widget Component
+/// 
+/// Purpose:
+/// - Provides reusable map component for location display and interaction
+/// - Abstracts map implementation details from parent screens
+/// - Supports multiple map providers through unified interface
+/// 
+/// Key Logic:
+/// - Generic map widget supporting different map service providers
+/// - Marker management for pickup/dropoff locations and driver tracking
+/// - User interaction handling (tap, drag, zoom) with callback support
+/// - Real-time location updates and map centering functionality
+/// - Route visualization and polyline drawing capabilities
+/// - Map state management (loading, error, ready states)
+/// - Integration with location services for GPS and geocoding
+/// - Responsive design adapting to different screen sizes
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';

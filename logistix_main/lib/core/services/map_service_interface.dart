@@ -1,22 +1,20 @@
-/**
- * map_service_interface.dart - Map Service Provider Interface
- * 
- * Purpose:
- * - Defines abstract interface for map service providers
- * - Enables switching between different map providers (Ola Maps, Google Maps, etc.)
- * - Provides common data models and method signatures for all map services
- * 
- * Key Logic:
- * - Abstract interface with geocoding and reverse geocoding capabilities
- * - Places autocomplete and nearby search functionality
- * - Directions and distance matrix calculations
- * - Map tile URL generation for custom map implementations
- * - Common data models: MapLatLng, MapRoute, MapDirectionsResult, etc.
- * - Provider-agnostic design for easy switching between services
- * - Comprehensive location-based service definitions
- * - Standard response formats for all map providers
- * - Configuration checking and provider identification
- */
+/// map_service_interface.dart - Map Service Provider Interface
+/// 
+/// Purpose:
+/// - Defines abstract interface for map service providers
+/// - Enables switching between different map providers (Ola Maps, Google Maps, etc.)
+/// - Provides common data models and method signatures for all map services
+/// 
+/// Key Logic:
+/// - Abstract interface with geocoding and reverse geocoding capabilities
+/// - Places autocomplete and nearby search functionality
+/// - Directions and distance matrix calculations
+/// - Map tile URL generation for custom map implementations
+/// - Common data models: MapLatLng, MapRoute, MapDirectionsResult, etc.
+/// - Provider-agnostic design for easy switching between services
+/// - Comprehensive location-based service definitions
+/// - Standard response formats for all map providers
+/// - Configuration checking and provider identification
 
 import 'dart:async';
 

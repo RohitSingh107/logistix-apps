@@ -1,21 +1,20 @@
-/**
- * service_locator.dart - Dependency Injection Container
- * 
- * Purpose:
- * - Manages dependency injection using GetIt service locator pattern
- * - Registers and provides access to all application services and repositories
- * - Configures singleton and factory patterns for different dependency types
- * 
- * Key Logic:
- * - Sets up SharedPreferences for persistent storage
- * - Registers Dio HTTP client for network operations
- * - Configures all service layer dependencies (AuthService, BookingService)
- * - Sets up ApiClient with proper authentication handling
- * - Registers repository implementations for all features
- * - Configures BLoC instances as factories for proper lifecycle management
- * - Provides central configuration for use cases and business logic
- * - Maintains dependency order to avoid circular dependencies
- */
+/// service_locator.dart - Dependency Injection Container
+/// 
+/// Purpose:
+/// - Manages dependency injection using GetIt service locator pattern
+/// - Registers and provides access to all application services and repositories
+/// - Configures singleton and factory patterns for different dependency types
+/// 
+/// Key Logic:
+/// - Sets up SharedPreferences for persistent storage
+/// - Registers Dio HTTP client for network operations
+/// - Configures all service layer dependencies (AuthService, BookingService)
+/// - Sets up ApiClient with proper authentication handling
+/// - Registers repository implementations for all features
+/// - Configures BLoC instances as factories for proper lifecycle management
+/// - Provides central configuration for use cases and business logic
+/// - Maintains dependency order to avoid circular dependencies
+library;
 
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';

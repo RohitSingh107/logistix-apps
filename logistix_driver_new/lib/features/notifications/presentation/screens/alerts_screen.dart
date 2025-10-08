@@ -1,21 +1,20 @@
-/**
- * alerts_screen.dart - Alerts and Notifications Screen
- * 
- * Purpose:
- * - Displays all notifications and alerts for the driver
- * - Provides notification management (read/unread, delete)
- * - Shows notification history with pagination
- * - Handles notification actions and navigation
- * 
- * Key Logic:
- * - Uses NotificationBloc for state management
- * - Displays notifications in a scrollable list
- * - Supports pull-to-refresh and infinite scrolling
- * - Shows notification badges and read/unread status
- * - Provides notification filtering and search
- * - Handles notification actions (mark as read, delete)
- * - Shows empty state when no notifications
- */
+/// alerts_screen.dart - Alerts and Notifications Screen
+/// 
+/// Purpose:
+/// - Displays all notifications and alerts for the driver
+/// - Provides notification management (read/unread, delete)
+/// - Shows notification history with pagination
+/// - Handles notification actions and navigation
+/// 
+/// Key Logic:
+/// - Uses NotificationBloc for state management
+/// - Displays notifications in a scrollable list
+/// - Supports pull-to-refresh and infinite scrolling
+/// - Shows notification badges and read/unread status
+/// - Provides notification filtering and search
+/// - Handles notification actions (mark as read, delete)
+/// - Shows empty state when no notifications
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -75,7 +74,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         title: const Text('Alerts & Notifications'),
         centerTitle: true,

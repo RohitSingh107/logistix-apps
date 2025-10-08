@@ -1,25 +1,23 @@
-/**
- * ola_map_widget.dart - Optimized Uber-Style Interactive Map Widget
- * 
- * Purpose:
- * - Provides a smooth, lag-free Uber-like map experience
- * - Handles zoom, pan, location tracking, and smooth animations
- * - Implements real-time location updates and marker management
- * - Includes search functionality with dynamic markers
- * 
- * Key Features:
- * - Optimized performance with minimal state updates
- * - Pinch to zoom in/out with smooth animations
- * - Pan/drag to move around the map
- * - Real-time location tracking with GPS
- * - Smooth camera animations between locations
- * - Dynamic marker positioning and updates
- * - Uber-style location button with GPS access
- * - Interactive tap detection for location selection
- * - Real-time address updates as you move
- * - Search functionality with location markers
- * - Performance optimizations for smooth interactions
- */
+/// ola_map_widget.dart - Optimized Uber-Style Interactive Map Widget
+/// 
+/// Purpose:
+/// - Provides a smooth, lag-free Uber-like map experience
+/// - Handles zoom, pan, location tracking, and smooth animations
+/// - Implements real-time location updates and marker management
+/// - Includes search functionality with dynamic markers
+/// 
+/// Key Features:
+/// - Optimized performance with minimal state updates
+/// - Pinch to zoom in/out with smooth animations
+/// - Pan/drag to move around the map
+/// - Real-time location tracking with GPS
+/// - Smooth camera animations between locations
+/// - Dynamic marker positioning and updates
+/// - Uber-style location button with GPS access
+/// - Interactive tap detection for location selection
+/// - Real-time address updates as you move
+/// - Search functionality with location markers
+/// - Performance optimizations for smooth interactions
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -87,7 +85,7 @@ class _OlaMapWidgetState extends State<OlaMapWidget> with TickerProviderStateMix
   bool _isLoadingLocation = false;
   bool _isMapReady = false;
   bool _isAnimating = false;
-  bool _isMapLoading = false;
+  final bool _isMapLoading = false;
   
   // Search state
   String _searchQuery = '';
@@ -678,7 +676,7 @@ class _OlaMapWidgetState extends State<OlaMapWidget> with TickerProviderStateMix
                     child: InkWell(
                       borderRadius: BorderRadius.circular(8),
                       onTap: _zoomIn,
-                      child: Container(
+                      child: SizedBox(
                         width: 40,
                         height: 40,
                         child: const Icon(
@@ -709,7 +707,7 @@ class _OlaMapWidgetState extends State<OlaMapWidget> with TickerProviderStateMix
                     child: InkWell(
                       borderRadius: BorderRadius.circular(8),
                       onTap: _zoomOut,
-                      child: Container(
+                      child: SizedBox(
                         width: 40,
                         height: 40,
                         child: const Icon(
@@ -747,7 +745,7 @@ class _OlaMapWidgetState extends State<OlaMapWidget> with TickerProviderStateMix
                   child: InkWell(
                     borderRadius: BorderRadius.circular(8),
                     onTap: _isLoadingLocation ? null : _getCurrentLocation,
-                    child: Container(
+                    child: SizedBox(
                       width: 40,
                       height: 40,
                       child: _isLoadingLocation

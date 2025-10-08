@@ -59,7 +59,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(
           'Package Details',
@@ -82,7 +82,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 24.sp,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 8.h),
@@ -91,7 +91,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w400,
-                  color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
               SizedBox(height: 24.h),
@@ -291,7 +291,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
       style: GoogleFonts.poppins(
         fontSize: 16.sp,
         fontWeight: FontWeight.w600,
-        color: Theme.of(context).colorScheme.onBackground,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
@@ -351,7 +351,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
           style: GoogleFonts.poppins(
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
         SizedBox(height: 8.h),
@@ -370,7 +370,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
               hintText: hint,
               hintStyle: GoogleFonts.poppins(
                 fontSize: 14.sp,
-                color: Theme.of(context).colorScheme.onBackground.withOpacity(0.5),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
               ),
               prefixText: prefix,
               border: InputBorder.none,
@@ -414,7 +414,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
           style: GoogleFonts.poppins(
             fontSize: 12.sp,
             fontWeight: FontWeight.w400,
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
         value: value,
@@ -440,7 +440,7 @@ class _PackageDetailsScreenState extends State<PackageDetailsScreen> {
           hintText: 'Describe your package contents...',
           hintStyle: GoogleFonts.poppins(
             fontSize: 14.sp,
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.all(16.w),

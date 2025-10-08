@@ -6,9 +6,9 @@ class CreateProfileScreen extends StatefulWidget {
   final String phone;
   
   const CreateProfileScreen({
-    Key? key,
+    super.key,
     required this.phone,
-  }) : super(key: key);
+  });
 
   @override
   State<CreateProfileScreen> createState() => _CreateProfileScreenState();

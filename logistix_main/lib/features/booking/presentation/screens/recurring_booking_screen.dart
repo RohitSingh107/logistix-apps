@@ -64,7 +64,7 @@ class _RecurringBookingScreenState extends State<RecurringBookingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(
           'Recurring Booking',
@@ -87,7 +87,7 @@ class _RecurringBookingScreenState extends State<RecurringBookingScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 24.sp,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               SizedBox(height: 8.h),
@@ -96,7 +96,7 @@ class _RecurringBookingScreenState extends State<RecurringBookingScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w400,
-                  color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
               SizedBox(height: 24.h),
@@ -293,7 +293,7 @@ class _RecurringBookingScreenState extends State<RecurringBookingScreen> {
       style: GoogleFonts.poppins(
         fontSize: 16.sp,
         fontWeight: FontWeight.w600,
-        color: Theme.of(context).colorScheme.onBackground,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
@@ -363,7 +363,7 @@ class _RecurringBookingScreenState extends State<RecurringBookingScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
@@ -396,7 +396,7 @@ class _RecurringBookingScreenState extends State<RecurringBookingScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               ),
             ),
             SizedBox(height: 4.h),
@@ -416,8 +416,8 @@ class _RecurringBookingScreenState extends State<RecurringBookingScreen> {
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                     color: date != null
-                        ? Theme.of(context).colorScheme.onBackground
-                        : Theme.of(context).colorScheme.onBackground.withOpacity(0.5),
+                        ? Theme.of(context).colorScheme.onSurface
+                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                   ),
                 ),
               ],
@@ -447,7 +447,7 @@ class _RecurringBookingScreenState extends State<RecurringBookingScreen> {
           hintText: hint,
           hintStyle: GoogleFonts.poppins(
             fontSize: 14.sp,
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
           ),
           prefixIcon: Icon(
             icon,
@@ -480,7 +480,7 @@ class _RecurringBookingScreenState extends State<RecurringBookingScreen> {
           hintText: 'Describe your package (optional)',
           hintStyle: GoogleFonts.poppins(
             fontSize: 14.sp,
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.all(16.w),

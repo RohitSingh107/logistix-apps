@@ -1,22 +1,20 @@
-/**
- * orders_screen.dart - Order History and Management Interface
- * 
- * Purpose:
- * - Displays comprehensive order history with different order states
- * - Provides tabbed interface for ongoing, completed, and cancelled orders
- * - Manages order list pagination and real-time updates
- * 
- * Key Logic:
- * - Implements tabbed interface for different order categories
- * - Fetches booking list and trip details from BookingService
- * - Provides pagination support for large order lists
- * - Shows order status, dates, addresses, and fare information
- * - Navigates to detailed trip view for each order
- * - Implements pull-to-refresh for updated order data
- * - Filters orders by status (ongoing, completed, cancelled)
- * - Displays appropriate empty states for each category
- * - Handles loading states and error conditions gracefully
- */
+/// orders_screen.dart - Order History and Management Interface
+/// 
+/// Purpose:
+/// - Displays comprehensive order history with different order states
+/// - Provides tabbed interface for ongoing, completed, and cancelled orders
+/// - Manages order list pagination and real-time updates
+/// 
+/// Key Logic:
+/// - Implements tabbed interface for different order categories
+/// - Fetches booking list and trip details from BookingService
+/// - Provides pagination support for large order lists
+/// - Shows order status, dates, addresses, and fare information
+/// - Navigates to detailed trip view for each order
+/// - Implements pull-to-refresh for updated order data
+/// - Filters orders by status (ongoing, completed, cancelled)
+/// - Displays appropriate empty states for each category
+/// - Handles loading states and error conditions gracefully
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -301,7 +299,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           _showQuickActions(context);

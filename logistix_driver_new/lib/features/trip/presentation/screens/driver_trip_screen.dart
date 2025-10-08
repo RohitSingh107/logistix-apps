@@ -1,18 +1,17 @@
-/**
- * driver_trip_screen.dart - Driver Trip Screen
- * 
- * Purpose:
- * - Shows trip details after driver accepts a ride
- * - Provides navigation and trip management features
- * - Similar to Uber's customer interface but for drivers
- * 
- * Key Features:
- * - Trip details display (pickup, dropoff, fare)
- * - Navigation integration
- * - Trip status management
- * - Action buttons (start trip, complete trip)
- * - Real-time updates
- */
+/// driver_trip_screen.dart - Driver Trip Screen
+/// 
+/// Purpose:
+/// - Shows trip details after driver accepts a ride
+/// - Provides navigation and trip management features
+/// - Similar to Uber's customer interface but for drivers
+/// 
+/// Key Features:
+/// - Trip details display (pickup, dropoff, fare)
+/// - Navigation integration
+/// - Trip status management
+/// - Action buttons (start trip, complete trip)
+/// - Real-time updates
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,7 +47,7 @@ class _DriverTripScreenState extends State<DriverTripScreen> {
     final booking = widget.trip.bookingRequest;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         title: const Text('Active Trip'),
         backgroundColor: theme.colorScheme.primary,
