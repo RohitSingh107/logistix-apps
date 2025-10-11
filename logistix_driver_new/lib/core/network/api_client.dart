@@ -142,7 +142,20 @@ class ApiClient {
   
   // Check if the endpoint is in the excluded list
   bool _isAuthExcluded(String path) {
-    final excluded = _noAuthRequired.any((endpoint) => path.contains(endpoint));
+    // Remove leading slash and base URL to get the clean path
+    String cleanPath = path;
+    if (cleanPath.startsWith('/')) {
+      cleanPath = cleanPath.substring(1);
+    }
+    
+    final excluded = _noAuthRequired.any((endpoint) {
+      String cleanEndpoint = endpoint;
+      if (cleanEndpoint.startsWith('/')) {
+        cleanEndpoint = cleanEndpoint.substring(1);
+      }
+      return cleanPath == cleanEndpoint || path.endsWith(endpoint);
+    });
+    
     print('DEBUG: Path $path auth excluded: $excluded');
     return excluded;
   }

@@ -18,6 +18,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/models/user_model.dart';
 import '../../../../features/driver/domain/repositories/driver_repository.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/push_notification_service.dart';
@@ -316,10 +317,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: CircleAvatar(
               radius: 28,
-              backgroundImage: profile['user']['profile_picture'] != null
-                  ? NetworkImage(profile['user']['profile_picture'])
+              backgroundImage: (profile['user'] as User).profilePicture != null
+                  ? NetworkImage((profile['user'] as User).profilePicture!)
                   : null,
-              child: profile['user']['profile_picture'] == null
+              child: (profile['user'] as User).profilePicture == null
                   ? Icon(
                       Icons.person,
                       size: 32,
@@ -336,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${profile['user']['first_name']} ${profile['user']['last_name']}',
+                  '${(profile['user'] as User).firstName ?? ''} ${(profile['user'] as User).lastName ?? ''}',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),

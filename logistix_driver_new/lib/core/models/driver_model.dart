@@ -98,5 +98,11 @@ class PatchedDriverRequest {
   });
 
   factory PatchedDriverRequest.fromJson(Map<String, dynamic> json) => _$PatchedDriverRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$PatchedDriverRequestToJson(this);
+  
+  Map<String, dynamic> toJson() {
+    final json = _$PatchedDriverRequestToJson(this);
+    // Remove null values to avoid server validation errors
+    json.removeWhere((key, value) => value == null);
+    return json;
+  }
 } 
