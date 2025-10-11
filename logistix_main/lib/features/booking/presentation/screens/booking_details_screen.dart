@@ -25,8 +25,9 @@ import '../../../wallet/domain/repositories/wallet_repository.dart';
 import '../../../wallet/presentation/bloc/wallet_bloc.dart';
 import '../../../wallet/presentation/widgets/add_balance_modal.dart';
 import '../../data/models/booking_request.dart' as data_models;
+import '../../data/models/stop_point.dart';
 import '../../data/services/booking_service.dart';
-import '../../../../core/repositories/booking_repository.dart';
+import '../../domain/repositories/booking_repository.dart';
 import '../bloc/booking_bloc.dart';
 import '../widgets/insufficient_balance_modal.dart';
 import '../../../../core/di/service_locator.dart';
@@ -208,32 +209,33 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
   }
 
   void _createBooking() {
-    // Ensure instructions is not empty as API requires minLength: 1
-    final instructions = _instructionsController.text.trim().isEmpty 
-        ? "No special instructions" 
-        : _instructionsController.text.trim();
-
     final bookingData = {
       'sender_name': _senderNameController.text.trim(),
       'receiver_name': _receiverNameController.text.trim(),
       'sender_phone': _senderPhoneController.text.trim(),
       'receiver_phone': _receiverPhoneController.text.trim(),
-      'pickup_latitude': widget.pickupLocation.lat,
-      'pickup_longitude': widget.pickupLocation.lng,
-      'dropoff_latitude': widget.dropLocation.lat,
-      'dropoff_longitude': widget.dropLocation.lng,
       'pickup_time': _selectedPickupTime.toIso8601String(),
-      'pickup_address': widget.pickupAddress,
-      'dropoff_address': widget.dropAddress,
       'vehicle_type_id': widget.selectedVehicle.vehicleType,
       'goods_type': _goodsTypeController.text.trim(),
       'goods_quantity': _goodsQuantityController.text.trim(),
       'payment_mode': _selectedPaymentMode,
-      'instructions': instructions,
+      'stop_points': [
+        {
+          'latitude': widget.pickupLocation.lat,
+          'longitude': widget.pickupLocation.lng,
+          'address': widget.pickupAddress,
+          'stop_order': 0,
+        },
+        {
+          'latitude': widget.dropLocation.lat,
+          'longitude': widget.dropLocation.lng,
+          'address': widget.dropAddress,
+          'stop_order': 1,
+        },
+      ],
     };
 
     // Debug: Print the booking data being sent
-    print('DEBUG: Booking data being sent: $bookingData');
 
     context.read<BookingBloc>().add(
       CreateBookingEvent(bookingData),
@@ -285,7 +287,7 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
     );
   }
 
-  void _navigateToDriverSearch(core.BookingRequestModel booking) {
+  void _navigateToDriverSearch(core.BookingRequest booking) {
     // Convert BookingRequestModel to BookingResponse
     final bookingResponse = data_models.BookingResponse(
       id: booking.id,
@@ -295,13 +297,40 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
       senderPhone: booking.senderPhone,
       receiverPhone: booking.receiverPhone,
       pickupTime: booking.pickupTime,
-      pickupAddress: booking.pickupAddress,
-      dropoffAddress: booking.dropoffAddress,
       goodsType: booking.goodsType,
       goodsQuantity: booking.goodsQuantity,
-      paymentMode: booking.paymentMode,
+      paymentMode: booking.paymentMode.toString().split('.').last.toUpperCase(),
       estimatedFare: booking.estimatedFare,
-      status: booking.status,
+      status: booking.status.toString().split('.').last.toUpperCase(),
+      instructions: '', // Default empty instructions
+      stopPoints: [
+        // Create a default pickup stop point
+        StopPoint(
+          id: 0,
+          location: 'POINT (0 0)',
+          address: booking.pickupAddress,
+          stopOrder: 0,
+          stopType: 'PICKUP',
+          contactName: '',
+          contactPhone: '',
+          notes: '',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+        // Create a default dropoff stop point
+        StopPoint(
+          id: 1,
+          location: 'POINT (0 0)',
+          address: booking.dropoffAddress,
+          stopOrder: 1,
+          stopType: 'DROPOFF',
+          contactName: '',
+          contactPhone: '',
+          notes: '',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      ],
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
     );
@@ -333,14 +362,11 @@ class _BookingDetailsContentState extends State<_BookingDetailsContent> {
               _createBooking();
             } else if (state is BookingRequestCreated) {
               // Navigate to driver search screen
-              print('DEBUG: Booking created successfully, navigating to driver search');
               _navigateToDriverSearch(state.bookingRequest);
             } else if (state is BookingSuccess) {
               // Navigate to driver search screen
-              print('DEBUG: Booking success, navigating to driver search');
               _navigateToDriverSearch(state.booking);
             } else if (state is BookingError) {
-              print('DEBUG: Booking error: ${state.message}');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),

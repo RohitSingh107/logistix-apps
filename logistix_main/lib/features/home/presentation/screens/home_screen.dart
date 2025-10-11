@@ -109,7 +109,7 @@ class _HomePageState extends State<HomePage> {
       final bookingListResponse = await _bookingService.getBookingList();
       setState(() {
         // Sort by creation date (most recent first) and take only 3
-        _recentBookings = bookingListResponse.bookingRequests
+        _recentBookings = bookingListResponse.results
             .take(3)
             .toList();
         _isLoadingBookings = false;

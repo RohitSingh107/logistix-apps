@@ -17,8 +17,8 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../../../core/repositories/booking_repository.dart';
-import '../../../../core/models/booking_model.dart';
+import '../../domain/repositories/booking_repository.dart';
+import '../../../../core/models/booking_model.dart' as core;
 
 // Events
 abstract class BookingEvent extends Equatable {
@@ -100,7 +100,7 @@ class BookingInitial extends BookingState {}
 class BookingLoading extends BookingState {}
 
 class BookingRequestsLoaded extends BookingState {
-  final List<BookingRequestModel> bookingRequests;
+  final List<core.BookingRequest> bookingRequests;
 
   const BookingRequestsLoaded(this.bookingRequests);
 
@@ -109,7 +109,7 @@ class BookingRequestsLoaded extends BookingState {
 }
 
 class BookingRequestLoaded extends BookingState {
-  final BookingRequestModel bookingRequest;
+  final core.BookingRequest bookingRequest;
 
   const BookingRequestLoaded(this.bookingRequest);
 
@@ -118,7 +118,7 @@ class BookingRequestLoaded extends BookingState {
 }
 
 class BookingRequestCreated extends BookingState {
-  final BookingRequestModel bookingRequest;
+  final core.BookingRequest bookingRequest;
 
   const BookingRequestCreated(this.bookingRequest);
 
@@ -127,7 +127,7 @@ class BookingRequestCreated extends BookingState {
 }
 
 class BookingRequestUpdated extends BookingState {
-  final BookingRequestModel bookingRequest;
+  final core.BookingRequest bookingRequest;
 
   const BookingRequestUpdated(this.bookingRequest);
 
@@ -145,11 +145,11 @@ class BookingRequestAccepted extends BookingState {
 }
 
 class BookingSuccess extends BookingState {
-  final BookingRequestModel bookingRequest;
+  final core.BookingRequest bookingRequest;
 
   const BookingSuccess(this.bookingRequest);
 
-  BookingRequestModel get booking => bookingRequest;
+  core.BookingRequest get booking => bookingRequest;
 
   @override
   List<Object?> get props => [bookingRequest];
@@ -181,7 +181,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   Future<void> _onLoadBookingRequests(LoadBookingRequests event, Emitter<BookingState> emit) async {
     try {
       emit(BookingLoading());
-      final bookingRequests = await _bookingRepository.getBookingRequests();
+      final bookingRequests = await _bookingRepository.getBookingList();
       emit(BookingRequestsLoaded(bookingRequests));
     } catch (e) {
       emit(BookingError(e.toString()));
@@ -191,7 +191,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   Future<void> _onLoadBookingRequestById(LoadBookingRequestById event, Emitter<BookingState> emit) async {
     try {
       emit(BookingLoading());
-      final bookingRequest = await _bookingRepository.getBookingRequestById(event.id);
+      final bookingRequest = await _bookingRepository.getBookingDetail(event.id);
       emit(BookingRequestLoaded(bookingRequest));
     } catch (e) {
       emit(BookingError(e.toString()));
@@ -221,8 +221,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   Future<void> _onCheckWalletBalance(CheckWalletBalance event, Emitter<BookingState> emit) async {
     // This would typically check wallet balance
     // For now, we'll emit a success state
-    emit(BookingSuccess(BookingRequestModel(
+    emit(BookingSuccess(core.BookingRequest(
       id: 0,
+      tripId: null,
       senderName: '',
       receiverName: '',
       senderPhone: '',
@@ -234,9 +235,10 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       dropoffAddress: '',
       goodsType: '',
       goodsQuantity: '',
-      paymentMode: PaymentMode.cash.toString().split('.').last.toUpperCase(),
+      paymentMode: core.PaymentMode.cash,
       estimatedFare: 0.0,
-      status: BookingStatus.requested.toString().split('.').last.toUpperCase(),
+      status: core.BookingStatus.requested,
+      instructions: null,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     )));

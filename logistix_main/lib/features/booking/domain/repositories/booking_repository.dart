@@ -46,4 +46,7 @@ abstract class BookingRepository {
 
   /// Get list of booking requests
   Future<List<core.BookingRequest>> getBookingList();
+
+  /// Create a booking request from a data map
+  Future<core.BookingRequest> createBookingRequest(Map<String, dynamic> bookingData);
 } 

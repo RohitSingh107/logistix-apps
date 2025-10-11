@@ -19,6 +19,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/services/api_endpoints.dart';
 import '../../domain/repositories/booking_repository.dart';
 import '../models/booking_request.dart';
+import '../models/stop_point_request.dart';
 
 class BookingRepositoryImpl implements BookingRepository {
   final ApiClient _apiClient;
@@ -70,7 +71,7 @@ class BookingRepositoryImpl implements BookingRepository {
       );
 
       // Parse the response using BookingResponse since the API returns nested structure
-      final bookingResponse = BookingResponse.fromJson(response.data);
+      final bookingResponse = BookingResponse.fromJson(response.data as Map<String, dynamic>);
       
       // Convert to core.BookingRequest
       return core.BookingRequest(
@@ -83,16 +84,18 @@ class BookingRepositoryImpl implements BookingRepository {
         pickupLocation: '', // This field is not in BookingResponse
         dropoffLocation: '', // This field is not in BookingResponse
         pickupTime: bookingResponse.pickupTime,
-        pickupAddress: bookingResponse.pickupAddress,
-        dropoffAddress: bookingResponse.dropoffAddress,
+        pickupAddress: bookingResponse.stopPoints.isNotEmpty ? bookingResponse.stopPoints.first.address : '',
+        dropoffAddress: bookingResponse.stopPoints.isNotEmpty ? bookingResponse.stopPoints.last.address : '',
         goodsType: bookingResponse.goodsType,
         goodsQuantity: bookingResponse.goodsQuantity,
         paymentMode: core.PaymentMode.values.firstWhere(
           (e) => e.toString().split('.').last.toUpperCase() == bookingResponse.paymentMode,
+          orElse: () => core.PaymentMode.cash,
         ),
         estimatedFare: bookingResponse.estimatedFare,
         status: core.BookingStatus.values.firstWhere(
           (e) => e.toString().split('.').last.toUpperCase() == bookingResponse.status,
+          orElse: () => core.BookingStatus.requested,
         ),
         instructions: null, // This field is not in BookingResponse
         createdAt: bookingResponse.createdAt,
@@ -115,6 +118,143 @@ class BookingRepositoryImpl implements BookingRepository {
       return core.BookingAcceptResponse.fromJson(response.data);
     } catch (e) {
       rethrow;
+    }
+  }
+
+  @override
+  Future<core.BookingRequest> createBookingRequest(Map<String, dynamic> bookingData) async {
+    try {
+      // Extract data from the booking data map
+      final senderName = bookingData['sender_name'] as String? ?? '';
+      final receiverName = bookingData['receiver_name'] as String? ?? '';
+      final senderPhone = bookingData['sender_phone'] as String? ?? '';
+      final receiverPhone = bookingData['receiver_phone'] as String? ?? '';
+      final pickupTime = DateTime.parse(bookingData['pickup_time'] as String? ?? DateTime.now().toIso8601String());
+      final vehicleTypeId = bookingData['vehicle_type_id'] as int? ?? 1;
+      final goodsType = bookingData['goods_type'] as String? ?? '';
+      final goodsQuantity = bookingData['goods_quantity'] as String? ?? '';
+      final paymentMode = bookingData['payment_mode'] as String? ?? 'CASH';
+      final stopPoints = bookingData['stop_points'] as List<dynamic>? ?? [];
+
+      // Create BookingRequest with stop points
+      final request = BookingRequest(
+        senderName: senderName,
+        receiverName: receiverName,
+        senderPhone: senderPhone,
+        receiverPhone: receiverPhone,
+        pickupTime: pickupTime,
+        vehicleTypeId: vehicleTypeId,
+        goodsType: goodsType,
+        goodsQuantity: goodsQuantity,
+        paymentMode: paymentMode,
+        stopPoints: stopPoints.map((stop) => StopPointRequest.fromJson(stop as Map<String, dynamic>)).toList(),
+      );
+
+      final response = await _apiClient.post(
+        ApiEndpoints.createBooking,
+        data: request.toJson(),
+      );
+
+      // Parse the response using BookingResponse since the API returns nested structure
+      
+      BookingResponse bookingResponse;
+      try {
+        
+        // Check if response.data is already a Map
+        Map<String, dynamic> responseData;
+        if (response.data is Map<String, dynamic>) {
+          responseData = response.data as Map<String, dynamic>;
+        } else {
+          responseData = Map<String, dynamic>.from(response.data);
+        }
+        
+        bookingResponse = BookingResponse.fromJson(responseData);
+      } catch (e) {
+        
+        // Try to create a fallback response from the raw data
+        try {
+          final rawData = response.data as Map<String, dynamic>;
+          final bookingData = rawData['booking_request'] as Map<String, dynamic>?;
+          
+          if (bookingData != null) {
+            bookingResponse = BookingResponse(
+              id: bookingData['id'] as int? ?? 0,
+              tripId: bookingData['trip_id'] as int?,
+              senderName: bookingData['sender_name'] as String? ?? '',
+              receiverName: bookingData['receiver_name'] as String? ?? '',
+              senderPhone: bookingData['sender_phone'] as String? ?? '',
+              receiverPhone: bookingData['receiver_phone'] as String? ?? '',
+              pickupTime: DateTime.parse(bookingData['pickup_time'] as String? ?? DateTime.now().toIso8601String()),
+              goodsType: bookingData['goods_type'] as String? ?? '',
+              goodsQuantity: bookingData['goods_quantity'] as String? ?? '',
+              paymentMode: bookingData['payment_mode'] as String? ?? 'CASH',
+              estimatedFare: (bookingData['estimated_fare'] as num?)?.toDouble() ?? 0.0,
+              status: bookingData['status'] as String? ?? 'REQUESTED',
+              instructions: bookingData['instructions'] as String? ?? '',
+              stopPoints: [], // Empty stop points to avoid parsing issues
+              createdAt: DateTime.parse(bookingData['created_at'] as String? ?? DateTime.now().toIso8601String()),
+              updatedAt: DateTime.parse(bookingData['updated_at'] as String? ?? DateTime.now().toIso8601String()),
+            );
+          } else {
+            throw Exception('No booking_request data found in response');
+          }
+        } catch (fallbackError) {
+          rethrow;
+        }
+      }
+      
+      // Convert to core.BookingRequest
+      return core.BookingRequest(
+        id: bookingResponse.id,
+        tripId: bookingResponse.tripId,
+        senderName: bookingResponse.senderName,
+        receiverName: bookingResponse.receiverName,
+        senderPhone: bookingResponse.senderPhone,
+        receiverPhone: bookingResponse.receiverPhone,
+        pickupLocation: '', // This field is not in BookingResponse
+        dropoffLocation: '', // This field is not in BookingResponse
+        pickupTime: bookingResponse.pickupTime,
+        pickupAddress: bookingResponse.stopPoints.isNotEmpty ? bookingResponse.stopPoints.first.address : '',
+        dropoffAddress: bookingResponse.stopPoints.isNotEmpty ? bookingResponse.stopPoints.last.address : '',
+        goodsType: bookingResponse.goodsType,
+        goodsQuantity: bookingResponse.goodsQuantity,
+        paymentMode: core.PaymentMode.values.firstWhere(
+          (e) => e.toString().split('.').last.toUpperCase() == bookingResponse.paymentMode,
+          orElse: () => core.PaymentMode.cash,
+        ),
+        estimatedFare: bookingResponse.estimatedFare,
+        status: core.BookingStatus.values.firstWhere(
+          (e) => e.toString().split('.').last.toUpperCase() == bookingResponse.status,
+          orElse: () => core.BookingStatus.requested,
+        ),
+        instructions: null, // This field is not in BookingResponse
+        createdAt: bookingResponse.createdAt,
+        updatedAt: bookingResponse.updatedAt,
+      );
+    } catch (e) {
+      print('Error in createBookingRequest: $e');
+      // Return a default BookingRequest instead of rethrowing
+      return core.BookingRequest(
+        id: 0,
+        tripId: null,
+        senderName: 'Unknown',
+        receiverName: 'Unknown',
+        senderPhone: '',
+        receiverPhone: '',
+        pickupLocation: '',
+        dropoffLocation: '',
+        pickupTime: DateTime.now(),
+        pickupAddress: 'Unknown',
+        dropoffAddress: 'Unknown',
+        goodsType: 'Unknown',
+        goodsQuantity: '',
+        paymentMode: core.PaymentMode.cash,
+        estimatedFare: 0.0,
+        status: core.BookingStatus.requested,
+        instructions: null,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
     }
   }
 

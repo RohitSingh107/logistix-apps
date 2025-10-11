@@ -9,10 +9,10 @@ abstract class BookingRepository {
   Future<void> acceptBooking(int bookingRequestId);
 }
 
-class BookingRepositoryImpl implements BookingRepository {
+class CoreBookingRepositoryImpl implements BookingRepository {
   final ApiClient _apiClient;
 
-  BookingRepositoryImpl(this._apiClient);
+  CoreBookingRepositoryImpl(this._apiClient);
 
   @override
   Future<List<BookingRequestModel>> getBookingRequests() async {
