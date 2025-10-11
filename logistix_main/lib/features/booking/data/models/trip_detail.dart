@@ -17,8 +17,8 @@ class User {
     return User(
       id: json['id'] as int,
       phone: json['phone'] as String,
-      firstName: json['first_name'] as String,
-      lastName: json['last_name'] as String,
+      firstName: json['first_name'] as String? ?? '',
+      lastName: json['last_name'] as String? ?? '',
       profilePicture: json['profile_picture'] as String?,
     );
   }
@@ -47,10 +47,10 @@ class Driver {
     return Driver(
       id: json['id'] as int,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
-      licenseNumber: json['license_number'] as String,
+      licenseNumber: json['license_number'] as String? ?? '',
       isAvailable: json['is_available'] as bool,
-      averageRating: json['average_rating'] as String,
-      totalEarnings: (json['total_earnings'] as num).toDouble(),
+      averageRating: json['average_rating'] as String? ?? '0.0',
+      totalEarnings: (json['total_earnings'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -65,35 +65,35 @@ class Driver {
 
 class BookingRequestDetail {
   final int id;
+  final int? tripId;
   final String senderName;
   final String receiverName;
   final String senderPhone;
   final String receiverPhone;
   final DateTime pickupTime;
-  final String pickupAddress;
-  final String dropoffAddress;
   final String goodsType;
   final String goodsQuantity;
   final String paymentMode;
   final double estimatedFare;
   final String status;
+  final String instructions;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   BookingRequestDetail({
     required this.id,
+    this.tripId,
     required this.senderName,
     required this.receiverName,
     required this.senderPhone,
     required this.receiverPhone,
     required this.pickupTime,
-    required this.pickupAddress,
-    required this.dropoffAddress,
     required this.goodsType,
     required this.goodsQuantity,
     required this.paymentMode,
     required this.estimatedFare,
     required this.status,
+    required this.instructions,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -101,22 +101,26 @@ class BookingRequestDetail {
   factory BookingRequestDetail.fromJson(Map<String, dynamic> json) {
     return BookingRequestDetail(
       id: json['id'] as int,
+      tripId: json['trip_id'] as int?,
       senderName: json['sender_name'] as String,
       receiverName: json['receiver_name'] as String,
       senderPhone: json['sender_phone'] as String,
       receiverPhone: json['receiver_phone'] as String,
       pickupTime: DateTime.parse(json['pickup_time'] as String),
-      pickupAddress: json['pickup_address'] as String,
-      dropoffAddress: json['dropoff_address'] as String,
       goodsType: json['goods_type'] as String,
       goodsQuantity: json['goods_quantity'] as String,
       paymentMode: json['payment_mode'] as String,
       estimatedFare: (json['estimated_fare'] as num).toDouble(),
       status: json['status'] as String,
+      instructions: json['instructions'] as String? ?? '',
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
+
+  // Helper methods to get addresses from stop points if needed
+  String get pickupAddress => 'Pickup Location'; // Placeholder - would need stop points parsing
+  String get dropoffAddress => 'Dropoff Location'; // Placeholder - would need stop points parsing
 }
 
 class TripDetail {

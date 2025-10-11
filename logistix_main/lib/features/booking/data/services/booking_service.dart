@@ -153,12 +153,21 @@ class BookingService {
     return 'Loading...';
     }
 
-  Future<BookingListResponse> getBookingList() async {
+  Future<BookingListResponse> getBookingList({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     try {
-      print('Getting booking list');
+      print('Getting booking list with pagination: page=$page, pageSize=$pageSize');
+      
+      final queryParams = {
+        'page': page,
+        'page_size': pageSize,
+      };
       
       final response = await _apiClient.get(
         ApiEndpoints.bookingList,
+        queryParameters: queryParams,
       );
 
       return BookingListResponse.fromJson(response.data as Map<String, dynamic>);

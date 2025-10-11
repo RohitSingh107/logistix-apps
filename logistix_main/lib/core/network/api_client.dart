@@ -21,7 +21,6 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import '../services/api_endpoints.dart';
-import 'dart:math' as math;
 
 class ApiClient {
   late final Dio _dio;
@@ -141,7 +140,12 @@ class ApiClient {
   
   // Check if the endpoint is in the excluded list
   bool _isAuthExcluded(String path) {
-    final excluded = _noAuthRequired.any((endpoint) => path.contains(endpoint));
+    // Remove leading slash and normalize path for comparison
+    final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+    final excluded = _noAuthRequired.any((endpoint) {
+      final normalizedEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+      return normalizedPath == normalizedEndpoint || normalizedPath.endsWith(normalizedEndpoint);
+    });
     print('DEBUG: Path $path auth excluded: $excluded');
     return excluded;
   }
@@ -150,17 +154,6 @@ class ApiClient {
     try {
       print('DEBUG: GET request to $path');
       _dio.options.baseUrl = AppConfig.baseUrl;
-      
-      // Manual verification that JWT is present for auth-required endpoints
-      if (!_isAuthExcluded(path)) {
-        final token = _authService.accessToken;
-        if (token != null) {
-          print('DEBUG: Manual set of Authorization header: Bearer ${token.substring(0, math.min(token.length, 10))}...');
-          _dio.options.headers['Authorization'] = 'Bearer $token';
-        } else {
-          print('DEBUG: No token available for GET request to $path');
-        }
-      }
       
       final response = await _dio.get(path, queryParameters: queryParameters);
       return response;
@@ -175,17 +168,6 @@ class ApiClient {
       print('DEBUG: POST request to $path');
       _dio.options.baseUrl = AppConfig.baseUrl;
       
-      // Manual verification that JWT is present for auth-required endpoints
-      if (!_isAuthExcluded(path)) {
-        final token = _authService.accessToken;
-        if (token != null) {
-          print('DEBUG: Manual set of Authorization header: Bearer ${token.substring(0, math.min(token.length, 10))}...');
-          _dio.options.headers['Authorization'] = 'Bearer $token';
-        } else {
-          print('DEBUG: No token available for POST request to $path');
-        }
-      }
-      
       final response = await _dio.post(path, data: data);
       return response;
     } catch (e) {
@@ -198,17 +180,6 @@ class ApiClient {
     try {
       print('DEBUG: PUT request to $path');
       _dio.options.baseUrl = AppConfig.baseUrl;
-      
-      // Manual verification that JWT is present for auth-required endpoints
-      if (!_isAuthExcluded(path)) {
-        final token = _authService.accessToken;
-        if (token != null) {
-          print('DEBUG: Manual set of Authorization header: Bearer ${token.substring(0, math.min(token.length, 10))}...');
-          _dio.options.headers['Authorization'] = 'Bearer $token';
-        } else {
-          print('DEBUG: No token available for PUT request to $path');
-        }
-      }
       
       final response = await _dio.put(path, data: data);
       return response;
@@ -223,17 +194,6 @@ class ApiClient {
       print('DEBUG: PATCH request to $path');
       _dio.options.baseUrl = AppConfig.baseUrl;
       
-      // Manual verification that JWT is present for auth-required endpoints
-      if (!_isAuthExcluded(path)) {
-        final token = _authService.accessToken;
-        if (token != null) {
-          print('DEBUG: Manual set of Authorization header: Bearer ${token.substring(0, math.min(token.length, 10))}...');
-          _dio.options.headers['Authorization'] = 'Bearer $token';
-        } else {
-          print('DEBUG: No token available for PATCH request to $path');
-        }
-      }
-      
       final response = await _dio.patch(path, data: data);
       return response;
     } catch (e) {
@@ -246,17 +206,6 @@ class ApiClient {
     try {
       print('DEBUG: DELETE request to $path');
       _dio.options.baseUrl = AppConfig.baseUrl;
-      
-      // Manual verification that JWT is present for auth-required endpoints
-      if (!_isAuthExcluded(path)) {
-        final token = _authService.accessToken;
-        if (token != null) {
-          print('DEBUG: Manual set of Authorization header: Bearer ${token.substring(0, math.min(token.length, 10))}...');
-          _dio.options.headers['Authorization'] = 'Bearer $token';
-        } else {
-          print('DEBUG: No token available for DELETE request to $path');
-        }
-      }
       
       final response = await _dio.delete(path);
       return response;

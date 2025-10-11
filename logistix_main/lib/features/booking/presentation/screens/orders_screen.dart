@@ -19,6 +19,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/config/app_theme.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../data/services/booking_service.dart';
 import '../../data/models/booking_list_response.dart';
@@ -39,7 +40,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
   late final TabController _tabController;
   
   // Pagination constants
-  static const int _pageSize = 10;
+  static const int _pageSize = 25;
   
   // Data lists
   List<BookingListItem> _allBookings = [];
@@ -128,12 +129,15 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
     });
 
     try {
-      // Load initial data from API
-      final bookingListResponse = await _bookingService.getBookingList();
+      // Load initial data from API with pagination
+      final bookingListResponse = await _bookingService.getBookingList(
+        page: 1,
+        pageSize: _pageSize,
+      );
       final tripList = await _bookingService.getTripList();
       
       setState(() {
-        _allBookings = bookingListResponse.bookingRequests;
+        _allBookings = bookingListResponse.results;
         _allTrips = tripList;
         _isInitialLoading = false;
       });
@@ -150,7 +154,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
   }
 
   void _populateInitialPages() {
-    // Get all orders for each category
+    // Get all orders for each category from the current data
     final ongoingOrders = _getOngoingOrders();
     final completedOrders = _getCompletedOrders();
     final cancelledOrders = _getCancelledOrders();
@@ -161,10 +165,11 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
       _paginatedOrders[OrderType.completed] = completedOrders.take(_pageSize).toList();
       _paginatedOrders[OrderType.cancelled] = cancelledOrders.take(_pageSize).toList();
 
-      // Update hasMore flags
-      _hasMoreData[OrderType.ongoing] = ongoingOrders.length > _pageSize;
-      _hasMoreData[OrderType.completed] = completedOrders.length > _pageSize;
-      _hasMoreData[OrderType.cancelled] = cancelledOrders.length > _pageSize;
+      // Update hasMore flags - for now, assume there might be more data
+      // This will be updated when we load more data
+      _hasMoreData[OrderType.ongoing] = true;
+      _hasMoreData[OrderType.completed] = true;
+      _hasMoreData[OrderType.cancelled] = true;
     });
   }
 
@@ -176,41 +181,46 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
     });
 
     try {
-      // Simulate network delay for better UX
-      await Future.delayed(const Duration(milliseconds: 500));
+      final currentPage = _currentPages[orderType]!;
+      final nextPage = currentPage + 1;
       
-      List<dynamic> allOrdersForType;
+      // Load more data from API
+      final bookingListResponse = await _bookingService.getBookingList(
+        page: nextPage,
+        pageSize: _pageSize,
+      );
+      
+      // Filter new bookings by order type
+      List<BookingListItem> newBookings = [];
       switch (orderType) {
         case OrderType.ongoing:
-          allOrdersForType = _getOngoingOrders();
+          newBookings = bookingListResponse.results.where((booking) => 
+            booking.status == 'REQUESTED' || 
+            booking.status == 'SEARCHING' || 
+            booking.status == 'ACCEPTED'
+          ).toList();
           break;
         case OrderType.completed:
-          allOrdersForType = _getCompletedOrders();
+          newBookings = bookingListResponse.results.where((booking) => 
+            booking.status == 'COMPLETED' || 
+            (booking.isAccepted && booking.tripId != null)
+          ).toList();
           break;
         case OrderType.cancelled:
-          allOrdersForType = _getCancelledOrders();
+          newBookings = bookingListResponse.results.where((booking) => 
+            booking.status == 'CANCELLED' ||
+            booking.status == 'DRIVERS_NOT_FOUND'
+          ).toList();
           break;
       }
-
-      final currentPage = _currentPages[orderType]!;
-      final startIndex = currentPage * _pageSize;
-      final endIndex = (startIndex + _pageSize).clamp(0, allOrdersForType.length);
       
-      if (startIndex < allOrdersForType.length) {
-        final newItems = allOrdersForType.sublist(startIndex, endIndex);
-        
-        setState(() {
-          _paginatedOrders[orderType]!.addAll(newItems);
-          _currentPages[orderType] = currentPage + 1;
-          _hasMoreData[orderType] = endIndex < allOrdersForType.length;
-          _isLoadingMore = false;
-        });
-      } else {
-        setState(() {
-          _hasMoreData[orderType] = false;
-          _isLoadingMore = false;
-        });
-      }
+      setState(() {
+        _paginatedOrders[orderType]!.addAll(newBookings);
+        _currentPages[orderType] = nextPage;
+        _hasMoreData[orderType] = bookingListResponse.hasNext;
+        _isLoadingMore = false;
+      });
+      
     } catch (e) {
       setState(() {
         _isLoadingMore = false;
@@ -253,7 +263,8 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
 
   List<dynamic> _getCancelledOrders() {
     final cancelledBookings = _allBookings.where((booking) => 
-      booking.status == 'CANCELLED'
+      booking.status == 'CANCELLED' ||
+      booking.status == 'DRIVERS_NOT_FOUND'
     ).toList();
     
     final cancelledTrips = _allTrips.where((trip) => 
@@ -1066,7 +1077,7 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
         ),
         child: ClipOval(
           child: Image.network(
-            'http://localhost:8000${driver.user.profilePicture}',
+            '${AppConfig.baseUrl}${driver.user.profilePicture}',
             width: 40,
             height: 40,
             fit: BoxFit.cover,
