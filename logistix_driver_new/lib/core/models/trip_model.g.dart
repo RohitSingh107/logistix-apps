@@ -31,6 +31,16 @@ Trip _$TripFromJson(Map<String, dynamic> json) => Trip(
       finalDuration: (json['final_duration'] as num?)?.toDouble(),
       finalDistance: json['final_distance'] as String?,
       isPaymentDone: json['is_payment_done'] as bool,
+      stopPoints: (json['stop_points'] as List<dynamic>?)
+          ?.map((e) => StopPoint.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      updates: (json['updates'] as List<dynamic>?)
+          ?.map((e) => TripUpdate.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      updatesCount: (json['updates_count'] as num?)?.toInt(),
+      latestUpdate: json['latest_update'] == null
+          ? null
+          : TripUpdate.fromJson(json['latest_update'] as Map<String, dynamic>),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -49,6 +59,10 @@ Map<String, dynamic> _$TripToJson(Trip instance) => <String, dynamic>{
       'final_duration': instance.finalDuration,
       'final_distance': instance.finalDistance,
       'is_payment_done': instance.isPaymentDone,
+      'stop_points': instance.stopPoints,
+      'updates': instance.updates,
+      'updates_count': instance.updatesCount,
+      'latest_update': instance.latestUpdate,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
     };

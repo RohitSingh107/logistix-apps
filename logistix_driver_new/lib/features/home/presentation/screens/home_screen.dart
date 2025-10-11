@@ -692,7 +692,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   onChanged: _isUpdatingAvailability 
                       ? null 
                       : (value) => _toggleAvailability(),
-                  activeThumbColor: Colors.white,
                   activeTrackColor: theme.colorScheme.primary,
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: theme.colorScheme.onSurface.withOpacity(0.3),

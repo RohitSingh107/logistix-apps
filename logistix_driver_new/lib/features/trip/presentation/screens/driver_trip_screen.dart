@@ -154,7 +154,7 @@ class _DriverTripScreenState extends State<DriverTripScreen> {
   Widget _buildLocationSection(
     ThemeData theme,
     String title,
-    String address,
+    String? address,
     IconData icon,
     Color color,
   ) {
@@ -199,7 +199,7 @@ class _DriverTripScreenState extends State<DriverTripScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  address,
+                  address ?? 'Address not available',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.7),
                   ),

@@ -51,6 +51,7 @@ class BookingRepositoryImpl implements BookingRepository {
       );
 
       // Parse the trip data from the response
+      // The response now has a nested structure: { "message": "...", "trip": {...} }
       final tripData = response.data['trip'];
       return Trip.fromJson(tripData);
     } catch (e) {
