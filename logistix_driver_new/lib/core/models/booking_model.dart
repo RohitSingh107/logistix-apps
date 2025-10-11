@@ -55,15 +55,15 @@ class Booking extends BaseModel {
   @JsonKey(name: 'receiver_phone')
   final String receiverPhone;
   @JsonKey(name: 'pickup_location')
-  final String pickupLocation;
+  final String? pickupLocation;
   @JsonKey(name: 'dropoff_location')
-  final String dropoffLocation;
+  final String? dropoffLocation;
   @JsonKey(name: 'pickup_time')
   final DateTime pickupTime;
   @JsonKey(name: 'pickup_address')
-  final String pickupAddress;
+  final String? pickupAddress;
   @JsonKey(name: 'dropoff_address')
-  final String dropoffAddress;
+  final String? dropoffAddress;
   @JsonKey(name: 'goods_type')
   final String goodsType;
   @JsonKey(name: 'goods_quantity')
@@ -86,11 +86,11 @@ class Booking extends BaseModel {
     required this.receiverName,
     required this.senderPhone,
     required this.receiverPhone,
-    required this.pickupLocation,
-    required this.dropoffLocation,
+    this.pickupLocation,
+    this.dropoffLocation,
     required this.pickupTime,
-    required this.pickupAddress,
-    required this.dropoffAddress,
+    this.pickupAddress,
+    this.dropoffAddress,
     required this.goodsType,
     required this.goodsQuantity,
     required this.paymentMode,

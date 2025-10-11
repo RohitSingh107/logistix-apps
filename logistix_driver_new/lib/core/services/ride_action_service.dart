@@ -70,8 +70,21 @@ class RideActionService {
       }
 
       // Create Trip object from JSON
-      final trip = Trip.fromJson(tripData);
-      print("✅ Trip object created successfully: ${trip.id}");
+      print("🔍 Attempting to parse trip data...");
+      print("🔍 Trip data keys: ${tripData.keys.toList()}");
+      print("🔍 Driver data: ${tripData['driver']}");
+      print("🔍 Booking request data: ${tripData['booking_request']}");
+      
+      Trip trip;
+      try {
+        trip = Trip.fromJson(tripData);
+        print("✅ Trip object created successfully: ${trip.id}");
+      } catch (e, stackTrace) {
+        print("❌ Error parsing trip data: $e");
+        print("❌ Stack trace: $stackTrace");
+        print("❌ Trip data: $tripData");
+        rethrow;
+      }
 
       // Update driver availability status
       await _updateDriverAvailability(false);
@@ -146,7 +159,7 @@ class RideActionService {
       final driverId = await _getCurrentDriverId();
       
       await _apiClient.patch(
-        '/api/driver/profile/',
+        '/api/users/driver/profile/',
         data: {
           'is_available': isAvailable,
         },

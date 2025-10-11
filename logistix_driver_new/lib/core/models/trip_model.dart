@@ -16,6 +16,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
 import 'driver_model.dart';
 import 'booking_model.dart';
+import 'stop_point_model.dart';
+import 'trip_update_model.dart';
 
 part 'trip_model.g.dart';
 
@@ -55,6 +57,13 @@ class Trip extends BaseModel {
   final String? finalDistance;
   @JsonKey(name: 'is_payment_done')
   final bool isPaymentDone;
+  @JsonKey(name: 'stop_points')
+  final List<StopPoint>? stopPoints;
+  final List<TripUpdate>? updates;
+  @JsonKey(name: 'updates_count')
+  final int? updatesCount;
+  @JsonKey(name: 'latest_update')
+  final TripUpdate? latestUpdate;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @JsonKey(name: 'updated_at')
@@ -74,6 +83,10 @@ class Trip extends BaseModel {
     this.finalDuration,
     this.finalDistance,
     required this.isPaymentDone,
+    this.stopPoints,
+    this.updates,
+    this.updatesCount,
+    this.latestUpdate,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -97,6 +110,10 @@ class Trip extends BaseModel {
     double? finalDuration,
     String? finalDistance,
     bool? isPaymentDone,
+    List<StopPoint>? stopPoints,
+    List<TripUpdate>? updates,
+    int? updatesCount,
+    TripUpdate? latestUpdate,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -114,6 +131,10 @@ class Trip extends BaseModel {
       finalDuration: finalDuration ?? this.finalDuration,
       finalDistance: finalDistance ?? this.finalDistance,
       isPaymentDone: isPaymentDone ?? this.isPaymentDone,
+      stopPoints: stopPoints ?? this.stopPoints,
+      updates: updates ?? this.updates,
+      updatesCount: updatesCount ?? this.updatesCount,
+      latestUpdate: latestUpdate ?? this.latestUpdate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -153,6 +174,24 @@ class Trip extends BaseModel {
 
   /// Get formatted final distance
   String get formattedFinalDistance => finalDistance != null ? '$finalDistance km' : 'N/A';
+
+  /// Get stop points count
+  int get stopPointsCount => stopPoints?.length ?? 0;
+
+  /// Get updates count
+  int get totalUpdates => updatesCount ?? 0;
+
+  /// Get latest update message
+  String get latestUpdateMessage => latestUpdate?.updateMessage ?? 'No updates available';
+
+  /// Get formatted latest update time
+  String get latestUpdateTime => latestUpdate?.formattedCreatedAt ?? 'N/A';
+
+  /// Check if trip has stop points
+  bool get hasStopPoints => stopPoints != null && stopPoints!.isNotEmpty;
+
+  /// Check if trip has updates
+  bool get hasUpdates => updates != null && updates!.isNotEmpty;
 }
 
 @JsonSerializable()
