@@ -18,14 +18,16 @@ class VehicleEstimationRepository implements VehicleEstimationRepositoryInterfac
   }) async {
     try {
       final request = VehicleEstimationRequest(
-        pickupLocation: Location(
-          latitude: pickupLatitude,
-          longitude: pickupLongitude,
-        ),
-        dropoffLocation: Location(
-          latitude: dropoffLatitude,
-          longitude: dropoffLongitude,
-        ),
+        stopLocations: [
+          Location(
+            latitude: pickupLatitude,
+            longitude: pickupLongitude,
+          ),
+          Location(
+            latitude: dropoffLatitude,
+            longitude: dropoffLongitude,
+          ),
+        ],
       );
 
       print('Making vehicle estimates API call with: ${request.toJson()}');
@@ -42,14 +44,17 @@ class VehicleEstimationRepository implements VehicleEstimationRepositoryInterfac
 
       try {
         print('Vehicle estimation API response: ${response.data}');
-        final responseData = VehicleEstimationResponse.fromJson(response.data);
+        
+        // The API now returns a direct array of estimates
+        final List<dynamic> estimatesData = response.data as List<dynamic>;
+        final estimates = estimatesData.map((item) => VehicleEstimate.fromJson(item as Map<String, dynamic>)).toList();
         
         // Calculate distance and duration for each estimate
         final distance = _calculateDistance(pickupLatitude, pickupLongitude, dropoffLatitude, dropoffLongitude);
         final duration = _calculateDuration(distance);
         
         // Update estimates with calculated distance and duration
-        final updatedEstimates = responseData.estimates.map((estimate) => VehicleEstimate(
+        final updatedEstimates = estimates.map((estimate) => VehicleEstimate(
           estimatedFare: estimate.estimatedFare,
           pickupReachTime: estimate.pickupReachTime,
           vehicleType: estimate.vehicleType,

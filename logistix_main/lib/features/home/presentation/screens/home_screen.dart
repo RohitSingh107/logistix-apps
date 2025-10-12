@@ -721,8 +721,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onBookingTapped(BookingListItem booking) {
-    if (booking.tripId != null && booking.isAccepted) {
-      // Navigate to trip details if booking is accepted and has trip_id
+    if (booking.tripId != null && booking.tripId! > 0 && booking.isAccepted) {
+      // Navigate to trip details if booking is accepted and has valid trip_id
       _navigateToTripDetails(booking.tripId!);
     } else {
       // Navigate to booking details for other cases

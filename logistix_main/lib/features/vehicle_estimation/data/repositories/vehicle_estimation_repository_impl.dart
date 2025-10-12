@@ -25,7 +25,7 @@ class VehicleEstimationRepositoryImpl implements VehicleEstimationRepository {
   VehicleEstimationRepositoryImpl(this._apiClient);
 
   @override
-  Future<List<VehicleEstimationRequest>> getVehicleEstimates({
+  Future<VehicleEstimationResponse> getVehicleEstimates({
     required double pickupLatitude,
     required double pickupLongitude,
     required double dropoffLatitude,
@@ -33,14 +33,16 @@ class VehicleEstimationRepositoryImpl implements VehicleEstimationRepository {
   }) async {
     try {
       final request = VehicleEstimationRequest(
-        pickupLocation: Location(
-          latitude: pickupLatitude,
-          longitude: pickupLongitude,
-        ),
-        dropoffLocation: Location(
-          latitude: dropoffLatitude,
-          longitude: dropoffLongitude,
-        ),
+        stopLocations: [
+          Location(
+            latitude: pickupLatitude,
+            longitude: pickupLongitude,
+          ),
+          Location(
+            latitude: dropoffLatitude,
+            longitude: dropoffLongitude,
+          ),
+        ],
       );
 
       final response = await _apiClient.post(
@@ -48,9 +50,11 @@ class VehicleEstimationRepositoryImpl implements VehicleEstimationRepository {
         data: request.toJson(),
       );
 
-      return (response.data as List)
-          .map((json) => VehicleEstimationRequest.fromJson(json))
-          .toList();
+      // The API now returns a direct array of estimates
+      final List<dynamic> estimatesData = response.data as List<dynamic>;
+      final estimates = estimatesData.map((item) => VehicleEstimate.fromJson(item as Map<String, dynamic>)).toList();
+      
+      return VehicleEstimationResponse(estimates: estimates);
     } catch (e) {
       rethrow;
     }
