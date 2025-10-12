@@ -35,7 +35,9 @@ import '../../features/booking/domain/repositories/booking_repository.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
 import '../../features/notifications/presentation/bloc/notification_bloc.dart';
+import '../../features/trip/presentation/bloc/trip_bloc.dart';
 import '../services/ride_action_service.dart';
+import '../services/trip_status_service.dart';
 import 'package:dio/dio.dart';
 import '../repositories/user_repository_impl.dart';
 import '../repositories/user_repository.dart';
@@ -103,6 +105,10 @@ Future<void> setupServiceLocator() async {
     () => RideActionService(serviceLocator()),
   );
 
+  serviceLocator.registerLazySingleton<TripStatusService>(
+    () => TripStatusService(serviceLocator()),
+  );
+
   // Use Cases
   // serviceLocator.registerLazySingleton(() => LoginUseCase(serviceLocator()));
 
@@ -110,4 +116,5 @@ Future<void> setupServiceLocator() async {
   serviceLocator.registerFactory(() => AuthBloc(serviceLocator(), serviceLocator()));
   serviceLocator.registerFactory(() => WalletBloc(serviceLocator()));
   serviceLocator.registerFactory(() => NotificationBloc(serviceLocator()));
+  serviceLocator.registerFactory(() => TripBloc(serviceLocator()));
 } 

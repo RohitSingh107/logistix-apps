@@ -3,6 +3,7 @@ import '../../../notifications/presentation/screens/alerts_screen.dart';
 import '../../../wallet/presentation/screens/wallet_screen.dart';
 import '../../../trip/presentation/screens/my_trips_screen.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
+import '../../../../core/models/trip_model.dart';
 import 'home_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -14,6 +15,8 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0; // Start with Home tab
+  bool _hasActiveTrip = false;
+  Trip? _activeTrip;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -22,6 +25,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const MyTripsScreen(),
     const SettingsScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkForActiveTrip();
+  }
+
+  Future<void> _checkForActiveTrip() async {
+    // TODO: Implement check for active trip
+    // This would typically check if there's an ongoing trip
+    // For now, we'll assume no active trip
+    setState(() {
+      _hasActiveTrip = false;
+      _activeTrip = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +75,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           type: BottomNavigationBarType.fixed,
           currentIndex: _currentIndex,
           onTap: (index) {
+            // Check if trying to navigate away from trip screen during active trip
+            if (_hasActiveTrip && _currentIndex != 0 && index != 0) {
+              _showActiveTripDialog();
+              return;
+            }
+            
             setState(() {
               _currentIndex = index;
             });
@@ -95,4 +120,34 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
     );
   }
+
+  void _showActiveTripDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Active Trip'),
+        content: const Text(
+          'You have an active trip in progress. Please complete or cancel the trip before navigating to other screens.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+          if (_activeTrip != null)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed(
+                  '/driver-trip',
+                  arguments: _activeTrip,
+                );
+              },
+              child: const Text('Go to Trip'),
+            ),
+        ],
+      ),
+    );
+  }
+
 } 

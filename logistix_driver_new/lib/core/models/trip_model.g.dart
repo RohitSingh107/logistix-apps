@@ -7,7 +7,7 @@ part of 'trip_model.dart';
 // **************************************************************************
 
 Trip _$TripFromJson(Map<String, dynamic> json) => Trip(
-      id: (json['id'] as num).toInt(),
+      id: (json['id'] as num?)?.toInt() ?? 0,
       driver: Driver.fromJson(json['driver'] as Map<String, dynamic>),
       bookingRequest:
           Booking.fromJson(json['booking_request'] as Map<String, dynamic>),
@@ -30,7 +30,7 @@ Trip _$TripFromJson(Map<String, dynamic> json) => Trip(
       finalFare: (json['final_fare'] as num?)?.toDouble(),
       finalDuration: (json['final_duration'] as num?)?.toDouble(),
       finalDistance: json['final_distance'] as String?,
-      isPaymentDone: json['is_payment_done'] as bool,
+      isPaymentDone: json['is_payment_done'] as bool? ?? false,
       stopPoints: (json['stop_points'] as List<dynamic>?)
           ?.map((e) => StopPoint.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -69,7 +69,7 @@ Map<String, dynamic> _$TripToJson(Trip instance) => <String, dynamic>{
 
 const _$TripStatusEnumMap = {
   TripStatus.accepted: 'ACCEPTED',
-  TripStatus.started: 'STARTED',
+  TripStatus.inProgress: 'IN_PROGRESS',
   TripStatus.completed: 'COMPLETED',
   TripStatus.cancelled: 'CANCELLED',
 };

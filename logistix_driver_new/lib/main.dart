@@ -35,6 +35,7 @@ import 'features/theme/presentation/bloc/theme_event.dart';
 import 'features/theme/presentation/bloc/theme_state.dart';
 import 'features/wallet/presentation/bloc/wallet_bloc.dart';
 import 'features/notifications/presentation/bloc/notification_bloc.dart';
+import 'features/trip/presentation/bloc/trip_bloc.dart';
 import 'core/services/auth_service.dart';
 import 'core/config/app_config.dart';
 import 'core/config/app_theme.dart';
@@ -84,7 +85,7 @@ void main() async {
         fileInput: '''
 # For emulators, 10.0.2.2 points to the host machine's localhost
 # For real devices, use your computer's actual IP address
-API_BASE_URL=https://5b9702f2b306.ngrok-free.app
+API_BASE_URL=https://76281b72189e.ngrok-free.app
 API_KEY=development_key
 '''
       );
@@ -193,6 +194,9 @@ class DriverApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => NotificationBloc(serviceLocator()),
+        ),
+        BlocProvider(
+          create: (context) => TripBloc(serviceLocator()),
         ),
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(

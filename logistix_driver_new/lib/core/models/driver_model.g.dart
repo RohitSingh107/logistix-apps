@@ -7,14 +7,14 @@ part of 'driver_model.dart';
 // **************************************************************************
 
 Driver _$DriverFromJson(Map<String, dynamic> json) => Driver(
-      id: (json['id'] as num).toInt(),
+      id: (json['id'] as num?)?.toInt() ?? 0,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
-      licenseNumber: json['license_number'] as String,
+      licenseNumber: json['license_number'] as String? ?? '',
       vehicleType: (json['vehicle_type'] as num?)?.toInt(),
       isAvailable: json['is_available'] as bool,
       fcmToken: json['fcm_token'] as String?,
-      averageRating: json['average_rating'] as String,
-      totalEarnings: (json['total_earnings'] as num).toDouble(),
+      averageRating: json['average_rating'] as String? ?? '0.00',
+      totalEarnings: (json['total_earnings'] as num?)?.toDouble() ?? 0.0,
       location: json['location'] as Map<String, dynamic>?,
       createdAt: json['created_at'] == null
           ? null

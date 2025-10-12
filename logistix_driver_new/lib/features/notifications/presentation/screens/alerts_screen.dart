@@ -189,7 +189,6 @@ class _AlertsScreenState extends State<AlertsScreen> {
   }
 
   Widget _buildNotificationList(NotificationLoaded state) {
-    final theme = Theme.of(context);
     final notifications = state.notifications.results;
 
     if (notifications.isEmpty) {
@@ -368,6 +367,28 @@ class _AlertsScreenState extends State<AlertsScreen> {
             try {
               if (accepted) {
                 final trip = await rideActionService.acceptRide(bookingId);
+                
+                // Show success message and redirect to trip screen
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Booking accepted successfully! Trip ID: ${trip.id}'),
+                      backgroundColor: Colors.green,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                  
+                  // Redirect to trip screen after successful acceptance
+                  Future.delayed(const Duration(seconds: 1), () {
+                    if (mounted) {
+                      Navigator.of(context).pushNamed(
+                        '/driver-trip',
+                        arguments: trip,
+                      );
+                    }
+                  });
+                }
+                
                 return trip;
               } else {
                 // For reject, just return null to close popup

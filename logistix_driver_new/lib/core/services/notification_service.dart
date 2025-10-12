@@ -23,7 +23,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../core/models/notification_model.dart' as app_notification;
 import '../di/service_locator.dart';
-import '../../features/notifications/presentation/bloc/notification_bloc.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
 import '../../features/notifications/presentation/widgets/ride_request_popup.dart';
 import 'ride_action_service.dart';
@@ -241,9 +240,33 @@ class NotificationService {
           onRideAction: (bookingId, accepted) async {
             try {
               if (accepted) {
-                await rideActionService.acceptRide(bookingId);
+                final trip = await rideActionService.acceptRide(bookingId);
+                
+                // Show success message and redirect to trip screen
+                if (_navigatorKey?.currentContext != null) {
+                  ScaffoldMessenger.of(_navigatorKey!.currentContext!).showSnackBar(
+                    SnackBar(
+                      content: Text('Booking accepted successfully! Trip ID: ${trip.id}'),
+                      backgroundColor: Colors.green,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                  
+                  // Redirect to trip screen after successful acceptance
+                  Future.delayed(const Duration(seconds: 1), () {
+                    if (_navigatorKey?.currentContext != null) {
+                      Navigator.of(_navigatorKey!.currentContext!).pushNamed(
+                        '/driver-trip',
+                        arguments: trip,
+                      );
+                    }
+                  });
+                }
+                
+                return trip;
               } else {
                 await rideActionService.rejectRide(bookingId);
+                return null;
               }
             } catch (e) {
               print("❌ Error handling ride action: $e");

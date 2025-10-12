@@ -24,9 +24,9 @@ class TripUpdate extends BaseModel {
   @JsonKey(name: 'update_message')
   final String updateMessage;
   @JsonKey(name: 'created_by')
-  final int createdBy;
+  final int? createdBy;
   @JsonKey(name: 'created_by_phone')
-  final String createdByPhone;
+  final String? createdByPhone;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
@@ -34,8 +34,8 @@ class TripUpdate extends BaseModel {
     required this.id,
     required this.trip,
     required this.updateMessage,
-    required this.createdBy,
-    required this.createdByPhone,
+    this.createdBy,
+    this.createdByPhone,
     required this.createdAt,
   });
 
