@@ -193,7 +193,9 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
   }
 
   Widget _buildDriverAvatar(Driver driver) {
-    final String initial = driver.user.firstName[0].toUpperCase();
+    final String initial = driver.user.firstName.isNotEmpty 
+        ? driver.user.firstName[0].toUpperCase()
+        : 'D';
     final profileImage = _getProfileImage(driver.user.profilePicture);
     
     if (profileImage != null) {
