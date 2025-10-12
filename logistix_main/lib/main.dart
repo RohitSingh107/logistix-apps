@@ -111,7 +111,7 @@ void main() async {
         fileInput: '''
 # For emulators, 10.0.2.2 points to the host machine's localhost
 # For real devices, use your computer's actual IP address
-API_BASE_URL=https://5b9702f2b306.ngrok-free.app
+API_BASE_URL=https://76281b72189e.ngrok-free.app
 API_KEY=development_key
 '''
       );

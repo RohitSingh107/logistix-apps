@@ -27,10 +27,12 @@ import '../../../../core/di/service_locator.dart';
 
 class TripDetailsScreen extends StatefulWidget {
   final TripDetail tripDetail;
+  final bool shouldStartPolling;
 
   const TripDetailsScreen({
     Key? key,
     required this.tripDetail,
+    this.shouldStartPolling = true,
   }) : super(key: key);
 
   @override
@@ -77,6 +79,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
 
   void _startStatusPolling() {
     if (_currentTrip.isCompleted || _currentTrip.isCancelled) return;
+    if (!widget.shouldStartPolling) return; // Don't start polling if disabled
     
     _statusTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       try {
@@ -109,18 +112,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
     switch (_currentTrip.status) {
       case 'ACCEPTED':
         return 'Accepted by Driver';
-      case 'TRIP_STARTED':
-        return 'Trip Started';
-      case 'LOADING_STARTED':
-        return 'Loading Started';
-      case 'LOADING_DONE':
-        return 'Loading Done';
-      case 'REACHED_DESTINATION':
-        return 'Driver Reached Destination';
-      case 'UNLOADING_STARTED':
-        return 'Unloading Started';
-      case 'UNLOADING_DONE':
-        return 'Unloading Complete';
+      case 'IN_PROGRESS':
+        return 'Trip In Progress';
       case 'COMPLETED':
         return 'Trip Completed';
       case 'CANCELLED':
@@ -134,18 +127,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
     switch (_currentTrip.status) {
       case 'ACCEPTED':
         return 'Your driver has accepted the trip and is preparing for pickup';
-      case 'TRIP_STARTED':
-        return 'Driver has started the trip and is heading to pickup location';
-      case 'LOADING_STARTED':
-        return 'Driver has arrived and is loading your goods';
-      case 'LOADING_DONE':
-        return 'Goods have been loaded and driver is heading to destination';
-      case 'REACHED_DESTINATION':
-        return 'Driver has successfully reached the destination';
-      case 'UNLOADING_STARTED':
-        return 'Driver is unloading your goods at the destination';
-      case 'UNLOADING_DONE':
-        return 'Goods have been successfully unloaded at destination';
+      case 'IN_PROGRESS':
+        return 'Trip is currently in progress - driver is handling your goods';
       case 'COMPLETED':
         return 'Trip completed successfully - all goods delivered';
       case 'CANCELLED':
@@ -159,18 +142,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
     switch (_currentTrip.status) {
       case 'ACCEPTED':
         return Icons.person_pin;
-      case 'TRIP_STARTED':
-        return Icons.directions_car;
-      case 'LOADING_STARTED':
-        return Icons.download;
-      case 'LOADING_DONE':
-        return Icons.inventory;
-      case 'REACHED_DESTINATION':
-        return Icons.location_on;
-      case 'UNLOADING_STARTED':
-        return Icons.upload;
-      case 'UNLOADING_DONE':
-        return Icons.unarchive;
+      case 'IN_PROGRESS':
+        return Icons.local_shipping;
       case 'COMPLETED':
         return Icons.check_circle;
       case 'CANCELLED':
@@ -186,8 +159,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
         return Colors.green;
       case 'CANCELLED':
         return Colors.red;
-      case 'LOADING_STARTED':
-      case 'UNLOADING_STARTED':
+      case 'IN_PROGRESS':
         return Colors.orange;
       default:
         return Theme.of(context).colorScheme.primary;
@@ -305,46 +277,11 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
         'color': Colors.blue,
       },
       {
-        'status': 'TRIP_STARTED',
-        'title': 'Trip Started',
-        'description': 'Driver is heading to pickup location',
-        'icon': Icons.directions_car,
-        'color': Colors.blue,
-      },
-      {
-        'status': 'LOADING_STARTED',
-        'title': 'Loading Started',
-        'description': 'Driver is loading your goods',
-        'icon': Icons.download,
+        'status': 'IN_PROGRESS',
+        'title': 'Trip In Progress',
+        'description': 'Driver is handling your goods',
+        'icon': Icons.local_shipping,
         'color': Colors.orange,
-      },
-      {
-        'status': 'LOADING_DONE',
-        'title': 'Loading Done',
-        'description': 'Goods loaded, heading to destination',
-        'icon': Icons.inventory,
-        'color': Colors.blue,
-      },
-      {
-        'status': 'REACHED_DESTINATION',
-        'title': 'Driver Reached Destination',
-        'description': 'Driver has arrived at the destination',
-        'icon': Icons.location_on,
-        'color': Colors.blue,
-      },
-      {
-        'status': 'UNLOADING_STARTED',
-        'title': 'Unloading Started',
-        'description': 'Driver is unloading your goods',
-        'icon': Icons.upload,
-        'color': Colors.orange,
-      },
-      {
-        'status': 'UNLOADING_DONE',
-        'title': 'Unloading Complete',
-        'description': 'Goods successfully unloaded',
-        'icon': Icons.unarchive,
-        'color': Colors.blue,
       },
       {
         'status': 'COMPLETED',
@@ -407,6 +344,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
                   _buildTripRouteCard(theme),
                   const SizedBox(height: AppSpacing.lg),
                   _buildTripDetailsCard(theme),
+                  const SizedBox(height: AppSpacing.lg),
+                  _buildTripUpdatesCard(theme),
                   const SizedBox(height: AppSpacing.lg),
                   _buildPaymentCard(theme),
                   const SizedBox(height: 100), // Space for bottom bar
@@ -936,6 +875,161 @@ class _TripDetailsScreenState extends State<TripDetailsScreen>
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTripUpdatesCard(ThemeData theme) {
+    if (_currentTrip.updates.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.update,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                'Trip Updates',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${_currentTrip.updatesCount} updates',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          
+          // Show latest update prominently
+          if (_currentTrip.latestUpdate != null) ...[
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withOpacity(0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.new_releases,
+                        color: theme.colorScheme.primary,
+                        size: 16,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        'Latest Update',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    _currentTrip.latestUpdate!.updateMessage,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    _formatDateTime(_currentTrip.latestUpdate!.createdAt),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+          
+          // Show all updates in a scrollable list
+          if (_currentTrip.updates.length > 1) ...[
+            Text(
+              'All Updates',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ..._currentTrip.updates.reversed.map((update) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withOpacity(0.2),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      update.updateMessage,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person,
+                          size: 14,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          update.createdByPhone ?? 'System',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          _formatDateTime(update.createdAt),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
         ],
       ),
     );

@@ -142,12 +142,16 @@ class _DriverSearchScreenState extends State<DriverSearchScreen>
                 _searchTimer?.cancel();
                 
                 // Navigate to trip details screen
+                // Disable polling in trip details screen since we're already polling here
                 Future.delayed(const Duration(seconds: 2), () {
                   if (mounted) {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => TripDetailsScreen(tripDetail: statusObject),
+                        builder: (context) => TripDetailsScreen(
+                          tripDetail: statusObject,
+                          shouldStartPolling: false, // Disable polling to prevent duplicates
+                        ),
                       ),
                     );
                   }

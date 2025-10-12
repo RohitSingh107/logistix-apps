@@ -123,6 +123,36 @@ class BookingRequestDetail {
   String get dropoffAddress => 'Dropoff Location'; // Placeholder - would need stop points parsing
 }
 
+// Trip Update model for tracking trip status changes
+class TripUpdate {
+  final int id;
+  final int trip;
+  final String updateMessage;
+  final int? createdBy;
+  final String? createdByPhone;
+  final DateTime createdAt;
+
+  const TripUpdate({
+    required this.id,
+    required this.trip,
+    required this.updateMessage,
+    this.createdBy,
+    this.createdByPhone,
+    required this.createdAt,
+  });
+
+  factory TripUpdate.fromJson(Map<String, dynamic> json) {
+    return TripUpdate(
+      id: json['id'] as int,
+      trip: json['trip'] as int,
+      updateMessage: json['update_message'] as String,
+      createdBy: json['created_by'] as int?,
+      createdByPhone: json['created_by_phone'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+    );
+  }
+}
+
 class TripDetail {
   final int id;
   final Driver? driver;
@@ -137,6 +167,9 @@ class TripDetail {
   final int? finalDuration;
   final String? finalDistance;
   final bool isPaymentDone;
+  final List<TripUpdate> updates;
+  final int updatesCount;
+  final TripUpdate? latestUpdate;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -154,6 +187,9 @@ class TripDetail {
     this.finalDuration,
     this.finalDistance,
     required this.isPaymentDone,
+    required this.updates,
+    required this.updatesCount,
+    this.latestUpdate,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -189,6 +225,13 @@ class TripDetail {
       finalDuration: json['final_duration'] as int?,
       finalDistance: json['final_distance'] as String?,
       isPaymentDone: json['is_payment_done'] as bool,
+      updates: (json['updates'] as List<dynamic>?)
+          ?.map((e) => TripUpdate.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      updatesCount: json['updates_count'] as int? ?? 0,
+      latestUpdate: json['latest_update'] != null
+          ? TripUpdate.fromJson(json['latest_update'] as Map<String, dynamic>)
+          : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -196,7 +239,7 @@ class TripDetail {
 
   bool get hasDriver => driver != null;
   bool get isAccepted => status == 'ACCEPTED';
-  bool get isRequested => status == 'REQUESTED';
+  bool get isInProgress => status == 'IN_PROGRESS';
   bool get isCompleted => status == 'COMPLETED';
   bool get isCancelled => status == 'CANCELLED';
 } 
