@@ -14,6 +14,7 @@ library;
 
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
+import 'stop_point_model.dart';
 
 part 'booking_model.g.dart';
 
@@ -74,6 +75,8 @@ class Booking extends BaseModel {
   final double estimatedFare;
   final BookingStatus status;
   final String? instructions;
+  @JsonKey(name: 'stop_points')
+  final List<StopPoint>? stopPoints;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @JsonKey(name: 'updated_at')
@@ -97,6 +100,7 @@ class Booking extends BaseModel {
     required this.estimatedFare,
     required this.status,
     this.instructions,
+    this.stopPoints,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -124,6 +128,7 @@ class Booking extends BaseModel {
     double? estimatedFare,
     BookingStatus? status,
     String? instructions,
+    List<StopPoint>? stopPoints,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -145,6 +150,7 @@ class Booking extends BaseModel {
       estimatedFare: estimatedFare ?? this.estimatedFare,
       status: status ?? this.status,
       instructions: instructions ?? this.instructions,
+      stopPoints: stopPoints ?? this.stopPoints,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

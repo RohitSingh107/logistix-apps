@@ -289,15 +289,25 @@ class _TestBookingAcceptanceState extends State<TestBookingAcceptance> {
         _acceptedTrip = trip;
       });
       
-      // Show success message
+      // Show success message and redirect to trip screen
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Booking $bookingId accepted successfully! Trip ID: ${trip.id}'),
             backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 2),
           ),
         );
+        
+        // Redirect to trip screen after successful acceptance
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            Navigator.of(context).pushNamed(
+              '/driver-trip',
+              arguments: trip,
+            );
+          }
+        });
       }
     } catch (e) {
       setState(() {

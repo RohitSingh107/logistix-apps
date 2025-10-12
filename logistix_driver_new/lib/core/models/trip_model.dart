@@ -24,8 +24,8 @@ part 'trip_model.g.dart';
 enum TripStatus {
   @JsonValue('ACCEPTED')
   accepted,
-  @JsonValue('STARTED')
-  started,
+  @JsonValue('IN_PROGRESS')
+  inProgress,
   @JsonValue('COMPLETED')
   completed,
   @JsonValue('CANCELLED')
@@ -144,7 +144,7 @@ class Trip extends BaseModel {
   bool get isAccepted => status == TripStatus.accepted;
 
   /// Check if trip is started
-  bool get isStarted => status == TripStatus.started;
+  bool get isStarted => status == TripStatus.inProgress;
 
   /// Check if trip is completed
   bool get isCompleted => status == TripStatus.completed;
@@ -157,8 +157,8 @@ class Trip extends BaseModel {
     switch (status) {
       case TripStatus.accepted:
         return 'Accepted';
-      case TripStatus.started:
-        return 'Started';
+      case TripStatus.inProgress:
+        return 'In Progress';
       case TripStatus.completed:
         return 'Completed';
       case TripStatus.cancelled:

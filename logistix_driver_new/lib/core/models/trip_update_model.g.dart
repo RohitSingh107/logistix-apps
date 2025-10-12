@@ -7,11 +7,11 @@ part of 'trip_update_model.dart';
 // **************************************************************************
 
 TripUpdate _$TripUpdateFromJson(Map<String, dynamic> json) => TripUpdate(
-      id: (json['id'] as num).toInt(),
-      trip: (json['trip'] as num).toInt(),
-      updateMessage: json['update_message'] as String,
-      createdBy: (json['created_by'] as num).toInt(),
-      createdByPhone: json['created_by_phone'] as String,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      trip: (json['trip'] as num?)?.toInt() ?? 0,
+      updateMessage: json['update_message'] as String? ?? '',
+      createdBy: (json['created_by'] as num?)?.toInt(),
+      createdByPhone: json['created_by_phone'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
 

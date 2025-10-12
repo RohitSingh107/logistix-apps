@@ -7,10 +7,10 @@ part of 'stop_point_model.dart';
 // **************************************************************************
 
 StopPoint _$StopPointFromJson(Map<String, dynamic> json) => StopPoint(
-      id: (json['id'] as num).toInt(),
-      location: json['location'] as String,
-      address: json['address'] as String,
-      stopOrder: (json['stop_order'] as num).toInt(),
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      location: json['location'] as String? ?? '',
+      address: json['address'] as String? ?? '',
+      stopOrder: (json['stop_order'] as num?)?.toInt() ?? 0,
       stopType: $enumDecode(_$StopTypeEnumMap, json['stop_type']),
       contactName: json['contact_name'] as String?,
       contactPhone: json['contact_phone'] as String?,
