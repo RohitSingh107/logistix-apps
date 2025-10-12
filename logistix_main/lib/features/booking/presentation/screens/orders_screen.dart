@@ -1065,7 +1065,9 @@ class _OrdersScreenState extends State<OrdersScreen> with TickerProviderStateMix
   }
 
   Widget _buildDriverAvatar(ThemeData theme, Driver? driver) {
-    final String initial = driver?.user.firstName.substring(0, 1).toUpperCase() ?? 'D';
+    final String initial = (driver?.user.firstName.isNotEmpty ?? false)
+        ? driver!.user.firstName[0].toUpperCase()
+        : 'D';
     
     if (driver?.user.profilePicture != null && driver!.user.profilePicture!.isNotEmpty) {
       return Container(
