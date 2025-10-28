@@ -17,6 +17,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/phone_input.dart';
@@ -33,6 +34,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
   String? _phoneNumber;
   String? _phoneError;
+  bool _isFromNavigation = false; // Track if user came from navigation
+
+  @override
+  void initState() {
+    super.initState();
+    // Check if there's a previous route in the navigation stack
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _isFromNavigation = ModalRoute.of(context)?.settings.name != null;
+    });
+  }
 
   @override
   void dispose() {
@@ -98,204 +109,220 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void _showExitConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exit App'),
+        content: const Text('Are you sure you want to exit the app?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Exit the app
+              SystemNavigator.pop();
+            },
+            child: const Text('Exit'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: SafeArea(
-        child: BlocListener<AuthBloc, AuthState>(
-          listener: (context, state) {
-            if (state is AuthError) {
-              if (state.message.contains('not found')) {
-                _showUserNotFoundDialog(state.message);
-              } else {
-                _showErrorToast(state.message);
+    return PopScope(
+      canPop: _isFromNavigation, // Allow back navigation only if user came from navigation
+      onPopInvoked: (didPop) {
+        if (!didPop && !_isFromNavigation) {
+          // If user tries to go back but shouldn't be able to, show confirmation dialog
+          _showExitConfirmation();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5), // Light gray background
+        body: SafeArea(
+          child: BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is AuthError) {
+                if (state.message.contains('not found')) {
+                  _showUserNotFoundDialog(state.message);
+                } else {
+                  _showErrorToast(state.message);
+                }
+              } else if (state is OtpRequested) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OtpVerificationScreen(
+                      phone: _phoneNumber!,
+                      isLogin: true,
+                    ),
+                  ),
+                );
               }
-            } else if (state is OtpRequested) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OtpVerificationScreen(
-                    phone: _phoneNumber!,
-                    isLogin: true,
-                  ),
-                ),
-              );
-            }
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
+            },
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
-                
-                // Logo and Welcome Section
-                Column(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Icon(
-                        Icons.local_shipping,
-                        size: 40,
-                        color: theme.colorScheme.onPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Welcome Back',
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Sign in to your Logistix Driver account',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 60),
-                
-                // Phone Input Section
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: theme.colorScheme.outline.withOpacity(0.1),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Phone Number',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                // Top Section - Interactive Elements (60% of screen)
+                Expanded(
+                  flex: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 60), // Exact spacing from top
+                        
+                        // Title Section - Centered
+                        Center(
+                          child: Text(
+                            'Logistics',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              color: theme.colorScheme.primary, // Orange-brown #D2691E
+                              fontFamily: 'Inter',
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Enter your registered phone number to continue',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        
+                        const SizedBox(height: 50), // Exact spacing from title
+                        
+                        // Phone Input Section
+                        PhoneInput(
+                          controller: _phoneController,
+                          onChanged: (phone) {
+                            setState(() {
+                              _phoneNumber = phone;
+                              _phoneError = null;
+                            });
+                          },
+                          onSubmitted: (phone) {
+                            setState(() {
+                              _phoneNumber = phone;
+                              _phoneError = null;
+                            });
+                            _requestOtp();
+                          },
+                          errorText: _phoneError,
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      
-                      // Phone Input Widget
-                      PhoneInput(
-                        controller: _phoneController,
-                        onChanged: (phone) {
-                          setState(() {
-                            _phoneNumber = phone;
-                            _phoneError = null;
-                          });
-                        },
-                        onSubmitted: (phone) {
-                          setState(() {
-                            _phoneNumber = phone;
-                            _phoneError = null;
-                          });
-                          _requestOtp();
-                        },
-                        errorText: _phoneError,
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Login Button
-                      BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          final isLoading = state is AuthLoading;
-                          
-                          return SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: isLoading ? null : _requestOtp,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: theme.colorScheme.primary,
-                                foregroundColor: theme.colorScheme.onPrimary,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                        
+                        const SizedBox(height: 40), // Exact spacing from input
+                        
+                        // Next Button
+                        BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, state) {
+                            final isLoading = state is AuthLoading;
+                            
+                            return SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: isLoading ? null : _requestOtp,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: theme.colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12), // Exact border radius
+                                  ),
                                 ),
-                              ),
-                              child: isLoading
-                                  ? SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: theme.colorScheme.onPrimary,
+                                child: isLoading
+                                    ? SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Next',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                          fontFamily: 'Inter',
+                                        ),
                                       ),
-                                    )
-                                  : Text(
-                                      'Continue',
-                                      style: theme.textTheme.titleMedium?.copyWith(
+                              ),
+                            );
+                          },
+                        ),
+                        
+                        const SizedBox(height: 20), // Exact spacing from button
+                        
+                        // Terms and Privacy Checkbox
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: true, // Always checked as shown in design
+                              onChanged: (value) {
+                                // Handle checkbox state if needed
+                              },
+                              activeColor: theme.colorScheme.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                    fontFamily: 'Inter',
+                                  ),
+                                  children: [
+                                    const TextSpan(text: 'I agree to the '),
+                                    TextSpan(
+                                      text: 'terms of service',
+                                      style: TextStyle(
+                                        color: theme.colorScheme.primary,
                                         fontWeight: FontWeight.w600,
-                                        color: theme.colorScheme.onPrimary,
                                       ),
                                     ),
+                                    const TextSpan(text: ' and '),
+                                    TextSpan(
+                                      text: 'privacy policy',
+                                      style: TextStyle(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Sign Up Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Don\'t have an account? ',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/signup');
-                      },
-                      child: Text(
-                        'Sign Up',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w600,
+                          ],
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
                 
-                const SizedBox(height: 40),
-                
-                // Terms and Privacy
-                Text(
-                  'By continuing, you agree to our Terms of Service and Privacy Policy',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                // Bottom Section - Image Placeholder (40% of screen)
+                Expanded(
+                  flex: 4,
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.delivery_dining,
+                        size: 80,
+                        color: Colors.grey.shade400,
+                      ),
+                    ),
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
@@ -304,4 +331,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-} 
+}

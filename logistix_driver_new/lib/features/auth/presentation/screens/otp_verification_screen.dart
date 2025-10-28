@@ -50,7 +50,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     (_) => FocusNode(),
   );
   String? _errorText;
-  bool _hasVerificationFailed = false;
+  int _focusedIndex = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    // Add focus listeners to track focused field
+    for (int i = 0; i < _focusNodes.length; i++) {
+      _focusNodes[i].addListener(() {
+        setState(() {
+          _focusedIndex = _focusNodes[i].hasFocus ? i : -1;
+        });
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -63,18 +76,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     super.dispose();
   }
 
-  void _clearOtpFields() {
-    for (var controller in _controllers) {
-      controller.clear();
-    }
-    _focusNodes[0].requestFocus();
-  }
-
   void _handleOtpInput(String value, int index) {
     if (_errorText != null) {
       setState(() {
         _errorText = null;
-        _hasVerificationFailed = false;
       });
     }
     
@@ -115,126 +120,300 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (lowerCaseMsg.contains('invalid') && lowerCaseMsg.contains('otp')) {
       setState(() {
         _errorText = 'Invalid OTP. Please check and try again.';
-        _hasVerificationFailed = true;
       });
     } else if (lowerCaseMsg.contains('expire')) {
       setState(() {
         _errorText = 'OTP has expired. Please request a new one.';
-        _hasVerificationFailed = true;
       });
     } else {
       setState(() {
         _errorText = errorMessage;
-        _hasVerificationFailed = true;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Verify OTP'),
-      ),
-      body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthSuccess) {
-            if (state.isNewUser) {
-              Navigator.of(context).pushReplacementNamed(
-                '/profile/create',
-                arguments: {'phone': widget.phone},
-              );
-            } else {
-              Navigator.of(context).pushReplacementNamed('/home');
-            }
-          } else if (state is AuthError) {
-            _handleVerificationError(state.message);
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Enter the OTP sent to ${widget.phone}',
-                style: Theme.of(context).textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(
-                  6,
-                  (index) => SizedBox(
-                    width: 40,
-                    child: TextField(
-                      controller: _controllers[index],
-                      focusNode: _focusNodes[index],
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      maxLength: 1,
-                      decoration: InputDecoration(
-                        counterText: '',
-                        errorText: _errorText != null && index == 0 ? _errorText : null,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+    final theme = Theme.of(context);
+    
+    return PopScope(
+      canPop: true, // Allow back navigation to login screen
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5), // Light gray background
+        body: SafeArea(
+          child: BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is AuthSuccess) {
+                if (state.isNewUser) {
+                  Navigator.of(context).pushReplacementNamed(
+                    '/profile/create',
+                    arguments: {'phone': widget.phone},
+                  );
+                } else {
+                  Navigator.of(context).pushReplacementNamed('/home');
+                }
+              } else if (state is AuthError) {
+                _handleVerificationError(state.message);
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 60), // Exact spacing from top
+                  
+                  // Title Section - Centered
+                  Center(
+                    child: Text(
+                      'Logistics',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.primary, // Orange-brown
+                        fontFamily: 'Inter',
                       ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (value) => _handleOtpInput(value, index),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  return ElevatedButton(
-                    onPressed: state is AuthLoading
-                        ? null
-                        : () {
-                            final otp = _controllers.map((c) => c.text).join();
-                            _verifyOtp(otp);
-                          },
-                    child: state is AuthLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2.0),
-                          )
-                        : const Text('Verify OTP'),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              if (_hasVerificationFailed)
-                ElevatedButton.icon(
-                  onPressed: _clearOtpFields,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Try Again'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                  
+                  const SizedBox(height: 40), // Exact spacing from title
+                  
+                  // Phone Number Display
+                  Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(2),
+                          border: Border.all(color: Colors.grey.shade300, width: 0.5),
+                        ),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                color: const Color(0xFFFF5722), // Saffron
+                              ),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                color: Colors.white,
+                                child: Center(
+                                  child: Container(
+                                    width: 3,
+                                    height: 3,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF000080), // Navy blue
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                color: const Color(0xFF4CAF50), // Green
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        widget.phone,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600, // Bold as shown in design
+                          color: Colors.black, // Dark grey/black as shown
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(
+                          'CHANGE',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  context.read<AuthBloc>().add(RequestOtp(
-                    widget.phone,
-                    isLogin: widget.isLogin,
-                    firstName: widget.firstName,
-                    lastName: widget.lastName,
-                  ));
-                },
-                child: const Text('Resend OTP'),
+                  
+                  const SizedBox(height: 10), // Exact spacing from phone number
+                  
+                  // Instructions
+                  Text(
+                    'One time password(OTP) has been sent to this number',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600, // Lighter grey
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 20), // Exact spacing from instructions
+                  
+                  // Status Message
+                  Text(
+                    'Waiting to auto verify OTP',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.primary,
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 20), // Exact spacing from status
+                  
+                  // OTP Input Fields - 6 individual fields with proper styling
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(
+                      6,
+                      (index) => Container(
+                        width: 45,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100, // Light gray background
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: _errorText != null && index == 0 
+                              ? theme.colorScheme.error 
+                              : _focusedIndex == index
+                                ? theme.colorScheme.primary // Orange-brown for focused
+                                : Colors.grey.shade300,
+                            width: _focusedIndex == index ? 2.0 : 1.0, // Double border for focused
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _focusedIndex == index 
+                                ? theme.colorScheme.primary.withValues(alpha: 0.2)
+                                : Colors.grey.withValues(alpha: 0.1),
+                              blurRadius: _focusedIndex == index ? 4 : 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          controller: _controllers[index],
+                          focusNode: _focusNodes[index],
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          maxLength: 1,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black, // Black text for visibility
+                            fontFamily: 'Inter',
+                            height: 1.2, // Ensure proper line height
+                          ),
+                          decoration: InputDecoration(
+                            counterText: '',
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            errorText: _errorText != null && index == 0 ? _errorText : null,
+                            contentPadding: EdgeInsets.zero, // Remove any padding
+                          ),
+                          cursorColor: theme.colorScheme.primary,
+                          cursorWidth: 2.0,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          onChanged: (value) => _handleOtpInput(value, index),
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 40), // Exact spacing from OTP input
+                  
+                  // Verify Button
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: state is AuthLoading
+                              ? null
+                              : () {
+                                  final otp = _controllers.map((c) => c.text).join();
+                                  _verifyOtp(otp);
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12), // Rounded corners
+                            ),
+                          ),
+                          child: state is AuthLoading
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  'Verify',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    fontFamily: 'Inter',
+                                  ),
+                                ),
+                        ),
+                      );
+                    },
+                  ),
+                  
+                  const SizedBox(height: 20), // Exact spacing from button
+                  
+                  // Resend OTP Button
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        context.read<AuthBloc>().add(RequestOtp(
+                          widget.phone,
+                          isLogin: widget.isLogin,
+                          firstName: widget.firstName,
+                          lastName: widget.lastName,
+                        ));
+                      },
+                      child: Text(
+                        'Resend OTP',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.primary,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const Spacer(), // Push content to top, ignore keyboard space
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
-} 
+}
