@@ -43,6 +43,7 @@ import '../repositories/user_repository_impl.dart';
 import '../repositories/user_repository.dart';
 import '../services/location_service.dart';
 import '../services/background_location_service.dart';
+import '../services/language_service.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -65,6 +66,10 @@ Future<void> setupServiceLocator() async {
 
   serviceLocator.registerLazySingleton<BackgroundLocationService>(
     () => BackgroundLocationService(),
+  );
+
+  serviceLocator.registerLazySingleton<LanguageService>(
+    () => LanguageService(),
   );
 
   // Network

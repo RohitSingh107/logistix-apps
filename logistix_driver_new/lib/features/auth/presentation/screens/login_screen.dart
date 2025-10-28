@@ -17,11 +17,13 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/phone_input.dart';
 import 'otp_verification_screen.dart';
+import '../../../../generated/l10n/app_localizations.dart';
+import '../../../language/presentation/screens/language_selection_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -34,16 +36,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
   String? _phoneNumber;
   String? _phoneError;
-  bool _isFromNavigation = false; // Track if user came from navigation
-
-  @override
-  void initState() {
-    super.initState();
-    // Check if there's a previous route in the navigation stack
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _isFromNavigation = ModalRoute.of(context)?.settings.name != null;
-    });
-  }
 
   @override
   void dispose() {
@@ -87,46 +79,23 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showUserNotFoundDialog(String message) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('User Not Found'),
+        title: Text(l10n.error),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               Navigator.pushNamed(context, '/signup');
             },
-            child: const Text('Sign Up'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showExitConfirmation() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Exit App'),
-        content: const Text('Are you sure you want to exit the app?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // Exit the app
-              SystemNavigator.pop();
-            },
-            child: const Text('Exit'),
+            child: Text(l10n.createProfile),
           ),
         ],
       ),
@@ -136,13 +105,18 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     return PopScope(
-      canPop: _isFromNavigation, // Allow back navigation only if user came from navigation
+      canPop: false, // Always prevent default back behavior
       onPopInvoked: (didPop) {
-        if (!didPop && !_isFromNavigation) {
-          // If user tries to go back but shouldn't be able to, show confirmation dialog
-          _showExitConfirmation();
+        if (!didPop) {
+          // Navigate to language selection screen
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const LanguageSelectionScreen(),
+            ),
+          );
         }
       },
       child: Scaffold(
@@ -183,12 +157,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Title Section - Centered
                         Center(
                           child: Text(
-                            'Logistics',
-                            style: TextStyle(
+                            l10n.appTitle,
+                            style: GoogleFonts.inter(
                               fontSize: 32,
                               fontWeight: FontWeight.w700,
                               color: theme.colorScheme.primary, // Orange-brown #D2691E
-                              fontFamily: 'Inter',
                             ),
                           ),
                         ),
@@ -243,12 +216,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                       )
                                     : Text(
-                                        'Next',
-                                        style: TextStyle(
+                                        l10n.next,
+                                        style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white,
-                                          fontFamily: 'Inter',
                                         ),
                                       ),
                               ),
@@ -274,28 +246,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             Expanded(
                               child: RichText(
                                 text: TextSpan(
-                                  style: TextStyle(
+                                  style: GoogleFonts.inter(
                                     fontSize: 14,
                                     color: Colors.grey.shade600,
-                                    fontFamily: 'Inter',
                                   ),
                                   children: [
-                                    const TextSpan(text: 'I agree to the '),
-                                    TextSpan(
-                                      text: 'terms of service',
-                                      style: TextStyle(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const TextSpan(text: ' and '),
-                                    TextSpan(
-                                      text: 'privacy policy',
-                                      style: TextStyle(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                                    TextSpan(text: l10n.termsAndConditions),
                                   ],
                                 ),
                               ),

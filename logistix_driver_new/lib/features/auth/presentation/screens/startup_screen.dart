@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
 import '../../../../core/widgets/auth_wrapper.dart';
+import '../../../language/presentation/screens/language_selection_screen.dart';
 
 class StartupScreen extends StatefulWidget {
   const StartupScreen({super.key});
@@ -85,10 +86,10 @@ class _StartupScreenState extends State<StartupScreen>
             // User is authenticated, navigate to main screen
             Navigator.of(context).pushReplacementNamed('/home');
           } else if (state is AuthInitial) {
-            // User is not authenticated, navigate to auth wrapper
+            // User is not authenticated, navigate to language selection screen
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) => const AuthWrapper(),
+                builder: (context) => const LanguageSelectionScreen(),
               ),
             );
           }
