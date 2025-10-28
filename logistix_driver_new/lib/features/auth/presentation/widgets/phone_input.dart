@@ -73,31 +73,104 @@ class _PhoneInputState extends State<PhoneInput> {
     }
   }
 
+  Widget _buildIndianFlag() {
+    return Container(
+      width: 24,
+      height: 16,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: Colors.grey.shade300, width: 0.5),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Container(
+              color: const Color(0xFFFF5722), // Saffron
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Container(
+              color: Colors.white,
+              child: Center(
+                child: Container(
+                  width: 3,
+                  height: 3,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF000080), // Navy blue
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Container(
+              color: const Color(0xFF4CAF50), // Green
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     // Use external error if provided, otherwise use internal validation error
     final errorMessage = widget.errorText ?? _error;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: 'Phone Number',
-            hintText: '+1234567890',
-            prefixIcon: const Icon(Icons.phone),
-            errorText: errorMessage,
-            border: const OutlineInputBorder(),
+        Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: errorMessage != null 
+                  ? theme.colorScheme.error 
+                  : Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
           ),
-          keyboardType: TextInputType.phone,
-          onSubmitted: _handleSubmitted,
-          onChanged: (value) {
-            // Clear error on typing
-            if (_error != null) {
-              setState(() => _error = null);
-            }
-          },
+          child: TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              labelText: 'Mobile number',
+              labelStyle: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(left: 0, right: 8),
+                child: _buildIndianFlag(),
+              ),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 32,
+                minHeight: 20,
+              ),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 0,
+                vertical: 16,
+              ),
+              errorText: errorMessage,
+            ),
+            keyboardType: TextInputType.phone,
+            onSubmitted: _handleSubmitted,
+            onChanged: (value) {
+              // Clear error on typing
+              if (_error != null) {
+                setState(() => _error = null);
+              }
+            },
+          ),
         ),
       ],
     );

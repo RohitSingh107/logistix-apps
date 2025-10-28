@@ -43,13 +43,13 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.light,
     
-    // Color Scheme - Uber-inspired colors
+    // Color Scheme - Logistix-inspired colors
     colorScheme: const ColorScheme.light(
-      primary: Color(0xFF000000), // Uber black
+      primary: Color(0xFFD2691E), // Orange-brown from design
       secondary: Color(0xFF1A1A1A), // Dark gray
       tertiary: Color(0xFF4CAF50), // Green for success
       error: Color(0xFFE53E3E), // Red for errors
-      surface: Color(0xFFFFFFFF), // Light gray background
+      surface: Color(0xFFF5F5F5), // Light gray background
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: Color(0xFF1A1A1A),
@@ -187,10 +187,10 @@ class AppTheme {
       ),
     ),
     
-    // Elevated Button Theme - Uber-style buttons
+    // Elevated Button Theme - Logistix-style buttons
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF000000),
+        backgroundColor: const Color(0xFFD2691E), // Orange-brown
         foregroundColor: Colors.white,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -208,7 +208,7 @@ class AppTheme {
     // Outlined Button Theme
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF000000),
+        foregroundColor: const Color(0xFFD2691E), // Orange-brown
         side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(
@@ -225,7 +225,7 @@ class AppTheme {
     // Text Button Theme
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: const Color(0xFF000000),
+        foregroundColor: const Color(0xFFD2691E), // Orange-brown
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         textStyle: GoogleFonts.inter(
           fontSize: 16,
@@ -250,7 +250,7 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF000000), width: 2),
+        borderSide: const BorderSide(color: Color(0xFFD2691E), width: 2), // Orange-brown
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -268,10 +268,10 @@ class AppTheme {
       ),
     ),
     
-    // Bottom Navigation Bar Theme - Uber-style
+    // Bottom Navigation Bar Theme - Logistix-style
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
-      selectedItemColor: const Color(0xFF000000),
+      selectedItemColor: const Color(0xFFD2691E), // Orange-brown
       unselectedItemColor: const Color(0xFF6B7280),
       selectedLabelStyle: GoogleFonts.inter(
         fontSize: 12,

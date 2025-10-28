@@ -27,6 +27,7 @@ import 'core/widgets/app_lifecycle_wrapper.dart';
 import 'core/widgets/auth_wrapper.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/auth/presentation/screens/startup_screen.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/home/presentation/screens/main_navigation_screen.dart';
 import 'features/profile/presentation/bloc/user_bloc.dart';
@@ -209,7 +210,7 @@ class DriverApp extends StatelessWidget {
               theme: themeState is ThemeLoaded 
                 ? AppTheme.getTheme(themeState.themeName)
                 : AppTheme.getTheme(AppTheme.lightTheme),
-              home: const AuthWrapper(),
+              home: const StartupScreen(),
               routes: {
                 '/login': (context) => const LoginScreen(),
                 '/home': (context) => const MainNavigationScreen(),
