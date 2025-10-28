@@ -20,7 +20,9 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../bloc/auth_bloc.dart';
+import '../../../../generated/l10n/app_localizations.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phone;
@@ -114,16 +116,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   }
 
   void _handleVerificationError(String errorMessage) {
+    final l10n = AppLocalizations.of(context)!;
     final lowerCaseMsg = errorMessage.toLowerCase();
     
     // Check for specific OTP errors
     if (lowerCaseMsg.contains('invalid') && lowerCaseMsg.contains('otp')) {
       setState(() {
-        _errorText = 'Invalid OTP. Please check and try again.';
+        _errorText = l10n.invalidOtp;
       });
     } else if (lowerCaseMsg.contains('expire')) {
       setState(() {
-        _errorText = 'OTP has expired. Please request a new one.';
+        _errorText = l10n.otpExpired;
       });
     } else {
       setState(() {
@@ -135,6 +138,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     return PopScope(
       canPop: true, // Allow back navigation to login screen
@@ -166,12 +170,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   // Title Section - Centered
                   Center(
                     child: Text(
-                      'Logistics',
-                      style: TextStyle(
+                      l10n.appTitle,
+                      style: GoogleFonts.inter(
                         fontSize: 32,
                         fontWeight: FontWeight.w700,
                         color: theme.colorScheme.primary, // Orange-brown
-                        fontFamily: 'Inter',
                       ),
                     ),
                   ),
@@ -224,11 +227,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       const SizedBox(width: 12),
                       Text(
                         widget.phone,
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600, // Bold as shown in design
                           color: Colors.black, // Dark grey/black as shown
-                          fontFamily: 'Inter',
                         ),
                       ),
                       const Spacer(),
@@ -237,12 +239,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           Navigator.of(context).pop();
                         },
                         child: Text(
-                          'CHANGE',
-                          style: TextStyle(
+                          l10n.change,
+                          style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: theme.colorScheme.primary,
-                            fontFamily: 'Inter',
                           ),
                         ),
                       ),
@@ -253,11 +254,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   
                   // Instructions
                   Text(
-                    'One time password(OTP) has been sent to this number',
-                    style: TextStyle(
+                    l10n.otpInstructions,
+                    style: GoogleFonts.inter(
                       fontSize: 14,
                       color: Colors.grey.shade600, // Lighter grey
-                      fontFamily: 'Inter',
                     ),
                   ),
                   
@@ -265,12 +265,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   
                   // Status Message
                   Text(
-                    'Waiting to auto verify OTP',
-                    style: TextStyle(
+                    l10n.waitingToAutoVerify,
+                    style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: theme.colorScheme.primary,
-                      fontFamily: 'Inter',
                     ),
                   ),
                   
@@ -369,12 +368,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                   ),
                                 )
                               : Text(
-                                  'Verify',
-                                  style: TextStyle(
+                                  l10n.verify,
+                                  style: GoogleFonts.inter(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
-                                    fontFamily: 'Inter',
                                   ),
                                 ),
                         ),
@@ -396,12 +394,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ));
                       },
                       child: Text(
-                        'Resend OTP',
-                        style: TextStyle(
+                        l10n.resendOtp,
+                        style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: theme.colorScheme.primary,
-                          fontFamily: 'Inter',
                         ),
                       ),
                     ),

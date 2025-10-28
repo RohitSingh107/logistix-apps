@@ -18,13 +18,16 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/widgets/app_lifecycle_wrapper.dart';
-import 'core/widgets/auth_wrapper.dart';
+import 'core/providers/locale_provider.dart';
+import 'generated/l10n/app_localizations.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/screens/startup_screen.dart';
@@ -49,10 +52,9 @@ import 'features/settings/presentation/screens/settings_screen.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
 import 'features/notifications/presentation/screens/alerts_screen.dart';
 import 'features/trip/presentation/screens/my_trips_screen.dart';
-import 'core/services/notification_service.dart';
-import 'core/models/trip_model.dart';
-import 'features/trip/presentation/screens/driver_trip_screen.dart';
-import 'features/home/presentation/screens/demo_navigation_screen.dart';
+import 'core/services/language_service.dart';
+import 'features/language/presentation/bloc/language_bloc.dart';
+import 'features/language/presentation/bloc/language_event.dart';
 
 // Global navigator key for showing popups from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -114,7 +116,7 @@ API_KEY=development_key
       );
       
       // Set the navigator key for notification popups
-      NotificationService.setNavigatorKey(navigatorKey);
+      // NotificationService.setNavigatorKey(navigatorKey);
       
       // Update driver FCM token on app start if user is authenticated
       try {
@@ -199,49 +201,63 @@ class DriverApp extends StatelessWidget {
         BlocProvider(
           create: (context) => TripBloc(serviceLocator()),
         ),
+        BlocProvider(
+          create: (context) => LanguageBloc(languageService: serviceLocator<LanguageService>())
+            ..add(LoadLanguage()),
+        ),
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, themeState) {
-          return AppLifecycleWrapper(
-            child: MaterialApp(
-              title: 'Logistix Driver',
-              debugShowCheckedModeBanner: false,
-              navigatorKey: navigatorKey,
-              theme: themeState is ThemeLoaded 
-                ? AppTheme.getTheme(themeState.themeName)
-                : AppTheme.getTheme(AppTheme.lightTheme),
-              home: const StartupScreen(),
-              routes: {
-                '/login': (context) => const LoginScreen(),
-                '/home': (context) => const MainNavigationScreen(),
-                '/profile/create': (context) {
-                  final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-                  return CreateProfileScreen(
-                    phone: args?['phone'] as String? ?? '',
-                  );
-                },
-                '/driver/create': (context) => const CreateDriverProfileScreen(),
-                '/settings': (context) => const SettingsScreen(),
-                '/wallet': (context) => const WalletScreen(),
-                '/alerts': (context) => const AlertsScreen(),
-                '/trips': (context) => const MyTripsScreen(),
-                '/driver-trip': (context) {
-                  final trip = ModalRoute.of(context)?.settings.arguments as Trip?;
-                  if (trip != null) {
-                    return DriverTripScreen(trip: trip);
-                  }
-                  return const MainNavigationScreen();
-                },
-                '/demo': (context) => const DemoNavigationScreen(),
-              },
-              onGenerateRoute: (settings) {
-                // Handle any additional routes
-                return null;
-              },
-              onUnknownRoute: (settings) {
-                // Redirect to home if route is not found
-                return MaterialPageRoute(
-                  builder: (context) => const MainNavigationScreen(),
+          return ChangeNotifierProvider(
+            create: (context) => LocaleProvider()..initialize(),
+            child: Consumer<LocaleProvider>(
+              builder: (context, localeProvider, child) {
+                return AppLifecycleWrapper(
+                  child: MaterialApp(
+                    title: 'Logistix Driver',
+                    debugShowCheckedModeBanner: false,
+                    navigatorKey: navigatorKey,
+                    theme: themeState is ThemeLoaded 
+                      ? AppTheme.getTheme(themeState.themeName)
+                      : AppTheme.getTheme(AppTheme.lightTheme),
+                    
+                    // Localization configuration
+                    locale: localeProvider.currentLocale,
+                    localizationsDelegates: const [
+                      AppLocalizations.delegate,
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+                    supportedLocales: localeProvider.supportedLocales,
+                    
+                    home: const StartupScreen(),
+                    routes: {
+                      '/login': (context) => const LoginScreen(),
+                      '/home': (context) => const MainNavigationScreen(),
+                      '/profile/create': (context) {
+                        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+                        return CreateProfileScreen(
+                          phone: args?['phone'] as String? ?? '',
+                        );
+                      },
+                      '/driver/create': (context) => const CreateDriverProfileScreen(),
+                      '/settings': (context) => const SettingsScreen(),
+                      '/wallet': (context) => const WalletScreen(),
+                      '/alerts': (context) => const AlertsScreen(),
+                      '/trips': (context) => const MyTripsScreen(),
+                    },
+                    onGenerateRoute: (settings) {
+                      // Handle any additional routes
+                      return null;
+                    },
+                    onUnknownRoute: (settings) {
+                      // Redirect to home if route is not found
+                      return MaterialPageRoute(
+                        builder: (context) => const MainNavigationScreen(),
+                      );
+                    },
+                  ),
                 );
               },
             ),
