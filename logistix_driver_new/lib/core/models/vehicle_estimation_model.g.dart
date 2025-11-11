@@ -47,15 +47,13 @@ Map<String, dynamic> _$VehicleEstimationRequestToJson(
 VehicleEstimationRequestRequest _$VehicleEstimationRequestRequestFromJson(
         Map<String, dynamic> json) =>
     VehicleEstimationRequestRequest(
-      pickupLocation: LocationRequest.fromJson(
-          json['pickup_location'] as Map<String, dynamic>),
-      dropoffLocation: LocationRequest.fromJson(
-          json['dropoff_location'] as Map<String, dynamic>),
+      stopLocations: (json['stop_locations'] as List<dynamic>)
+          .map((e) => LocationRequest.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$VehicleEstimationRequestRequestToJson(
         VehicleEstimationRequestRequest instance) =>
     <String, dynamic>{
-      'pickup_location': instance.pickupLocation,
-      'dropoff_location': instance.dropoffLocation,
+      'stop_locations': instance.stopLocations,
     };

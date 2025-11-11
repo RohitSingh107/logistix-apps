@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/home/presentation/screens/main_navigation_screen.dart';
+import '../../features/vehicle/presentation/widgets/vehicle_verification_wrapper.dart';
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -23,11 +23,11 @@ class AuthWrapper extends StatelessWidget {
             ),
           );
         } else if (state is AuthSuccess) {
-          print('✅ AuthWrapper: User authenticated, navigating to main screen');
-          // User is authenticated, navigate to main navigation
+          print('✅ AuthWrapper: User authenticated, navigating to vehicle verification');
+          // User is authenticated, navigate to vehicle verification wrapper
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => const MainNavigationScreen(),
+              builder: (context) => const VehicleVerificationWrapper(),
             ),
           );
         } else if (state is AuthError) {
@@ -44,8 +44,8 @@ class AuthWrapper extends StatelessWidget {
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is AuthSuccess) {
-            // User is authenticated, show main navigation
-            return const MainNavigationScreen();
+            // User is authenticated, show vehicle verification wrapper
+            return const VehicleVerificationWrapper();
           } else {
             // User is not authenticated, show login screen
             return const LoginScreen();

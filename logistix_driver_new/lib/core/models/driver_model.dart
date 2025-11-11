@@ -29,6 +29,8 @@ class Driver {
   final int? vehicleType;
   @JsonKey(name: 'is_available')
   final bool isAvailable;
+  @JsonKey(name: 'is_verified')
+  final bool isVerified;
   @JsonKey(name: 'fcm_token')
   final String? fcmToken;
   @JsonKey(name: 'average_rating')
@@ -47,6 +49,7 @@ class Driver {
     required this.licenseNumber,
     this.vehicleType,
     required this.isAvailable,
+    required this.isVerified,
     this.fcmToken,
     required this.averageRating,
     required this.totalEarnings,

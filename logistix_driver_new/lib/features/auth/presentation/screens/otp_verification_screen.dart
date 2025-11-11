@@ -23,6 +23,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../bloc/auth_bloc.dart';
 import '../../../../generated/l10n/app_localizations.dart';
+import '../../../vehicle/presentation/widgets/vehicle_verification_wrapper.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phone;
@@ -154,7 +155,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     arguments: {'phone': widget.phone},
                   );
                 } else {
-                  Navigator.of(context).pushReplacementNamed('/home');
+                  // Navigate to VehicleVerificationWrapper to check driver status
+                  // This will route to document screen if is_verified is false
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => const VehicleVerificationWrapper(),
+                    ),
+                  );
                 }
               } else if (state is AuthError) {
                 _handleVerificationError(state.message);

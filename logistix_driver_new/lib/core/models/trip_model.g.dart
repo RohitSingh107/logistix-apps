@@ -7,7 +7,7 @@ part of 'trip_model.dart';
 // **************************************************************************
 
 Trip _$TripFromJson(Map<String, dynamic> json) => Trip(
-      id: (json['id'] as num?)?.toInt() ?? 0,
+      id: (json['id'] as num).toInt(),
       driver: Driver.fromJson(json['driver'] as Map<String, dynamic>),
       bookingRequest:
           Booking.fromJson(json['booking_request'] as Map<String, dynamic>),
@@ -28,9 +28,9 @@ Trip _$TripFromJson(Map<String, dynamic> json) => Trip(
           ? null
           : DateTime.parse(json['payment_time'] as String),
       finalFare: (json['final_fare'] as num?)?.toDouble(),
-      finalDuration: (json['final_duration'] as num?)?.toDouble(),
+      finalDuration: (json['final_duration'] as num?)?.toInt(),
       finalDistance: json['final_distance'] as String?,
-      isPaymentDone: json['is_payment_done'] as bool? ?? false,
+      isPaymentDone: json['is_payment_done'] as bool,
       stopPoints: (json['stop_points'] as List<dynamic>?)
           ?.map((e) => StopPoint.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -96,6 +96,7 @@ TripUpdateRequest _$TripUpdateRequestFromJson(Map<String, dynamic> json) =>
       finalDuration: (json['final_duration'] as num?)?.toInt(),
       finalDistance: json['final_distance'] as String?,
       isPaymentDone: json['is_payment_done'] as bool?,
+      updateMessage: json['update_message'] as String?,
     );
 
 Map<String, dynamic> _$TripUpdateRequestToJson(TripUpdateRequest instance) =>
@@ -110,6 +111,29 @@ Map<String, dynamic> _$TripUpdateRequestToJson(TripUpdateRequest instance) =>
       'final_duration': instance.finalDuration,
       'final_distance': instance.finalDistance,
       'is_payment_done': instance.isPaymentDone,
+      'update_message': instance.updateMessage,
+    };
+
+PatchedTripUpdateRequest _$PatchedTripUpdateRequestFromJson(
+        Map<String, dynamic> json) =>
+    PatchedTripUpdateRequest(
+      status: $enumDecodeNullable(_$TripStatusEnumMap, json['status']),
+      finalFare: (json['final_fare'] as num?)?.toDouble(),
+      finalDuration: (json['final_duration'] as num?)?.toInt(),
+      finalDistance: json['final_distance'] as String?,
+      isPaymentDone: json['is_payment_done'] as bool?,
+      updateMessage: json['update_message'] as String?,
+    );
+
+Map<String, dynamic> _$PatchedTripUpdateRequestToJson(
+        PatchedTripUpdateRequest instance) =>
+    <String, dynamic>{
+      'status': _$TripStatusEnumMap[instance.status],
+      'final_fare': instance.finalFare,
+      'final_duration': instance.finalDuration,
+      'final_distance': instance.finalDistance,
+      'is_payment_done': instance.isPaymentDone,
+      'update_message': instance.updateMessage,
     };
 
 PaginatedTripList _$PaginatedTripListFromJson(Map<String, dynamic> json) =>

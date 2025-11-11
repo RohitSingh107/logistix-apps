@@ -19,16 +19,16 @@ import 'stop_point_model.dart';
 part 'booking_model.g.dart';
 
 enum BookingStatus {
-  @JsonValue('PENDING')
-  pending,
+  @JsonValue('REQUESTED')
+  requested,
+  @JsonValue('SEARCHING')
+  searching,
   @JsonValue('ACCEPTED')
   accepted,
-  @JsonValue('REJECTED')
-  rejected,
   @JsonValue('CANCELLED')
   cancelled,
-  @JsonValue('COMPLETED')
-  completed,
+  @JsonValue('DRIVERS_NOT_FOUND')
+  driversNotFound,
 }
 
 enum PaymentMode {
@@ -36,10 +36,6 @@ enum PaymentMode {
   cash,
   @JsonValue('WALLET')
   wallet,
-  @JsonValue('CARD')
-  card,
-  @JsonValue('UPI')
-  upi,
 }
 
 @JsonSerializable()
@@ -157,16 +153,16 @@ class Booking extends BaseModel {
   }
 
   /// Check if booking is available for acceptance
-  bool get isAvailable => status == BookingStatus.pending;
+  bool get isAvailable => status == BookingStatus.requested || status == BookingStatus.searching;
 
   /// Check if booking is accepted
   bool get isAccepted => status == BookingStatus.accepted;
 
-  /// Check if booking is completed
-  bool get isCompleted => status == BookingStatus.completed;
-
   /// Check if booking is cancelled
   bool get isCancelled => status == BookingStatus.cancelled;
+
+  /// Check if drivers were not found
+  bool get isDriversNotFound => status == BookingStatus.driversNotFound;
 
   /// Get formatted estimated fare
   String get formattedEstimatedFare => '₹${estimatedFare.toStringAsFixed(2)}';
@@ -174,16 +170,16 @@ class Booking extends BaseModel {
   /// Get booking status display text
   String get statusText {
     switch (status) {
-      case BookingStatus.pending:
-        return 'Pending';
+      case BookingStatus.requested:
+        return 'Requested';
+      case BookingStatus.searching:
+        return 'Searching for Driver';
       case BookingStatus.accepted:
         return 'Accepted';
-      case BookingStatus.rejected:
-        return 'Rejected';
       case BookingStatus.cancelled:
         return 'Cancelled';
-      case BookingStatus.completed:
-        return 'Completed';
+      case BookingStatus.driversNotFound:
+        return 'Drivers Not Found';
     }
   }
 
@@ -194,10 +190,6 @@ class Booking extends BaseModel {
         return 'Cash';
       case PaymentMode.wallet:
         return 'Wallet';
-      case PaymentMode.card:
-        return 'Card';
-      case PaymentMode.upi:
-        return 'UPI';
     }
   }
 
@@ -212,4 +204,46 @@ class Booking extends BaseModel {
     final period = pickupTime.hour >= 12 ? 'PM' : 'AM';
     return '$hour:${pickupTime.minute.toString().padLeft(2, '0')} $period';
   }
+}
+
+@JsonSerializable()
+class BookingRequestRequest {
+  @JsonKey(name: 'sender_name')
+  final String senderName;
+  @JsonKey(name: 'receiver_name')
+  final String receiverName;
+  @JsonKey(name: 'sender_phone')
+  final String senderPhone;
+  @JsonKey(name: 'receiver_phone')
+  final String receiverPhone;
+  @JsonKey(name: 'pickup_time')
+  final DateTime pickupTime;
+  @JsonKey(name: 'vehicle_type_id')
+  final int vehicleTypeId;
+  @JsonKey(name: 'goods_type')
+  final String goodsType;
+  @JsonKey(name: 'goods_quantity')
+  final String goodsQuantity;
+  @JsonKey(name: 'payment_mode')
+  final PaymentMode paymentMode;
+  final String? instructions;
+  @JsonKey(name: 'stop_points')
+  final List<StopPointRequest> stopPoints;
+
+  BookingRequestRequest({
+    required this.senderName,
+    required this.receiverName,
+    required this.senderPhone,
+    required this.receiverPhone,
+    required this.pickupTime,
+    required this.vehicleTypeId,
+    required this.goodsType,
+    required this.goodsQuantity,
+    required this.paymentMode,
+    this.instructions,
+    required this.stopPoints,
+  });
+
+  factory BookingRequestRequest.fromJson(Map<String, dynamic> json) => _$BookingRequestRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$BookingRequestRequestToJson(this);
 } 
