@@ -20,6 +20,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../features/driver/domain/repositories/driver_repository.dart';
+import '../../../../features/wallet/domain/repositories/wallet_repository.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/push_notification_service.dart';
 import '../../../../core/services/auth_service.dart';
@@ -34,9 +35,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final DriverRepository _driverRepository;
+  late final WalletRepository _walletRepository;
   late final LocationService _locationService;
   late final AuthService _authService;
   Map<String, dynamic>? _driverProfile;
+  double _walletBalance = 0.0;
   bool _isAvailable = false;
   bool _isUpdatingAvailability = false;
   bool _isInitialized = false;
@@ -45,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _driverRepository = serviceLocator<DriverRepository>();
+    _walletRepository = serviceLocator<WalletRepository>();
     _locationService = serviceLocator<LocationService>();
     _authService = serviceLocator<AuthService>();
     _initializeHomeScreen();
@@ -55,7 +59,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final isAuthenticated = await _authService.isAuthenticated();
       
       if (isAuthenticated) {
-        await _fetchDriverProfile();
+        await Future.wait([
+          _fetchDriverProfile(),
+          _fetchWalletBalance(),
+        ]);
       } else {
         // Navigate back to login
         if (mounted) {
@@ -65,7 +72,10 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       debugPrint('Error checking authentication: $e');
       // If we can't check authentication, try to fetch profile anyway
-      await _fetchDriverProfile();
+      await Future.wait([
+        _fetchDriverProfile(),
+        _fetchWalletBalance(),
+      ]);
     }
   }
 
@@ -125,6 +135,26 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         _navigateToCreateDriverProfile();
         return;
+      }
+    }
+  }
+
+  /// Fetch wallet balance from API
+  Future<void> _fetchWalletBalance() async {
+    try {
+      final balance = await _walletRepository.getWalletBalance();
+      if (mounted) {
+        setState(() {
+          _walletBalance = balance;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching wallet balance: $e');
+      // Set balance to 0.0 on error
+      if (mounted) {
+        setState(() {
+          _walletBalance = 0.0;
+        });
       }
     }
   }
@@ -217,72 +247,654 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     if (!_isInitialized) {
       return Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Colors.white,
         body: Center(
           child: CircularProgressIndicator(
-            color: Theme.of(context).colorScheme.primary,
+            color: const Color(0xFFFF6B00),
           ),
         ),
       );
     }
 
-    final theme = Theme.of(context);
     final profile = _driverProfile;
+    final userName = profile != null && profile['user'] != null
+        ? '${(profile['user'] as User).firstName ?? 'Driver'}'
+        : 'Driver';
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: theme.colorScheme.surface,
-        foregroundColor: theme.colorScheme.onSurface,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // Navigate to alerts
-              Navigator.of(context).pushNamed('/alerts');
-            },
-            tooltip: 'Alerts',
-          ),
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            onPressed: () {
-              // TODO: Implement support/help action
-            },
-            tooltip: 'Support',
-          ),
-        ],
-      ),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await _fetchDriverProfile();
+            await Future.wait([
+              _fetchDriverProfile(),
+              _fetchWalletBalance(),
+            ]);
           },
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Profile and Status Section
-                if (profile != null) _buildProfileSection(theme, profile),
-                const SizedBox(height: 24),
-                
-                // Earnings Section
-                if (profile != null) _buildEarningsSection(theme, profile),
-                const SizedBox(height: 24),
-                
-                // Performance Section
-                _buildPerformanceSection(theme, profile),
-                const SizedBox(height: 24),
-                
-                // Availability Toggle Section
-                _buildAvailabilitySection(theme),
-                const SizedBox(height: 24),
-                
-                // Quick Actions Section
-                _buildQuickActionsSection(theme),
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(color: Colors.white),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                            // Header
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.only(
+                                top: 12,
+                                left: 16,
+                                right: 16,
+                                bottom: 9,
+                              ),
+                              decoration: ShapeDecoration(
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    width: 1,
+                                    color: Color(0xFFE6E6E6),
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 28,
+                                    height: 28,
+                                    decoration: ShapeDecoration(
+                                      gradient: const LinearGradient(
+                                        begin: Alignment(0.00, 0.00),
+                                        end: Alignment(1.00, 1.00),
+                                        colors: [Color(0xFFFF6B00), Color(0xFFFF7A1A)],
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Logistix Driver',
+                                      style: TextStyle(
+                                        color: const Color(0xFF111111),
+                                        fontSize: 18,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 9,
+                                          vertical: 3,
+                                        ),
+                                        decoration: ShapeDecoration(
+                                          color: _isAvailable ? const Color(0xFF16A34A) : const Color(0xFFF3F4F6),
+                                          shape: RoundedRectangleBorder(
+                                            side: BorderSide(
+                                              width: 1,
+                                              color: _isAvailable ? const Color(0xFF16A34A) : const Color(0xFFE6E6E6),
+                                            ),
+                                            borderRadius: BorderRadius.circular(999),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          _isAvailable ? 'Online' : 'Go Online',
+                                          style: TextStyle(
+                                            color: _isAvailable ? Colors.white : const Color(0xFF9CA3AF),
+                                            fontSize: 12,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.of(context).pushNamed('/alerts');
+                                        },
+                                        child: Container(
+                                          width: 22,
+                                          height: 22,
+                                          child: const Icon(
+                                            Icons.notifications_outlined,
+                                            size: 22,
+                                            color: Color(0xFF111111),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Main Content
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.only(
+                                left: 16,
+                                right: 16,
+                                bottom: 12,
+                                top: 24,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Profile Card
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(13),
+                                    decoration: ShapeDecoration(
+                                      color: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        side: const BorderSide(
+                                          width: 1,
+                                          color: Color(0xFFE6E6E6),
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          width: double.infinity,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Hi, $userName',
+                                                    style: TextStyle(
+                                                      color: const Color(0xFF111111),
+                                                      fontSize: 16,
+                                                      fontFamily: 'Inter',
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Container(
+                                                width: 28,
+                                                height: 28,
+                                                clipBehavior: Clip.antiAlias,
+                                                decoration: ShapeDecoration(
+                                                  image: profile != null &&
+                                                          profile['user'] != null &&
+                                                          (profile['user'] as User).profilePicture != null
+                                                      ? DecorationImage(
+                                                          image: NetworkImage(
+                                                            (profile['user'] as User).profilePicture!,
+                                                          ),
+                                                          fit: BoxFit.fill,
+                                                        )
+                                                      : null,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(999),
+                                                  ),
+                                                  color: profile == null ||
+                                                          profile['user'] == null ||
+                                                          (profile['user'] as User).profilePicture == null
+                                                      ? const Color(0xFFE6E6E6)
+                                                      : null,
+                                                ),
+                                                child: profile == null ||
+                                                        profile['user'] == null ||
+                                                        (profile['user'] as User).profilePicture == null
+                                                    ? const Icon(
+                                                        Icons.person,
+                                                        size: 18,
+                                                        color: Color(0xFF9CA3AF),
+                                                      )
+                                                    : null,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          width: double.infinity,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                width: 8,
+                                                height: 8,
+                                                decoration: ShapeDecoration(
+                                                  color: const Color(0xFF16A34A),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(999),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              SizedBox(
+                                                width: 54.92,
+                                                child: Text(
+                                                  'Available',
+                                                  style: TextStyle(
+                                                    color: const Color(0xFF9CA3AF),
+                                                    fontSize: 13,
+                                                    fontFamily: 'Inter',
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              GestureDetector(
+                                                onTap: _isUpdatingAvailability ? null : _toggleAvailability,
+                                                child: AnimatedContainer(
+                                                  duration: const Duration(milliseconds: 300),
+                                                  curve: Curves.easeInOut,
+                                                  width: 44,
+                                                  height: 24,
+                                                  decoration: ShapeDecoration(
+                                                    color: _isAvailable ? const Color(0xFFFF6B00).withOpacity(0.2) : const Color(0xFFFAFAFA),
+                                                    shape: RoundedRectangleBorder(
+                                                      side: BorderSide(
+                                                        width: 1,
+                                                        color: _isAvailable ? const Color(0xFFFF6B00) : const Color(0xFFE6E6E6),
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(999),
+                                                    ),
+                                                  ),
+                                                  child: Stack(
+                                                    children: [
+                                                      AnimatedPositioned(
+                                                        duration: const Duration(milliseconds: 300),
+                                                        curve: Curves.easeInOutCubic,
+                                                        left: _isAvailable ? 23 : 3,
+                                                        top: 3,
+                                                        child: AnimatedContainer(
+                                                          duration: const Duration(milliseconds: 300),
+                                                          curve: Curves.easeInOutCubic,
+                                                          width: 18,
+                                                          height: 18,
+                                                          decoration: ShapeDecoration(
+                                                            color: const Color(0xFFFF6B00),
+                                                            shape: RoundedRectangleBorder(
+                                                              borderRadius: BorderRadius.circular(999),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.only(top: 6),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(10),
+                                                  decoration: ShapeDecoration(
+                                                    color: const Color(0xFF333333),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(6),
+                                                    ),
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Today',
+                                                        style: TextStyle(
+                                                          color: const Color(0xFF9CA3AF),
+                                                          fontSize: 13,
+                                                          fontFamily: 'Inter',
+                                                          fontWeight: FontWeight.w400,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        '₹${profile?['today_earnings'] ?? profile?['total_earnings'] ?? '0'}',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 18,
+                                                          fontFamily: 'Inter',
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(10),
+                                                  decoration: ShapeDecoration(
+                                                    color: const Color(0xFF333333),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(6),
+                                                    ),
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'This Week',
+                                                        style: TextStyle(
+                                                          color: const Color(0xFF9CA3AF),
+                                                          fontSize: 13,
+                                                          fontFamily: 'Inter',
+                                                          fontWeight: FontWeight.w400,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        '₹${profile?['week_earnings'] ?? profile?['total_earnings'] ?? '0'}',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 18,
+                                                          fontFamily: 'Inter',
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Available Balance Card
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(13),
+                                    decoration: ShapeDecoration(
+                                      color: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        side: const BorderSide(
+                                          width: 1,
+                                          color: Color(0xFFE6E6E6),
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          width: double.infinity,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'Available Balance',
+                                                    style: TextStyle(
+                                                      color: const Color(0xFF9CA3AF),
+                                                      fontSize: 13,
+                                                      fontFamily: 'Inter',
+                                                      fontWeight: FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    '₹ ${_walletBalance.toStringAsFixed(2)}',
+                                                    style: TextStyle(
+                                                      color: const Color(0xFF111111),
+                                                      fontSize: 28,
+                                                      fontFamily: 'Inter',
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 9,
+                                                  vertical: 3,
+                                                ),
+                                                decoration: ShapeDecoration(
+                                                  color: const Color(0xFF333333),
+                                                  shape: RoundedRectangleBorder(
+                                                    side: const BorderSide(
+                                                      width: 1,
+                                                      color: Color(0xFFE6E6E6),
+                                                    ),
+                                                    borderRadius: BorderRadius.circular(999),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  'Settles Daily',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontFamily: 'Inter',
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          width: double.infinity,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.of(context).pushNamed('/wallet');
+                                                  },
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(11),
+                                                    decoration: ShapeDecoration(
+                                                      color: const Color(0xFFFF6B00),
+                                                      shape: RoundedRectangleBorder(
+                                                        side: const BorderSide(
+                                                          width: 1,
+                                                          color: Color(0xFFE6E6E6),
+                                                        ),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      'Add Balance',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 15,
+                                                        fontFamily: 'Inter',
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.of(context).pushNamed('/wallet');
+                                                  },
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(11),
+                                                    decoration: ShapeDecoration(
+                                                      color: const Color(0xFF333333),
+                                                      shape: RoundedRectangleBorder(
+                                                        side: const BorderSide(
+                                                          width: 1,
+                                                          color: Color(0xFFE6E6E6),
+                                                        ),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      'Withdraw',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 15,
+                                                        fontFamily: 'Inter',
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Go Online Button
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: _isUpdatingAvailability ? null : _toggleAvailability,
+                                          child: AnimatedContainer(
+                                            duration: const Duration(milliseconds: 300),
+                                            curve: Curves.easeInOut,
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 13,
+                                              vertical: 17,
+                                            ),
+                                            decoration: ShapeDecoration(
+                                              color: _isAvailable ? const Color(0xFF333333) : const Color(0xFFFF6B00),
+                                              shape: RoundedRectangleBorder(
+                                                side: BorderSide(
+                                                  width: 1,
+                                                  color: _isAvailable ? const Color(0xFF333333) : const Color(0xFFFF6B00),
+                                                ),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                AnimatedContainer(
+                                                  duration: const Duration(milliseconds: 300),
+                                                  curve: Curves.easeInOut,
+                                                  width: 18,
+                                                  height: 18,
+                                                  child: const Icon(
+                                                    Icons.power_settings_new,
+                                                    size: 18,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                SizedBox(
+                                                  width: 69.94,
+                                                  height: 19,
+                                                  child: Text(
+                                                    _isAvailable ? 'Go Offline' : 'Go Online',
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 15,
+                                                      fontFamily: 'Inter',
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.only(top: 6),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                width: double.infinity,
+                                                child: Text(
+                                                  'Tap to toggle your status between Online and Offline.',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: const Color(0xFF9CA3AF),
+                                                    fontSize: 12,
+                                                    fontFamily: 'Inter',
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -291,600 +903,68 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildProfileSection(ThemeData theme, Map<String, dynamic> profile) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          // Profile Picture
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: theme.colorScheme.primary,
-                width: 2,
-              ),
+  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        if (label == 'Trips') {
+          Navigator.of(context).pushNamed('/trips');
+        } else if (label == 'Earnings') {
+          Navigator.of(context).pushNamed('/wallet');
+        } else if (label == 'Alerts') {
+          Navigator.of(context).pushNamed('/alerts');
+        } else if (label == 'Profile') {
+          Navigator.of(context).pushNamed('/settings');
+        }
+      },
+      child: Container(
+        width: 68.59,
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  child: Icon(
+                    icon,
+                    size: 22,
+                    color: isSelected ? const Color(0xFF111111) : const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
             ),
-            child: CircleAvatar(
-              radius: 28,
-              backgroundImage: (profile['user'] as User).profilePicture != null
-                  ? NetworkImage((profile['user'] as User).profilePicture!)
-                  : null,
-              child: (profile['user'] as User).profilePicture == null
-                  ? Icon(
-                      Icons.person,
-                      size: 32,
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    )
-                  : null,
-            ),
-          ),
-          const SizedBox(width: 16),
-          
-          // Profile Info
-          Expanded(
-            child: Column(
+            const SizedBox(height: 4),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${(profile['user'] as User).firstName ?? ''} ${(profile['user'] as User).lastName ?? ''}',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  profile['vehicle_number'] != null
-                      ? 'Vehicle: ${profile['vehicle_number']}'
-                      : 'No vehicle info',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.star,
-                      color: Colors.amber,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${profile['average_rating'] ?? '-'} rating',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          
-          // Status Indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: _isAvailable ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: _isAvailable ? Colors.green : Colors.grey,
-                width: 1,
-              ),
-            ),
-            child: Text(
-              _isAvailable ? 'Online' : 'Offline',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: _isAvailable ? Colors.green : Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEarningsSection(ThemeData theme, Map<String, dynamic> profile) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Today\'s Earnings',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '₹${profile['today_earnings'] ?? profile['total_earnings'] ?? '0'}',
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Total earned today',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.account_balance_wallet,
-                          color: (profile['ledger_balance'] ?? 0) < 0 
-                              ? theme.colorScheme.error 
-                              : theme.colorScheme.primary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '₹${profile['ledger_balance'] ?? '0'}',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: (profile['ledger_balance'] ?? 0) < 0 
-                                ? theme.colorScheme.error 
-                                : theme.colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Wallet balance',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                    if ((profile['ledger_balance'] ?? 0) < 0) ...[
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () {
-                          // Navigate to wallet
-                          Navigator.of(context).pushNamed('/wallet');
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          minimumSize: Size.zero,
-                        ),
-                        child: Text(
-                          'Clear Dues',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.error,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPerformanceSection(ThemeData theme, Map<String, dynamic>? profile) {
-    final completion = profile?['completion_score'] ?? 16;
-    final loginHours = profile?['login_hours'] ?? 5;
-    final cancelRate = profile?['cancellation_rate'] ?? 3;
-    final isPrime = profile?['is_prime'] ?? false;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Performance',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isPrime 
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isPrime ? Colors.green : Colors.orange,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isPrime ? Icons.thumb_up : Icons.thumb_down,
-                      color: isPrime ? Colors.green : Colors.orange,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      isPrime ? 'Prime' : 'Not Prime',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: isPrime ? Colors.green : Colors.orange,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Completion Rate',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: completion / 100,
-                      color: theme.colorScheme.primary,
-                      backgroundColor: theme.colorScheme.surface,
-                      minHeight: 6,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$completion%',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Login Hours',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '$loginHours hrs',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cancel Rate',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '$cancelRate%',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAvailabilitySection(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Availability Status',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _isAvailable 
-                          ? 'Online - Ready for bookings' 
-                          : 'Offline - Not accepting bookings',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: _isAvailable 
-                            ? Colors.green 
-                            : theme.colorScheme.onSurface.withOpacity(0.6),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Toggle Switch
-              Transform.scale(
-                scale: 1.2,
-                child: Switch(
-                  value: _isAvailable,
-                  onChanged: _isUpdatingAvailability 
-                      ? null 
-                      : (value) => _toggleAvailability(),
-                  activeTrackColor: theme.colorScheme.primary,
-                  inactiveThumbColor: Colors.white,
-                  inactiveTrackColor: theme.colorScheme.onSurface.withOpacity(0.3),
-                ),
-              ),
-            ],
-          ),
-          
-          // Loading indicator when updating
-          if (_isUpdatingAvailability) ...[
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
                 SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Updating...',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  width: label == 'Earnings' ? 49.44 : (label == 'Trips' ? 28.30 : (label == 'Alerts' ? 33.03 : (label == 'Profile' ? 36.44 : 33.63))),
+                  height: 15,
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected ? const Color(0xFF111111) : const Color(0xFF9CA3AF),
+                      fontSize: 12,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
               ],
             ),
           ],
-          
-          const SizedBox(height: 16),
-          
-          // Go Online/Offline Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(_isAvailable ? 'Done for the day?' : 'Ready to go online?'),
-                    content: Text(_isAvailable
-                        ? 'Are you sure you want to go offline?'
-                        : 'Are you sure you want to go online and start accepting bookings?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: Text(_isAvailable ? 'Go Offline' : 'Go Online'),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true) {
-                  await _toggleAvailability();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isAvailable 
-                    ? theme.colorScheme.error 
-                    : theme.colorScheme.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                _isAvailable ? 'GO OFFLINE' : 'GO ONLINE',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildQuickActionsSection(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Quick Actions',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildQuickActionButton(
-                  theme,
-                  'Wallet',
-                  Icons.account_balance_wallet,
-                  () {
-                    Navigator.of(context).pushNamed('/wallet');
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildQuickActionButton(
-                  theme,
-                  'Trips',
-                  Icons.local_shipping,
-                  () {
-                    Navigator.of(context).pushNamed('/trips');
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildQuickActionButton(
-                  theme,
-                  'Alerts',
-                  Icons.notifications,
-                  () {
-                    Navigator.of(context).pushNamed('/alerts');
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActionButton(ThemeData theme, String label, IconData icon, VoidCallback onPressed) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: theme.colorScheme.primary,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 } 

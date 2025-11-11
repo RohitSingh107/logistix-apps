@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/push_notification_service.dart';
 import '../../domain/repositories/driver_repository.dart';
-import '../../../home/presentation/screens/home_screen.dart';
+import '../../../vehicle/presentation/widgets/vehicle_verification_wrapper.dart';
 
 class CreateDriverProfileScreen extends StatefulWidget {
   const CreateDriverProfileScreen({super.key});
@@ -100,7 +100,12 @@ class _CreateDriverProfileScreenState extends State<CreateDriverProfileScreen> {
         );
 
         // Navigate to home screen
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Navigate to VehicleVerificationWrapper to check if documents are needed
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const VehicleVerificationWrapper(),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {

@@ -44,6 +44,8 @@ import '../repositories/user_repository.dart';
 import '../services/location_service.dart';
 import '../services/background_location_service.dart';
 import '../services/language_service.dart';
+import '../services/vehicle_service.dart';
+import '../services/driver_document_service.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -75,6 +77,14 @@ Future<void> setupServiceLocator() async {
   // Network
   serviceLocator.registerLazySingleton<ApiClient>(
     () => ApiClient(serviceLocator()),
+  );
+
+  serviceLocator.registerLazySingleton<DriverDocumentService>(
+    () => DriverDocumentService(serviceLocator<ApiClient>()),
+  );
+
+  serviceLocator.registerLazySingleton<VehicleService>(
+    () => VehicleService(),
   );
 
   // Repositories

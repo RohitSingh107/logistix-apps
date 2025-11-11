@@ -47,7 +47,10 @@ import 'core/repositories/user_repository.dart';
 import 'core/di/service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'features/profile/presentation/screens/create_profile_screen.dart';
+import 'features/vehicle/presentation/screens/vehicle_number_screen.dart';
+import 'features/vehicle/presentation/screens/my_vehicles_screen.dart';
 import 'features/driver/presentation/screens/create_driver_profile_screen.dart';
+import 'features/driver/presentation/screens/driver_documents_screen.dart';
 import 'features/settings/presentation/screens/settings_screen.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
 import 'features/notifications/presentation/screens/alerts_screen.dart';
@@ -241,11 +244,14 @@ class DriverApp extends StatelessWidget {
                           phone: args?['phone'] as String? ?? '',
                         );
                       },
-                      '/driver/create': (context) => const CreateDriverProfileScreen(),
+                      '/driver/create': (context) => CreateDriverProfileScreen(),
+                      '/driver/documents': (context) => const DriverDocumentsScreen(),
                       '/settings': (context) => const SettingsScreen(),
                       '/wallet': (context) => const WalletScreen(),
                       '/alerts': (context) => const AlertsScreen(),
                       '/trips': (context) => const MyTripsScreen(),
+                      '/vehicle/add': (context) => const VehicleNumberScreen(),
+                      '/vehicles': (context) => const MyVehiclesScreen(),
                     },
                     onGenerateRoute: (settings) {
                       // Handle any additional routes

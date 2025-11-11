@@ -7,14 +7,15 @@ part of 'driver_model.dart';
 // **************************************************************************
 
 Driver _$DriverFromJson(Map<String, dynamic> json) => Driver(
-      id: (json['id'] as num?)?.toInt() ?? 0,
+      id: (json['id'] as num).toInt(),
       user: User.fromJson(json['user'] as Map<String, dynamic>),
-      licenseNumber: json['license_number'] as String? ?? '',
+      licenseNumber: json['license_number'] as String,
       vehicleType: (json['vehicle_type'] as num?)?.toInt(),
       isAvailable: json['is_available'] as bool,
+      isVerified: json['is_verified'] as bool,
       fcmToken: json['fcm_token'] as String?,
-      averageRating: json['average_rating'] as String? ?? '0.00',
-      totalEarnings: (json['total_earnings'] as num?)?.toDouble() ?? 0.0,
+      averageRating: json['average_rating'] as String,
+      totalEarnings: (json['total_earnings'] as num).toDouble(),
       location: json['location'] as Map<String, dynamic>?,
       createdAt: json['created_at'] == null
           ? null
@@ -30,6 +31,7 @@ Map<String, dynamic> _$DriverToJson(Driver instance) => <String, dynamic>{
       'license_number': instance.licenseNumber,
       'vehicle_type': instance.vehicleType,
       'is_available': instance.isAvailable,
+      'is_verified': instance.isVerified,
       'fcm_token': instance.fcmToken,
       'average_rating': instance.averageRating,
       'total_earnings': instance.totalEarnings,

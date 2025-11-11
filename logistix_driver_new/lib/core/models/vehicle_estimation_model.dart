@@ -65,14 +65,11 @@ class VehicleEstimationRequest {
 
 @JsonSerializable()
 class VehicleEstimationRequestRequest {
-  @JsonKey(name: 'pickup_location')
-  final LocationRequest pickupLocation;
-  @JsonKey(name: 'dropoff_location')
-  final LocationRequest dropoffLocation;
+  @JsonKey(name: 'stop_locations')
+  final List<LocationRequest> stopLocations;
 
   VehicleEstimationRequestRequest({
-    required this.pickupLocation,
-    required this.dropoffLocation,
+    required this.stopLocations,
   });
 
   factory VehicleEstimationRequestRequest.fromJson(Map<String, dynamic> json) => _$VehicleEstimationRequestRequestFromJson(json);

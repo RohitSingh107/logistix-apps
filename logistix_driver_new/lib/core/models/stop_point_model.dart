@@ -128,3 +128,33 @@ class StopPoint extends BaseModel {
     return 'N/A';
   }
 }
+
+@JsonSerializable()
+class StopPointRequest {
+  final String address;
+  final double latitude;
+  final double longitude;
+  @JsonKey(name: 'stop_order')
+  final int stopOrder;
+  @JsonKey(name: 'stop_type')
+  final StopType? stopType;
+  @JsonKey(name: 'contact_name')
+  final String? contactName;
+  @JsonKey(name: 'contact_phone')
+  final String? contactPhone;
+  final String? notes;
+
+  StopPointRequest({
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+    required this.stopOrder,
+    this.stopType,
+    this.contactName,
+    this.contactPhone,
+    this.notes,
+  });
+
+  factory StopPointRequest.fromJson(Map<String, dynamic> json) => _$StopPointRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$StopPointRequestToJson(this);
+}

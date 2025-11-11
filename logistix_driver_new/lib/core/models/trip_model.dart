@@ -52,7 +52,7 @@ class Trip extends BaseModel {
   @JsonKey(name: 'final_fare')
   final double? finalFare;
   @JsonKey(name: 'final_duration')
-  final double? finalDuration;
+  final int? finalDuration;
   @JsonKey(name: 'final_distance')
   final String? finalDistance;
   @JsonKey(name: 'is_payment_done')
@@ -107,7 +107,7 @@ class Trip extends BaseModel {
     DateTime? unloadingEndTime,
     DateTime? paymentTime,
     double? finalFare,
-    double? finalDuration,
+    int? finalDuration,
     String? finalDistance,
     bool? isPaymentDone,
     List<StopPoint>? stopPoints,
@@ -170,7 +170,7 @@ class Trip extends BaseModel {
   String get formattedFinalFare => finalFare != null ? '₹${finalFare!.toStringAsFixed(2)}' : 'N/A';
 
   /// Get formatted final duration
-  String get formattedFinalDuration => finalDuration != null ? '${finalDuration!.toStringAsFixed(1)} mins' : 'N/A';
+  String get formattedFinalDuration => finalDuration != null ? '$finalDuration mins' : 'N/A';
 
   /// Get formatted final distance
   String get formattedFinalDistance => finalDistance != null ? '$finalDistance km' : 'N/A';
@@ -215,6 +215,8 @@ class TripUpdateRequest {
   final String? finalDistance;
   @JsonKey(name: 'is_payment_done')
   final bool? isPaymentDone;
+  @JsonKey(name: 'update_message')
+  final String? updateMessage;
 
   const TripUpdateRequest({
     required this.status,
@@ -227,10 +229,38 @@ class TripUpdateRequest {
     this.finalDuration,
     this.finalDistance,
     this.isPaymentDone,
+    this.updateMessage,
   });
 
   factory TripUpdateRequest.fromJson(Map<String, dynamic> json) => _$TripUpdateRequestFromJson(json);
   Map<String, dynamic> toJson() => _$TripUpdateRequestToJson(this);
+}
+
+@JsonSerializable()
+class PatchedTripUpdateRequest {
+  final TripStatus? status;
+  @JsonKey(name: 'final_fare')
+  final double? finalFare;
+  @JsonKey(name: 'final_duration')
+  final int? finalDuration;
+  @JsonKey(name: 'final_distance')
+  final String? finalDistance;
+  @JsonKey(name: 'is_payment_done')
+  final bool? isPaymentDone;
+  @JsonKey(name: 'update_message')
+  final String? updateMessage;
+
+  const PatchedTripUpdateRequest({
+    this.status,
+    this.finalFare,
+    this.finalDuration,
+    this.finalDistance,
+    this.isPaymentDone,
+    this.updateMessage,
+  });
+
+  factory PatchedTripUpdateRequest.fromJson(Map<String, dynamic> json) => _$PatchedTripUpdateRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$PatchedTripUpdateRequestToJson(this);
 }
 
 @JsonSerializable()

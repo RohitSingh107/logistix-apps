@@ -132,8 +132,21 @@ paths:
           description: ''
   /api/booking/list/:
     get:
-      operationId: booking_list_retrieve
-      description: API endpoint to retrieve a list of booking requests.
+      operationId: booking_list_list
+      description: API endpoint to retrieve a paginated list of booking requests.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       tags:
       - booking
       security:
@@ -143,7 +156,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookingRequest'
+                $ref: '#/components/schemas/PaginatedBookingRequestList'
           description: ''
   /api/payments/wallet/balance/:
     get:
@@ -297,18 +310,24 @@ paths:
     post:
       operationId: strategy_vehicle_estimates_create
       description: |-
-        Get vehicle estimation quotes for the given pickup and dropoff locations.
+        Get vehicle estimation quotes for the given stop locations.
 
         Request body:
         {
-            "pickup_location": {
-                "latitude": 12.9716,
-                "longitude": 77.5946
-            },
-            "dropoff_location": {
-                "latitude": 13.0827,
-                "longitude": 77.5877
-            }
+            "stop_locations": [
+                {
+                    "latitude": 12.9716,
+                    "longitude": 77.5946
+                },
+                {
+                    "latitude": 13.0827,
+                    "longitude": 77.5877
+                },
+                {
+                    "latitude": 13.1234,
+                    "longitude": 77.6543
+                }
+            ]
         }
 
         Returns:
@@ -457,6 +476,56 @@ paths:
               schema:
                 description: Trip not found
           description: ''
+    patch:
+      operationId: trip_update_partial_update
+      description: Partially update a trip's status and details (driver only)
+      summary: Partially update trip
+      parameters:
+      - in: path
+        name: trip_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - trip
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTripUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTripUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTripUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Bad request - validation error
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                description: Permission denied
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Trip not found
+          description: ''
   /api/users/driver/:
     post:
       operationId: users_driver_create
@@ -483,6 +552,191 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Driver'
+          description: ''
+  /api/users/driver/documents/:
+    get:
+      operationId: users_driver_documents_list
+      description: |-
+        API view for listing all documents for the authenticated driver.
+        Supports filtering by document_type.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DriverDocument'
+          description: ''
+  /api/users/driver/documents/{id}/:
+    get:
+      operationId: users_driver_documents_retrieve
+      description: API view for retrieving, updating, or deleting a specific document.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverDocument'
+          description: ''
+    put:
+      operationId: users_driver_documents_update
+      description: API view for retrieving, updating, or deleting a specific document.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DocumentUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DocumentUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUpdate'
+          description: ''
+    patch:
+      operationId: users_driver_documents_partial_update
+      description: API view for retrieving, updating, or deleting a specific document.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDocumentUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDocumentUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDocumentUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUpdate'
+          description: ''
+    delete:
+      operationId: users_driver_documents_destroy
+      description: API view for retrieving, updating, or deleting a specific document.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/users/driver/documents/bulk-upload/:
+    post:
+      operationId: users_driver_documents_bulk_upload_create
+      description: API view for uploading multiple documents for a driver in bulk.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkDocumentUploadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BulkDocumentUploadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BulkDocumentUploadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkDocumentUpload'
+          description: ''
+  /api/users/driver/documents/stats/:
+    get:
+      operationId: users_driver_documents_stats_retrieve
+      description: API view for getting document statistics for the authenticated
+        driver.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/users/driver/documents/upload/:
+    post:
+      operationId: users_driver_documents_upload_create
+      description: API view for uploading a single document for a driver.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverDocumentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DriverDocumentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DriverDocumentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverDocument'
           description: ''
   /api/users/driver/profile/:
     get:
@@ -670,6 +924,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenRefresh'
           description: ''
+  /api/users/upload/:
+    post:
+      operationId: users_upload_create
+      description: Upload a file and return its URL
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileUploadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FileUploadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FileUploadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUpload'
+          description: ''
   /api/users/verify-otp/:
     post:
       operationId: users_verify_otp_create
@@ -738,19 +1019,9 @@ components:
         receiver_phone:
           type: string
           maxLength: 100
-        pickup_location:
-          type: string
-          readOnly: true
-        dropoff_location:
-          type: string
-          readOnly: true
         pickup_time:
           type: string
           format: date-time
-        pickup_address:
-          type: string
-        dropoff_address:
-          type: string
         goods_type:
           type: string
           maxLength: 100
@@ -769,6 +1040,10 @@ components:
           readOnly: true
         instructions:
           type: string
+        stop_points:
+          type: array
+          items:
+            $ref: '#/components/schemas/StopPoint'
         created_at:
           type: string
           format: date-time
@@ -779,14 +1054,10 @@ components:
           readOnly: true
       required:
       - created_at
-      - dropoff_address
-      - dropoff_location
       - estimated_fare
       - goods_quantity
       - goods_type
       - id
-      - pickup_address
-      - pickup_location
       - pickup_time
       - receiver_name
       - receiver_phone
@@ -814,31 +1085,9 @@ components:
           type: string
           minLength: 1
           maxLength: 100
-        pickup_latitude:
-          type: number
-          format: double
-          writeOnly: true
-        pickup_longitude:
-          type: number
-          format: double
-          writeOnly: true
-        dropoff_latitude:
-          type: number
-          format: double
-          writeOnly: true
-        dropoff_longitude:
-          type: number
-          format: double
-          writeOnly: true
         pickup_time:
           type: string
           format: date-time
-        pickup_address:
-          type: string
-          minLength: 1
-        dropoff_address:
-          type: string
-          minLength: 1
         vehicle_type_id:
           type: integer
           writeOnly: true
@@ -855,15 +1104,13 @@ components:
         instructions:
           type: string
           minLength: 1
+        stop_points:
+          type: array
+          items:
+            $ref: '#/components/schemas/StopPointRequest'
       required:
-      - dropoff_address
-      - dropoff_latitude
-      - dropoff_longitude
       - goods_quantity
       - goods_type
-      - pickup_address
-      - pickup_latitude
-      - pickup_longitude
       - pickup_time
       - receiver_name
       - receiver_phone
@@ -884,6 +1131,95 @@ components:
         * `ACCEPTED` - Accepted by Driver
         * `CANCELLED` - Cancelled
         * `DRIVERS_NOT_FOUND` - Drivers Not Found
+    BulkDocumentUpload:
+      type: object
+      description: Serializer for bulk document upload
+      properties:
+        documents:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          description: List of documents to upload
+          minItems: 1
+      required:
+      - documents
+    BulkDocumentUploadRequest:
+      type: object
+      description: Serializer for bulk document upload
+      properties:
+        documents:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          description: List of documents to upload
+          minItems: 1
+      required:
+      - documents
+    DocumentTypeEnum:
+      enum:
+      - LICENSE
+      - VEHICLE_RC
+      - INSURANCE
+      - PAN_CARD
+      - AADHAR_CARD
+      - VEHICLE_PERMIT
+      - POLLUTION_CERT
+      - OTHER
+      type: string
+      description: |-
+        * `LICENSE` - Driving License
+        * `VEHICLE_RC` - Vehicle Registration Certificate
+        * `INSURANCE` - Insurance Certificate
+        * `PAN_CARD` - PAN Card
+        * `AADHAR_CARD` - Aadhar Card
+        * `VEHICLE_PERMIT` - Vehicle Permit
+        * `POLLUTION_CERT` - Pollution Certificate
+        * `OTHER` - Other
+    DocumentUpdate:
+      type: object
+      description: Serializer for updating document details
+      properties:
+        document_number:
+          type: string
+          nullable: true
+          maxLength: 50
+        document_url:
+          type: string
+          format: uri
+          maxLength: 200
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+      - document_url
+    DocumentUpdateRequest:
+      type: object
+      description: Serializer for updating document details
+      properties:
+        document_number:
+          type: string
+          nullable: true
+          maxLength: 50
+        document_url:
+          type: string
+          format: uri
+          minLength: 1
+          maxLength: 200
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+      - document_url
     Driver:
       type: object
       description: Serializer for the Driver model
@@ -903,6 +1239,9 @@ components:
           nullable: true
         is_available:
           type: boolean
+        is_verified:
+          type: boolean
+          readOnly: true
         fcm_token:
           type: string
           nullable: true
@@ -922,10 +1261,92 @@ components:
       required:
       - average_rating
       - id
+      - is_verified
       - license_number
       - location
       - total_earnings
       - user
+    DriverDocument:
+      type: object
+      description: Serializer for the DriverDocument model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        document_type_display:
+          type: string
+          readOnly: true
+        document_number:
+          type: string
+          nullable: true
+          maxLength: 50
+        document_url:
+          type: string
+          format: uri
+          maxLength: 200
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        is_verified:
+          type: boolean
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        is_expired:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - document_type
+      - document_type_display
+      - document_url
+      - id
+      - is_expired
+      - is_verified
+      - updated_at
+      - verified_at
+    DriverDocumentRequest:
+      type: object
+      description: Serializer for the DriverDocument model
+      properties:
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        document_number:
+          type: string
+          nullable: true
+          maxLength: 50
+        document_url:
+          type: string
+          format: uri
+          minLength: 1
+          maxLength: 200
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+      - document_type
+      - document_url
     DriverRequest:
       type: object
       description: Serializer for the Driver model
@@ -953,6 +1374,37 @@ components:
           writeOnly: true
       required:
       - license_number
+    FileUpload:
+      type: object
+      description: Serializer for file upload
+      properties:
+        file:
+          type: string
+          format: uri
+          description: File to upload (PDF, images, videos)
+        subfolder:
+          type: string
+          default: uploads
+          description: 'Subfolder to store the file in (default: ''uploads'')'
+          maxLength: 100
+      required:
+      - file
+    FileUploadRequest:
+      type: object
+      description: Serializer for file upload
+      properties:
+        file:
+          type: string
+          format: binary
+          description: File to upload (PDF, images, videos)
+        subfolder:
+          type: string
+          minLength: 1
+          default: uploads
+          description: 'Subfolder to store the file in (default: ''uploads'')'
+          maxLength: 100
+      required:
+      - file
     Location:
       type: object
       description: Serializer for location data
@@ -1026,6 +1478,29 @@ components:
       required:
       - otp
       - phone
+    PaginatedBookingRequestList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingRequest'
     PaginatedTripList:
       type: object
       required:
@@ -1072,6 +1547,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WalletTransaction'
+    PatchedDocumentUpdateRequest:
+      type: object
+      description: Serializer for updating document details
+      properties:
+        document_number:
+          type: string
+          nullable: true
+          maxLength: 50
+        document_url:
+          type: string
+          format: uri
+          minLength: 1
+          maxLength: 200
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+          nullable: true
     PatchedDriverRequest:
       type: object
       description: Serializer for the Driver model
@@ -1097,6 +1592,33 @@ components:
           type: number
           format: double
           writeOnly: true
+    PatchedTripUpdateRequest:
+      type: object
+      description: Serializer for updating Trip model via API.
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusD09Enum'
+        final_fare:
+          type: number
+          format: double
+        final_duration:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          description: duration in minutes
+        final_distance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          nullable: true
+          description: distance in kilometers
+        is_payment_done:
+          type: boolean
+        update_message:
+          type: string
+          minLength: 1
+          description: Custom message for this update
     PatchedUserRequest:
       type: object
       description: Serializer for the User model
@@ -1122,28 +1644,109 @@ components:
       - WALLET
       type: string
       description: "* `CASH` - \n* `WALLET` - Wallet"
-    Status20dEnum:
+    StatusD09Enum:
       enum:
       - ACCEPTED
-      - TRIP_STARTED
-      - LOADING_STARTED
-      - LOADING_DONE
-      - REACHED_DESTINATION
-      - UNLOADING_STARTED
-      - UNLOADING_DONE
+      - IN_PROGRESS
       - COMPLETED
       - CANCELLED
       type: string
       description: |-
         * `ACCEPTED` - Accepted by Driver
-        * `TRIP_STARTED` - Trip Started
-        * `LOADING_STARTED` - Loading Started
-        * `LOADING_DONE` - Loading Done
-        * `REACHED_DESTINATION` - Driver Reached Destination
-        * `UNLOADING_STARTED` - Unloading Started
-        * `UNLOADING_DONE` - Unloading Complete
-        * `COMPLETED` - Trip Completed
-        * `CANCELLED` - Trip Cancelled
+        * `IN_PROGRESS` - In Progress
+        * `COMPLETED` - Completed
+        * `CANCELLED` - Cancelled
+    StopPoint:
+      type: object
+      description: Serializer for StopPoint model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        location:
+          type: string
+          readOnly: true
+        address:
+          type: string
+        stop_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Order of this stop in the trip sequence (0-indexed)
+        stop_type:
+          $ref: '#/components/schemas/StopTypeEnum'
+        contact_name:
+          type: string
+          nullable: true
+          maxLength: 100
+        contact_phone:
+          type: string
+          nullable: true
+          maxLength: 100
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - address
+      - created_at
+      - id
+      - location
+      - stop_order
+      - updated_at
+    StopPointRequest:
+      type: object
+      description: Serializer for StopPoint model
+      properties:
+        address:
+          type: string
+          minLength: 1
+        stop_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Order of this stop in the trip sequence (0-indexed)
+        stop_type:
+          $ref: '#/components/schemas/StopTypeEnum'
+        contact_name:
+          type: string
+          nullable: true
+          maxLength: 100
+        contact_phone:
+          type: string
+          nullable: true
+          maxLength: 100
+        notes:
+          type: string
+        latitude:
+          type: number
+          format: double
+          writeOnly: true
+        longitude:
+          type: number
+          format: double
+          writeOnly: true
+      required:
+      - address
+      - latitude
+      - longitude
+      - stop_order
+    StopTypeEnum:
+      enum:
+      - PICKUP
+      - DROPOFF
+      - WAYPOINT
+      type: string
+      description: |-
+        * `PICKUP` - Pickup Location
+        * `DROPOFF` - Dropoff Location
+        * `WAYPOINT` - Waypoint
     TokenRefresh:
       type: object
       properties:
@@ -1178,33 +1781,8 @@ components:
           readOnly: true
         status:
           allOf:
-          - $ref: '#/components/schemas/Status20dEnum'
+          - $ref: '#/components/schemas/StatusD09Enum'
           readOnly: true
-        loading_start_time:
-          type: string
-          format: date-time
-          readOnly: true
-          nullable: true
-        loading_end_time:
-          type: string
-          format: date-time
-          readOnly: true
-          nullable: true
-        unloading_start_time:
-          type: string
-          format: date-time
-          readOnly: true
-          nullable: true
-        unloading_end_time:
-          type: string
-          format: date-time
-          readOnly: true
-          nullable: true
-        payment_time:
-          type: string
-          format: date-time
-          readOnly: true
-          nullable: true
         final_fare:
           type: number
           format: double
@@ -1232,6 +1810,17 @@ components:
           type: string
           format: date-time
           readOnly: true
+        updates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripUpdateModel'
+          readOnly: true
+        updates_count:
+          type: string
+          readOnly: true
+        latest_update:
+          type: string
+          readOnly: true
       required:
       - booking_request
       - created_at
@@ -1241,39 +1830,49 @@ components:
       - final_fare
       - id
       - is_payment_done
-      - loading_end_time
-      - loading_start_time
-      - payment_time
+      - latest_update
       - status
-      - unloading_end_time
-      - unloading_start_time
       - updated_at
+      - updates
+      - updates_count
+    TripUpdateModel:
+      type: object
+      description: Serializer for the TripUpdate model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        trip:
+          type: integer
+          readOnly: true
+        update_message:
+          type: string
+          description: Message describing the trip update
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: User who created this update (driver or customer)
+        created_by_phone:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - created_by_phone
+      - id
+      - trip
+      - update_message
     TripUpdateRequest:
       type: object
-      description: Serializer for updating Trip model.
+      description: Serializer for updating Trip model via API.
       properties:
         status:
-          $ref: '#/components/schemas/Status20dEnum'
-        loading_start_time:
-          type: string
-          format: date-time
-          nullable: true
-        loading_end_time:
-          type: string
-          format: date-time
-          nullable: true
-        unloading_start_time:
-          type: string
-          format: date-time
-          nullable: true
-        unloading_end_time:
-          type: string
-          format: date-time
-          nullable: true
-        payment_time:
-          type: string
-          format: date-time
-          nullable: true
+          $ref: '#/components/schemas/StatusD09Enum'
         final_fare:
           type: number
           format: double
@@ -1291,9 +1890,12 @@ components:
           description: distance in kilometers
         is_payment_done:
           type: boolean
+        update_message:
+          type: string
+          minLength: 1
+          description: Custom message for this update
       required:
       - final_fare
-      - status
     User:
       type: object
       description: Serializer for the User model
@@ -1343,26 +1945,24 @@ components:
           maxLength: 255
     VehicleEstimationRequest:
       type: object
-      description: Serializer for vehicle estimation request
+      description: Serializer for vehicle estimation request with multiple stop points
       properties:
-        pickup_location:
-          $ref: '#/components/schemas/Location'
-        dropoff_location:
-          $ref: '#/components/schemas/Location'
+        stop_locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
       required:
-      - dropoff_location
-      - pickup_location
+      - stop_locations
     VehicleEstimationRequestRequest:
       type: object
-      description: Serializer for vehicle estimation request
+      description: Serializer for vehicle estimation request with multiple stop points
       properties:
-        pickup_location:
-          $ref: '#/components/schemas/LocationRequest'
-        dropoff_location:
-          $ref: '#/components/schemas/LocationRequest'
+        stop_locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationRequest'
       required:
-      - dropoff_location
-      - pickup_location
+      - stop_locations
     WalletTransaction:
       type: object
       description: Serializer for WalletTransaction model.
