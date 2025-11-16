@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/models/trip_model.dart';
 import '../../../../core/models/booking_model.dart';
+import '../../../../core/models/stop_point_model.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/trip_status_service.dart';
 
@@ -70,25 +71,8 @@ class _DriverTripScreenState extends State<DriverTripScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Pickup Section
-                  _buildLocationSection(
-                    theme,
-                    'Pickup',
-                    booking.pickupAddress,
-                    Icons.location_on,
-                    Colors.green,
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Dropoff Section
-                  _buildLocationSection(
-                    theme,
-                    'Dropoff',
-                    booking.dropoffAddress,
-                    Icons.location_on,
-                    Colors.red,
-                  ),
+                  // Stop Points Section
+                  _buildStopPointsSection(theme, booking),
                   
                   const SizedBox(height: 24),
                   
@@ -149,6 +133,559 @@ class _DriverTripScreenState extends State<DriverTripScreen> {
               color: Colors.white.withOpacity(0.8),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showStopPointDetails(BuildContext context, StopPoint stop) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _buildStopPointDetailsBottomSheet(context, stop),
+    );
+  }
+
+  Widget _buildStopPointDetailsBottomSheet(BuildContext context, StopPoint stop) {
+    // Get icon and color based on stop type
+    IconData icon;
+    Color iconColor;
+    String typeLabel;
+    
+    switch (stop.stopType) {
+      case StopType.pickup:
+        icon = Icons.location_on;
+        iconColor = Colors.green;
+        typeLabel = 'Pickup';
+        break;
+      case StopType.dropoff:
+        icon = Icons.location_on;
+        iconColor = Colors.red;
+        typeLabel = 'Dropoff';
+        break;
+      case StopType.waypoint:
+        icon = Icons.location_on;
+        iconColor = Colors.orange;
+        typeLabel = 'Waypoint';
+        break;
+    }
+
+    return Container(
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(
+            width: 1,
+            color: Color(0xFFE6E6E6),
+          ),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 13,
+              left: 16,
+              right: 16,
+              bottom: 12,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Drag Handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: ShapeDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: ShapeDecoration(
+                        color: iconColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Icon(
+                        icon,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            typeLabel,
+                            style: const TextStyle(
+                              color: Color(0xFF111111),
+                              fontSize: 18,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Address Section
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: ShapeDecoration(
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(
+                        width: 1,
+                        color: Color(0xFFE6E6E6),
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Address',
+                        style: const TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        stop.address,
+                        style: const TextStyle(
+                          color: Color(0xFF111111),
+                          fontSize: 15,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (stop.location.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Location',
+                          style: const TextStyle(
+                            color: Color(0xFF9CA3AF),
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          stop.location,
+                          style: const TextStyle(
+                            color: Color(0xFF111111),
+                            fontSize: 13,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                // Contact Information
+                if (stop.contactName != null || stop.contactPhone != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: ShapeDecoration(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(
+                          width: 1,
+                          color: Color(0xFFE6E6E6),
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Contact Information',
+                          style: const TextStyle(
+                            color: Color(0xFF9CA3AF),
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        if (stop.contactName != null) ...[
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.person_outline,
+                                size: 18,
+                                color: Color(0xFF9CA3AF),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  stop.contactName!,
+                                  style: const TextStyle(
+                                    color: Color(0xFF111111),
+                                    fontSize: 15,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (stop.contactPhone != null) const SizedBox(height: 8),
+                        ],
+                        if (stop.contactPhone != null) ...[
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.phone_outlined,
+                                size: 18,
+                                color: Color(0xFF9CA3AF),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  stop.contactPhone!,
+                                  style: const TextStyle(
+                                    color: Color(0xFF111111),
+                                    fontSize: 15,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  // TODO: Implement call functionality
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: ShapeDecoration(
+                                    color: const Color(0xFFF3F4F6),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.phone,
+                                    size: 18,
+                                    color: Color(0xFFFF6B00),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+                // Notes
+                if (stop.notes != null && stop.notes!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: ShapeDecoration(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(
+                          width: 1,
+                          color: Color(0xFFE6E6E6),
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Notes',
+                          style: const TextStyle(
+                            color: Color(0xFF9CA3AF),
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          stop.notes!,
+                          style: const TextStyle(
+                            color: Color(0xFF111111),
+                            fontSize: 13,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                // Stop Order
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(
+                        width: 1,
+                        color: Color(0xFFE6E6E6),
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Stop Order',
+                        style: const TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 13,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 3,
+                        ),
+                        decoration: ShapeDecoration(
+                          color: iconColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        child: Text(
+                          '${stop.stopOrder}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStopPointsSection(ThemeData theme, Booking booking) {
+    // Get stop points from trip or booking
+    List<StopPoint>? stopPoints = widget.trip.stopPoints ?? booking.stopPoints;
+    
+    // If no stop points, show fallback pickup/dropoff
+    if (stopPoints == null || stopPoints.isEmpty) {
+      return Column(
+        children: [
+          _buildLocationSection(
+            theme,
+            'Pickup',
+            booking.pickupAddress,
+            Icons.location_on,
+            Colors.green,
+          ),
+          const SizedBox(height: 16),
+          _buildLocationSection(
+            theme,
+            'Dropoff',
+            booking.dropoffAddress,
+            Icons.location_on,
+            Colors.red,
+          ),
+        ],
+      );
+    }
+    
+    // Sort stop points by order
+    final sortedStops = List<StopPoint>.from(stopPoints);
+    sortedStops.sort((a, b) => a.stopOrder.compareTo(b.stopOrder));
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Route',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...sortedStops.asMap().entries.map((entry) {
+            final index = entry.key;
+            final stop = entry.value;
+            final isLast = index == sortedStops.length - 1;
+            
+            // Get icon and color based on stop type
+            IconData icon;
+            Color color;
+            String typeLabel;
+            
+            switch (stop.stopType) {
+              case StopType.pickup:
+                icon = Icons.location_on;
+                color = Colors.green;
+                typeLabel = 'Pickup';
+                break;
+              case StopType.dropoff:
+                icon = Icons.location_on;
+                color = Colors.red;
+                typeLabel = 'Dropoff';
+                break;
+              case StopType.waypoint:
+                icon = Icons.location_on;
+                color = Colors.orange;
+                typeLabel = 'Waypoint';
+                break;
+            }
+            
+            return InkWell(
+              onTap: () => _showStopPointDetails(context, stop),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            icon,
+                            color: color,
+                            size: 24,
+                          ),
+                        ),
+                        if (!isLast) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            width: 2,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.onSurface.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            typeLabel,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            stop.address,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            ),
+                          ),
+                          if (stop.contactName != null || stop.contactPhone != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              stop.contactName != null && stop.contactPhone != null
+                                  ? '${stop.contactName} • ${stop.contactPhone}'
+                                  : stop.contactName ?? stop.contactPhone ?? '',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                            ),
+                          ],
+                          if (stop.notes != null && stop.notes!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              stop.notes!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                      size: 16,
+                    ),
+                  ],
+                  ),
+                  if (!isLast) const SizedBox(height: 16),
+                ],
+              ),
+            );
+          }).toList(),
         ],
       ),
     );

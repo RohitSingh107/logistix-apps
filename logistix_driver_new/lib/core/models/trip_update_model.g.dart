@@ -11,7 +11,7 @@ TripUpdate _$TripUpdateFromJson(Map<String, dynamic> json) => TripUpdate(
       trip: (json['trip'] as num).toInt(),
       updateMessage: json['update_message'] as String,
       createdBy: (json['created_by'] as num?)?.toInt(),
-      createdByPhone: json['created_by_phone'] as String?,
+      createdByPhone: json['created_by_phone'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
 

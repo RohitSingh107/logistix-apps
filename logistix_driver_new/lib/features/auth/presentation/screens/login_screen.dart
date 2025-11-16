@@ -18,9 +18,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../bloc/auth_bloc.dart';
-import '../widgets/phone_input.dart';
 import 'otp_verification_screen.dart';
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../../language/presentation/screens/language_selection_screen.dart';
@@ -105,13 +103,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
     
     return PopScope(
-      canPop: false, // Always prevent default back behavior
+      canPop: false,
       onPopInvoked: (didPop) {
         if (!didPop) {
-          // Navigate to language selection screen
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => const LanguageSelectionScreen(),
@@ -120,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5), // Light gray background
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
@@ -142,145 +138,321 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             },
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 644),
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(color: Colors.white),
             child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Section - Interactive Elements (60% of screen)
                 Expanded(
-                  flex: 6,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
                     child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 60), // Exact spacing from top
-                        
-                        // Title Section - Centered
+                          const SizedBox(height: 32),
+                          // Logo
+                          Center(
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: ShapeDecoration(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Image.asset(
+                                'assets/images/logo without text/logo color.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Fallback to gradient if image not found
+                                  return Container(
+                                    decoration: ShapeDecoration(
+                                      gradient: const LinearGradient(
+                                        begin: Alignment(-0.00, 0.00),
+                                        end: Alignment(1.00, 1.00),
+                                        colors: [Color(0xFFFF6B00), Color(0xFFFF7A1A)],
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.local_shipping,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          // Title
                         Center(
                           child: Text(
-                            l10n.appTitle,
-                            style: GoogleFonts.inter(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
-                              color: theme.colorScheme.primary, // Orange-brown #D2691E
+                              'Welcome to Logistix',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(0xFF111111),
+                                fontSize: 20,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          // Description
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 21.50),
+                              child: Text(
+                                'Use your phone to access trips, earnings, and\nsupport.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 13,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),
-                        
-                        const SizedBox(height: 50), // Exact spacing from title
-                        
-                        // Phone Input Section
-                        PhoneInput(
+                          ),
+                          const SizedBox(height: 32),
+                          // Phone Number Input
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Phone number',
+                                style: TextStyle(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 13,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 13,
+                                  vertical: 11,
+                                ),
+                                decoration: ShapeDecoration(
+                                  color: const Color(0xFFFAFAFA),
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(
+                                      width: 1,
+                                      color: _phoneError != null
+                                          ? theme.colorScheme.error
+                                          : const Color(0xFFE6E6E6),
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.phone_outlined,
+                                      size: 18,
+                                      color: Color(0xFF111111),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: TextField(
                           controller: _phoneController,
-                          onChanged: (phone) {
+                                        keyboardType: TextInputType.phone,
+                                        style: TextStyle(
+                                          color: const Color(0xFF111111),
+                                          fontSize: 15,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                        decoration: InputDecoration(
+                                          hintText: '+1 202 555 • • • •',
+                                          hintStyle: TextStyle(
+                                            color: const Color(0xFF111111).withOpacity(0.90),
+                                            fontSize: 15,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                          border: InputBorder.none,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                          contentPadding: EdgeInsets.zero,
+                                        ),
+                                        onChanged: (value) {
                             setState(() {
-                              _phoneNumber = phone;
+                                            _phoneNumber = value;
                               _phoneError = null;
                             });
                           },
-                          onSubmitted: (phone) {
-                            setState(() {
-                              _phoneNumber = phone;
-                              _phoneError = null;
-                            });
+                                        onSubmitted: (value) {
+                                          if (value.isNotEmpty) {
                             _requestOtp();
+                                          }
                           },
-                          errorText: _phoneError,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (_phoneError != null) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  _phoneError!,
+                                  style: TextStyle(
+                                    color: theme.colorScheme.error,
+                                    fontSize: 12,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
                         ),
-                        
-                        const SizedBox(height: 40), // Exact spacing from input
-                        
-                        // Next Button
+                                ),
+                              ] else ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  'We\'ll send a verification code to this number.',
+                                  style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 12,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 32),
+                          // Login Button
                         BlocBuilder<AuthBloc, AuthState>(
                           builder: (context, state) {
                             final isLoading = state is AuthLoading;
                             
-                            return SizedBox(
+                              return GestureDetector(
+                                onTap: isLoading ? null : _requestOtp,
+                                child: Container(
                               width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: isLoading ? null : _requestOtp,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  height: 48,
+                                  decoration: ShapeDecoration(
+                                    color: isLoading
+                                        ? const Color(0xFFFF6B00).withOpacity(0.6)
+                                        : const Color(0xFFFF6B00),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12), // Exact border radius
+                                      side: const BorderSide(
+                                        width: 1,
+                                        color: Color(0xFFFF6B00),
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                                 child: isLoading
-                                    ? SizedBox(
+                                      ? Center(
+                                          child: SizedBox(
                                         width: 20,
                                         height: 20,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
                                           color: Colors.white,
                                         ),
-                                      )
-                                    : Text(
-                                        l10n.next,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
+                                          ),
+                                        )
+                                      : Center(
+                                          child: Text(
+                                            ' Log in',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
                                           color: Colors.white,
+                                              fontSize: 15,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                         ),
                                       ),
                               ),
                             );
                           },
                         ),
-                        
-                        const SizedBox(height: 20), // Exact spacing from button
-                        
-                        // Terms and Privacy Checkbox
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: true, // Always checked as shown in design
-                              onChanged: (value) {
-                                // Handle checkbox state if needed
-                              },
-                              activeColor: theme.colorScheme.primary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                            Expanded(
-                              child: RichText(
-                                text: TextSpan(
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  children: [
-                                    TextSpan(text: l10n.termsAndConditions),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                // Bottom Section - Image Placeholder (40% of screen)
-                Expanded(
-                  flex: 4,
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.delivery_dining,
-                        size: 80,
-                        color: Colors.grey.shade400,
+                        ],
                       ),
                     ),
+                    ),
+                    // Footer
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(
+                        top: 13,
+                        left: 16,
+                        right: 16,
+                        bottom: 12,
+                      ),
+                      decoration: ShapeDecoration(
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFE6E6E6),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                          const Icon(
+                            Icons.lock_outline,
+                            size: 16,
+                            color: Color(0xFF9CA3AF),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Secure authentication',
+                            style: TextStyle(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 13,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: ShapeDecoration(
+                              color: const Color(0xFF9CA3AF),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Logistix',
+                            style: TextStyle(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 13,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                        ],
                   ),
                 ),
               ],
+                ),
+              ),
             ),
           ),
         ),

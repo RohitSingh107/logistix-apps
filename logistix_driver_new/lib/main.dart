@@ -25,6 +25,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'core/services/push_notification_service.dart';
+import 'core/services/notification_service.dart';
 import 'core/widgets/app_lifecycle_wrapper.dart';
 import 'core/providers/locale_provider.dart';
 import 'generated/l10n/app_localizations.dart';
@@ -44,6 +45,7 @@ import 'core/services/auth_service.dart';
 import 'core/config/app_config.dart';
 import 'core/config/app_theme.dart';
 import 'core/repositories/user_repository.dart';
+import 'core/widgets/main_navigation_wrapper.dart';
 import 'core/di/service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'features/profile/presentation/screens/create_profile_screen.dart';
@@ -53,11 +55,15 @@ import 'features/driver/presentation/screens/create_driver_profile_screen.dart';
 import 'features/driver/presentation/screens/driver_documents_screen.dart';
 import 'features/settings/presentation/screens/settings_screen.dart';
 import 'features/wallet/presentation/screens/wallet_screen.dart';
+import 'features/wallet/presentation/screens/transaction_history_screen.dart';
 import 'features/notifications/presentation/screens/alerts_screen.dart';
 import 'features/trip/presentation/screens/my_trips_screen.dart';
+import 'features/trip/presentation/screens/active_trips_screen.dart';
+import 'core/models/trip_model.dart';
 import 'core/services/language_service.dart';
 import 'features/language/presentation/bloc/language_bloc.dart';
 import 'features/language/presentation/bloc/language_event.dart';
+// import 'package:sentry_flutter/sentry_flutter.dart'; // Disabled
 
 // Global navigator key for showing popups from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -119,7 +125,7 @@ API_KEY=development_key
       );
       
       // Set the navigator key for notification popups
-      // NotificationService.setNavigatorKey(navigatorKey);
+      NotificationService.setNavigatorKey(navigatorKey);
       
       // Update driver FCM token on app start if user is authenticated
       try {
@@ -137,6 +143,7 @@ API_KEY=development_key
     }
     
     print("Starting driver app...");
+    // Sentry disabled
     runApp(DriverApp(
       authRepository: authRepository,
       userRepository: userRepository,
@@ -146,6 +153,7 @@ API_KEY=development_key
     print("Fatal error during driver app initialization: $e");
     print("Stack trace: $stackTrace");
     // Show error UI instead of crashing
+    // Sentry disabled
     runApp(MaterialApp(
       home: Scaffold(
         body: Center(
@@ -246,10 +254,40 @@ class DriverApp extends StatelessWidget {
                       },
                       '/driver/create': (context) => CreateDriverProfileScreen(),
                       '/driver/documents': (context) => const DriverDocumentsScreen(),
-                      '/settings': (context) => const SettingsScreen(),
-                      '/wallet': (context) => const WalletScreen(),
-                      '/alerts': (context) => const AlertsScreen(),
-                      '/trips': (context) => const MyTripsScreen(),
+                      '/settings': (context) => const MainNavigationWrapper(
+                        currentIndex: 4,
+                        child: SettingsScreen(),
+                      ),
+                      '/wallet': (context) => const MainNavigationWrapper(
+                        currentIndex: 2,
+                        child: WalletScreen(),
+                      ),
+                      '/transaction-history': (context) => const MainNavigationWrapper(
+                        currentIndex: 2,
+                        child: TransactionHistoryScreen(),
+                      ),
+                      '/alerts': (context) => const MainNavigationWrapper(
+                        currentIndex: 1,
+                        child: AlertsScreen(),
+                      ),
+                      '/trips': (context) => const MainNavigationWrapper(
+                        currentIndex: 3,
+                        child: MyTripsScreen(),
+                      ),
+                      '/trip-details': (context) {
+                        final trip = ModalRoute.of(context)?.settings.arguments as Trip?;
+                        return MainNavigationWrapper(
+                          currentIndex: 3,
+                          child: ActiveTripsScreen(trip: trip, isViewOnly: true),
+                        );
+                      },
+                      '/driver-trip': (context) {
+                        final trip = ModalRoute.of(context)?.settings.arguments as Trip?;
+                        return MainNavigationWrapper(
+                          currentIndex: 3,
+                          child: ActiveTripsScreen(trip: trip),
+                        );
+                      },
                       '/vehicle/add': (context) => const VehicleNumberScreen(),
                       '/vehicles': (context) => const MyVehiclesScreen(),
                     },

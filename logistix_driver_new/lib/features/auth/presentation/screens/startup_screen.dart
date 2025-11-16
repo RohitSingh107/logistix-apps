@@ -15,8 +15,9 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
-import '../../../../core/widgets/auth_wrapper.dart';
 import '../../../language/presentation/screens/language_selection_screen.dart';
+import '../../../vehicle/presentation/widgets/vehicle_verification_wrapper.dart';
+import '../../../../core/services/app_permission_service.dart';
 
 class StartupScreen extends StatefulWidget {
   const StartupScreen({super.key});
@@ -60,9 +61,12 @@ class _StartupScreenState extends State<StartupScreen>
     // Start animation
     _animationController.forward();
     
-    // Check authentication status and navigate accordingly
-    Future.delayed(const Duration(milliseconds: 2000), () {
+    // Request permissions and check authentication status
+    Future.delayed(const Duration(milliseconds: 2000), () async {
       if (mounted) {
+        // Request all necessary permissions
+        await AppPermissionService.requestWithExplanation(context);
+        
         // Check if user is already authenticated
         final authBloc = context.read<AuthBloc>();
         authBloc.add(CheckAuthStatus());
@@ -83,8 +87,12 @@ class _StartupScreenState extends State<StartupScreen>
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-            // User is authenticated, navigate to main screen
-            Navigator.of(context).pushReplacementNamed('/home');
+            // User is authenticated, navigate to verification wrapper to check status
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const VehicleVerificationWrapper(),
+              ),
+            );
           } else if (state is AuthInitial) {
             // User is not authenticated, navigate to language selection screen
             Navigator.of(context).pushReplacement(
@@ -108,29 +116,19 @@ class _StartupScreenState extends State<StartupScreen>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // LOGISTIX Logo/Text
-                          Text(
-                            'LOGISTIX',
-                            style: TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              letterSpacing: 2.0,
-                              fontFamily: 'Inter',
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          
-                          // Subtitle
-                          Text(
-                            'Driver App',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white.withValues(alpha: 0.9),
-                              letterSpacing: 1.0,
-                              fontFamily: 'Inter',
-                            ),
+                          // Logo without text - show only the logo, no fallback icon
+                          Image.asset(
+                            'assets/images/logo without text/logo white.png',
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              // If logo not found, show empty container (no icon)
+                              return const SizedBox(
+                                width: 120,
+                                height: 120,
+                              );
+                            },
                           ),
                         ],
                       ),

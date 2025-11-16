@@ -296,48 +296,62 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: ShapeDecoration(
                                 shape: RoundedRectangleBorder(
                                   side: const BorderSide(
-                                    width: 1,
+          width: 1,
                                     color: Color(0xFFE6E6E6),
                                   ),
-                                ),
-                              ),
-                              child: Row(
+        ),
+      ),
+      child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
+        children: [
+          Container(
                                     width: 28,
                                     height: 28,
                                     decoration: ShapeDecoration(
-                                      gradient: const LinearGradient(
-                                        begin: Alignment(0.00, 0.00),
-                                        end: Alignment(1.00, 1.00),
-                                        colors: [Color(0xFFFF6B00), Color(0xFFFF7A1A)],
-                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                     ),
-                                  ),
+                                    child: Image.asset(
+                                      'assets/images/logo without text/logo color.png',
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        // Fallback to gradient if image not found
+                                        return Container(
+                                          decoration: ShapeDecoration(
+                                            gradient: const LinearGradient(
+                                              begin: Alignment(0.00, 0.00),
+                                              end: Alignment(1.00, 1.00),
+                                              colors: [Color(0xFFFF6B00), Color(0xFFFF7A1A)],
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+          ),
                                   const SizedBox(width: 12),
-                                  Expanded(
+          Expanded(
                                     child: Text(
                                       'Logistix Driver',
                                       style: TextStyle(
                                         color: const Color(0xFF111111),
                                         fontSize: 18,
                                         fontFamily: 'Inter',
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                                   ),
                                   const Spacer(),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
+                  children: [
                                       Container(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 9,
@@ -351,17 +365,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: _isAvailable ? const Color(0xFF16A34A) : const Color(0xFFE6E6E6),
                                             ),
                                             borderRadius: BorderRadius.circular(999),
-                                          ),
-                                        ),
-                                        child: Text(
+              ),
+            ),
+            child: Text(
                                           _isAvailable ? 'Online' : 'Go Online',
                                           style: TextStyle(
                                             color: _isAvailable ? Colors.white : const Color(0xFF9CA3AF),
                                             fontSize: 12,
                                             fontFamily: 'Inter',
                                             fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
+              ),
+            ),
                                       ),
                                       const SizedBox(width: 10),
                                       GestureDetector(
@@ -379,9 +393,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                     ],
-                                  ),
-                                ],
-                              ),
+          ),
+        ],
+      ),
                             ),
                             // Main Content
                             Container(
@@ -391,12 +405,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 right: 16,
                                 bottom: 12,
                                 top: 24,
-                              ),
-                              child: Column(
+      ),
+      child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
                                   // Profile Card
                                   Container(
                                     width: double.infinity,
@@ -407,38 +421,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                         side: const BorderSide(
                                           width: 1,
                                           color: Color(0xFFE6E6E6),
-                                        ),
+                      ),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
-                                    child: Column(
+                child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                                         Container(
                                           width: double.infinity,
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
+                      children: [
                                               Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 mainAxisAlignment: MainAxisAlignment.start,
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(
+                        Text(
                                                     'Hi, $userName',
                                                     style: TextStyle(
                                                       color: const Color(0xFF111111),
                                                       fontSize: 16,
                                                       fontFamily: 'Inter',
-                                                      fontWeight: FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                                               Container(
                                                 width: 28,
                                                 height: 28,
@@ -462,7 +476,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           (profile['user'] as User).profilePicture == null
                                                       ? const Color(0xFFE6E6E6)
                                                       : null,
-                                                ),
+                        ),
                                                 child: profile == null ||
                                                         profile['user'] == null ||
                                                         (profile['user'] as User).profilePicture == null
@@ -472,10 +486,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         color: Color(0xFF9CA3AF),
                                                       )
                                                     : null,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                      ),
+                  ],
+                ),
+              ),
                                         const SizedBox(height: 4),
                                         Container(
                                           width: double.infinity,
@@ -505,8 +519,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     fontFamily: 'Inter',
                                                     fontWeight: FontWeight.w400,
                                                   ),
-                                                ),
-                                              ),
+                ),
+              ),
                                               const SizedBox(width: 6),
                                               GestureDetector(
                                                 onTap: _isUpdatingAvailability ? null : _toggleAvailability,
@@ -519,14 +533,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     color: _isAvailable ? const Color(0xFFFF6B00).withOpacity(0.2) : const Color(0xFFFAFAFA),
                                                     shape: RoundedRectangleBorder(
                                                       side: BorderSide(
-                                                        width: 1,
+                    width: 1,
                                                         color: _isAvailable ? const Color(0xFFFF6B00) : const Color(0xFFE6E6E6),
-                                                      ),
+                  ),
                                                       borderRadius: BorderRadius.circular(999),
-                                                    ),
+                ),
                                                   ),
                                                   child: Stack(
-                                                    children: [
+                  children: [
                                                       AnimatedPositioned(
                                                         duration: const Duration(milliseconds: 300),
                                                         curve: Curves.easeInOutCubic,
@@ -543,14 +557,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               borderRadius: BorderRadius.circular(999),
                                                             ),
                                                           ),
-                                                        ),
-                                                      ),
-                                                    ],
+                      ),
+                    ),
+                  ],
                                                   ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                ),
+              ),
+            ],
+          ),
                                         ),
                                         Container(
                                           width: double.infinity,
@@ -559,8 +573,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Expanded(
+            children: [
+              Expanded(
                                                 child: Container(
                                                   padding: const EdgeInsets.all(10),
                                                   decoration: ShapeDecoration(
@@ -569,12 +583,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       borderRadius: BorderRadius.circular(6),
                                                     ),
                                                   ),
-                                                  child: Column(
+                child: Column(
                                                     mainAxisSize: MainAxisSize.min,
                                                     mainAxisAlignment: MainAxisAlignment.start,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                                                         'Today',
                                                         style: TextStyle(
                                                           color: const Color(0xFF9CA3AF),
@@ -582,23 +596,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           fontFamily: 'Inter',
                                                           fontWeight: FontWeight.w400,
                                                         ),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Text(
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
                                                         '₹${profile?['today_earnings'] ?? profile?['total_earnings'] ?? '0'}',
                                                         style: TextStyle(
                                                           color: Colors.white,
                                                           fontSize: 18,
                                                           fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w600,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
                                               ),
                                               const SizedBox(width: 8),
-                                              Expanded(
+              Expanded(
                                                 child: Container(
                                                   padding: const EdgeInsets.all(10),
                                                   decoration: ShapeDecoration(
@@ -607,39 +621,39 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       borderRadius: BorderRadius.circular(6),
                                                     ),
                                                   ),
-                                                  child: Column(
+                child: Column(
                                                     mainAxisSize: MainAxisSize.min,
                                                     mainAxisAlignment: MainAxisAlignment.start,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                                                         'This Week',
                                                         style: TextStyle(
                                                           color: const Color(0xFF9CA3AF),
                                                           fontSize: 13,
                                                           fontFamily: 'Inter',
                                                           fontWeight: FontWeight.w400,
-                                                        ),
-                                                      ),
+                      ),
+                    ),
                                                       const SizedBox(height: 4),
-                                                      Text(
+                    Text(
                                                         '₹${profile?['week_earnings'] ?? profile?['total_earnings'] ?? '0'}',
                                                         style: TextStyle(
                                                           color: Colors.white,
                                                           fontSize: 18,
                                                           fontFamily: 'Inter',
-                                                          fontWeight: FontWeight.w600,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
                                   ),
                                   const SizedBox(height: 24),
                                   // Available Balance Card
@@ -650,50 +664,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                       color: Colors.white,
                                       shape: RoundedRectangleBorder(
                                         side: const BorderSide(
-                                          width: 1,
+          width: 1,
                                           color: Color(0xFFE6E6E6),
                                         ),
                                         borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: Column(
+        ),
+      ),
+      child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       mainAxisAlignment: MainAxisAlignment.start,
                                       crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
+        children: [
                                         Container(
                                           width: double.infinity,
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
+            children: [
                                               Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 mainAxisAlignment: MainAxisAlignment.start,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                                                     'Available Balance',
                                                     style: TextStyle(
                                                       color: const Color(0xFF9CA3AF),
                                                       fontSize: 13,
                                                       fontFamily: 'Inter',
                                                       fontWeight: FontWeight.w400,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
                                                     '₹ ${_walletBalance.toStringAsFixed(2)}',
                                                     style: TextStyle(
                                                       color: const Color(0xFF111111),
                                                       fontSize: 28,
                                                       fontFamily: 'Inter',
                                                       fontWeight: FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                      ),
+                    ),
+                  ],
+                ),
                                               Container(
                                                 padding: const EdgeInsets.symmetric(
                                                   horizontal: 9,
@@ -717,19 +731,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     fontFamily: 'Inter',
                                                     fontWeight: FontWeight.w400,
                                                   ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                ),
+              ),
+            ],
+          ),
                                         ),
                                         const SizedBox(height: 12),
                                         Container(
                                           width: double.infinity,
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
                                             crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
+              children: [
                                               Expanded(
                                                 child: GestureDetector(
                                                   onTap: () {
@@ -770,29 +784,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     padding: const EdgeInsets.all(11),
                                                     decoration: ShapeDecoration(
                                                       color: const Color(0xFF333333),
-                                                      shape: RoundedRectangleBorder(
+                shape: RoundedRectangleBorder(
                                                         side: const BorderSide(
                                                           width: 1,
                                                           color: Color(0xFFE6E6E6),
                                                         ),
                                                         borderRadius: BorderRadius.circular(8),
-                                                      ),
-                                                    ),
-                                                    child: Text(
+                ),
+              ),
+              child: Text(
                                                       'Withdraw',
                                                       textAlign: TextAlign.center,
                                                       style: TextStyle(
-                                                        color: Colors.white,
+                  color: Colors.white,
                                                         fontSize: 15,
                                                         fontFamily: 'Inter',
                                                         fontWeight: FontWeight.w500,
                                                       ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
                                         ),
                                       ],
                                     ),
@@ -802,11 +816,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    child: Column(
+      child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
                                         GestureDetector(
                                           onTap: _isUpdatingAvailability ? null : _toggleAvailability,
                                           child: AnimatedContainer(
@@ -825,13 +839,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   color: _isAvailable ? const Color(0xFF333333) : const Color(0xFFFF6B00),
                                                 ),
                                                 borderRadius: BorderRadius.circular(12),
-                                              ),
-                                            ),
+            ),
+          ),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               crossAxisAlignment: CrossAxisAlignment.center,
-                                              children: [
+            children: [
                                                 AnimatedContainer(
                                                   duration: const Duration(milliseconds: 300),
                                                   curve: Curves.easeInOut,
@@ -841,8 +855,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     Icons.power_settings_new,
                                                     size: 18,
                                                     color: Colors.white,
-                                                  ),
-                                                ),
+                ),
+              ),
                                                 const SizedBox(width: 8),
                                                 SizedBox(
                                                   width: 69.94,
@@ -857,7 +871,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       fontWeight: FontWeight.w500,
                                                     ),
                                                   ),
-                                                ),
+                ),
                                               ],
                                             ),
                                           ),
@@ -881,10 +895,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     fontFamily: 'Inter',
                                                     fontWeight: FontWeight.w400,
                                                   ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                ),
+              ),
+            ],
+          ),
                                         ),
                                       ],
                                     ),
@@ -919,7 +933,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         width: 68.59,
         padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Column(
+            child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -950,13 +964,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: label == 'Earnings' ? 49.44 : (label == 'Trips' ? 28.30 : (label == 'Alerts' ? 33.03 : (label == 'Profile' ? 36.44 : 33.63))),
                   height: 15,
                   child: Text(
-                    label,
+                  label,
                     style: TextStyle(
                       color: isSelected ? const Color(0xFF111111) : const Color(0xFF9CA3AF),
                       fontSize: 12,
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.w400,
-                    ),
+                  ),
                   ),
                 ),
               ],

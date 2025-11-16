@@ -22,7 +22,7 @@ DriverDocument _$DriverDocumentFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['verified_at'] as String),
       notes: json['notes'] as String?,
-      isExpired: json['is_expired'] as String,
+      isExpired: json['is_expired'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );

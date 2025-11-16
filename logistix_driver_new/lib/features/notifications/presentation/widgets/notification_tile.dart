@@ -102,14 +102,27 @@ class NotificationTile extends StatelessWidget {
     return Container(
       width: 48,
       height: 48,
-      decoration: BoxDecoration(
-        color: _getNotificationColor(theme).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+      decoration: ShapeDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment(0.00, 0.00),
+          end: Alignment(1.00, 1.00),
+          colors: [Color(0xFFFF6B00), Color(0xFFFF7A1A)],
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
-      child: Center(
-        child: Text(
-          notification.icon,
-          style: const TextStyle(fontSize: 20),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Image.asset(
+          'assets/images/logo without text/logo color.png',
+          fit: BoxFit.contain,
+          width: 32,
+          height: 32,
+          errorBuilder: (context, error, stackTrace) {
+            // Fallback to gradient container if image not found
+            return const SizedBox.shrink();
+          },
         ),
       ),
     );
@@ -257,29 +270,6 @@ class NotificationTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _getNotificationColor(ThemeData theme) {
-    switch (notification.type) {
-      case app_notification.NotificationType.rideRequest:
-        return Colors.blue;
-      case app_notification.NotificationType.rideAccepted:
-        return Colors.green;
-      case app_notification.NotificationType.rideStarted:
-        return Colors.orange;
-      case app_notification.NotificationType.rideCompleted:
-        return Colors.purple;
-      case app_notification.NotificationType.paymentReceived:
-        return Colors.green;
-      case app_notification.NotificationType.walletTopup:
-        return Colors.blue;
-      case app_notification.NotificationType.systemUpdate:
-        return Colors.grey;
-      case app_notification.NotificationType.promotion:
-        return Colors.amber;
-      case app_notification.NotificationType.general:
-        return theme.colorScheme.primary;
-    }
   }
 
   String _formatTimestamp(DateTime timestamp) {

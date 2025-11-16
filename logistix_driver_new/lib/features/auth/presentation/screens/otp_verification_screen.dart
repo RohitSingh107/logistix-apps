@@ -17,10 +17,10 @@
 /// - Supports retry functionality for failed verifications
 library;
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../bloc/auth_bloc.dart';
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../../vehicle/presentation/widgets/vehicle_verification_wrapper.dart';
@@ -54,6 +54,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   );
   String? _errorText;
   int _focusedIndex = -1;
+  Timer? _timer;
+  int _remainingSeconds = 120; // 2 minutes
 
   @override
   void initState() {
@@ -66,10 +68,38 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         });
       });
     }
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _remainingSeconds = 120;
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        setState(() {
+          _remainingSeconds--;
+        });
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  String _formatTimer(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '$minutes:${secs.toString().padLeft(2, '0')}';
+  }
+
+  String _maskPhoneNumber(String phone) {
+    if (phone.length <= 4) return phone;
+    final prefix = phone.substring(0, phone.length - 4);
+    return '$prefix • • • •';
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -136,15 +166,24 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
   }
 
+  void _resendOtp() {
+    context.read<AuthBloc>().add(RequestOtp(
+      widget.phone,
+      isLogin: widget.isLogin,
+      firstName: widget.firstName,
+      lastName: widget.lastName,
+    ));
+    _startTimer();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
     
     return PopScope(
-      canPop: true, // Allow back navigation to login screen
+      canPop: true,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5), // Light gray background
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
@@ -155,8 +194,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     arguments: {'phone': widget.phone},
                   );
                 } else {
-                  // Navigate to VehicleVerificationWrapper to check driver status
-                  // This will route to document screen if is_verified is false
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
                       builder: (context) => const VehicleVerificationWrapper(),
@@ -167,149 +204,223 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 _handleVerificationError(state.message);
               }
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 644),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(bottom: 67),
+                decoration: const BoxDecoration(color: Colors.white),
               child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 60), // Exact spacing from top
-                  
-                  // Title Section - Centered
-                  Center(
-                    child: Text(
-                      l10n.appTitle,
-                      style: GoogleFonts.inter(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.primary, // Orange-brown
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 40), // Exact spacing from title
-                  
-                  // Phone Number Display
-                  Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 16,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(2),
-                          border: Border.all(color: Colors.grey.shade300, width: 0.5),
-                        ),
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              flex: 1,
+                            const SizedBox(height: 16),
+                            // Logo
+                            Center(
                               child: Container(
-                                color: const Color(0xFFFF5722), // Saffron
+                                width: 48,
+                                height: 48,
+                                decoration: ShapeDecoration(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Image.asset(
+                                  'assets/images/logo without text/logo color.png',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    // Fallback to gradient if image not found
+                                    return Container(
+                                      decoration: ShapeDecoration(
+                                        gradient: const LinearGradient(
+                                          begin: Alignment(-0.00, 0.00),
+                                          end: Alignment(1.00, 1.00),
+                                          colors: [Color(0xFFFF6B00), Color(0xFFFF7A1A)],
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.local_shipping,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                color: Colors.white,
-                                child: Center(
-                                  child: Container(
-                                    width: 3,
-                                    height: 3,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF000080), // Navy blue
-                                      shape: BoxShape.circle,
-                                    ),
+                            const SizedBox(height: 16),
+                            // Title
+                            Center(
+                              child: Text(
+                                'Enter verification code',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: const Color(0xFF111111),
+                                  fontSize: 20,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            // Description
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 36.91),
+                                child: Text(
+                                  'We sent a 6‑digit code to ${_maskPhoneNumber(widget.phone)}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 13,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
                                   ),
                                 ),
                               ),
                             ),
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                color: const Color(0xFF4CAF50), // Green
+                            const SizedBox(height: 16),
+                            // SMS Verification Card
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(13),
+                              decoration: ShapeDecoration(
+                                color: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    width: 1,
+                                    color: Color(0xFFE6E6E6),
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.sms_outlined,
+                                        size: 18,
+                                        color: Color(0xFF111111),
                       ),
-                      const SizedBox(width: 12),
+                                      const SizedBox(width: 8),
                       Text(
-                        widget.phone,
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600, // Bold as shown in design
-                          color: Colors.black, // Dark grey/black as shown
+                                        'SMS Verification',
+                                        style: TextStyle(
+                                          color: const Color(0xFF111111),
+                                          fontSize: 15,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const Spacer(),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: ShapeDecoration(
+                                          color: const Color(0xFFF3F4F6),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                        ),
                         child: Text(
-                          l10n.change,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.primary,
+                                          _formatTimer(_remainingSeconds),
+                                          style: TextStyle(
+                                            color: const Color(0xFF9CA3AF),
+                                            fontSize: 12,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  
-                  const SizedBox(height: 10), // Exact spacing from phone number
-                  
-                  // Instructions
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.access_time,
+                                        size: 16,
+                                        color: Color(0xFF9CA3AF),
+                                      ),
+                                      const SizedBox(width: 8),
                   Text(
-                    l10n.otpInstructions,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.grey.shade600, // Lighter grey
+                                        'Code expires in 2 minutes',
+                                        style: TextStyle(
+                                          color: const Color(0xFF9CA3AF),
+                                          fontSize: 13,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w400,
                     ),
                   ),
-                  
-                  const SizedBox(height: 20), // Exact spacing from instructions
-                  
-                  // Status Message
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            // 6-digit code input
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                   Text(
-                    l10n.waitingToAutoVerify,
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: theme.colorScheme.primary,
+                                  '6-digit code',
+                                  style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 13,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
                     ),
                   ),
-                  
-                  const SizedBox(height: 20), // Exact spacing from status
-                  
-                  // OTP Input Fields - 6 individual fields with proper styling
+                                const SizedBox(height: 10),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       6,
                       (index) => Container(
-                        width: 45,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100, // Light gray background
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _errorText != null && index == 0 
+                                      width: 44,
+                                      height: 44,
+                                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                                      padding: const EdgeInsets.all(1),
+                                      decoration: ShapeDecoration(
+                                        color: const Color(0xFFFAFAFA),
+                                        shape: RoundedRectangleBorder(
+                                          side: BorderSide(
+                                            width: 1,
+                                            color: _errorText != null
                               ? theme.colorScheme.error 
                               : _focusedIndex == index
-                                ? theme.colorScheme.primary // Orange-brown for focused
-                                : Colors.grey.shade300,
-                            width: _focusedIndex == index ? 2.0 : 1.0, // Double border for focused
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _focusedIndex == index 
-                                ? theme.colorScheme.primary.withValues(alpha: 0.2)
-                                : Colors.grey.withValues(alpha: 0.1),
-                              blurRadius: _focusedIndex == index ? 4 : 2,
-                              offset: const Offset(0, 1),
+                                                    ? const Color(0xFFFF6B00)
+                                                    : const Color(0xFFE6E6E6),
+                                          ),
+                                          borderRadius: BorderRadius.circular(8),
                             ),
-                          ],
                         ),
                         child: TextField(
                           controller: _controllers[index],
@@ -318,22 +429,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           textAlign: TextAlign.center,
                           maxLength: 1,
                           style: TextStyle(
-                            fontSize: 20,
+                                          color: const Color(0xFF111111),
+                                          fontSize: 18,
+                                          fontFamily: 'Inter',
                             fontWeight: FontWeight.w600,
-                            color: Colors.black, // Black text for visibility
-                            fontFamily: 'Inter',
-                            height: 1.2, // Ensure proper line height
                           ),
                           decoration: InputDecoration(
                             counterText: '',
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,
                             focusedBorder: InputBorder.none,
-                            errorText: _errorText != null && index == 0 ? _errorText : null,
-                            contentPadding: EdgeInsets.zero, // Remove any padding
+                                          contentPadding: EdgeInsets.zero,
                           ),
-                          cursorColor: theme.colorScheme.primary,
-                          cursorWidth: 2.0,
+                                        cursorColor: const Color(0xFFFF6B00),
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                           ],
@@ -342,77 +450,214 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ),
                     ),
                   ),
-                  
-                  const SizedBox(height: 40), // Exact spacing from OTP input
-                  
+                                if (_errorText != null) ...[
+                                  const SizedBox(height: 10),
+                                  Center(
+                                    child: Text(
+                                      _errorText!,
+                                      style: TextStyle(
+                                        color: theme.colorScheme.error,
+                                        fontSize: 12,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 10),
+                                // Resend and change number
+                                Center(
+                                  child: Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: 'Didn\'t receive it? ',
+                                          style: TextStyle(
+                                            color: const Color(0xFF9CA3AF),
+                                            fontSize: 12,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                        WidgetSpan(
+                                          child: GestureDetector(
+                                            onTap: _remainingSeconds == 0 ? _resendOtp : null,
+                                            child: Text(
+                                              'Resend',
+                                              style: TextStyle(
+                                                color: _remainingSeconds == 0
+                                                    ? const Color(0xFFFF6B00)
+                                                    : const Color(0xFF9CA3AF),
+                                                fontSize: 12,
+                                                fontFamily: 'Inter',
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: ' • ',
+                                          style: TextStyle(
+                                            color: const Color(0xFF9CA3AF),
+                                            fontSize: 12,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                        WidgetSpan(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text(
+                                              'Use a different number',
+                                              style: TextStyle(
+                                                color: const Color(0xFFFF6B00),
+                                                fontSize: 12,
+                                                fontFamily: 'Inter',
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
                   // Verify Button
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
-                      return SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: state is AuthLoading
+                                final isLoading = state is AuthLoading;
+                                
+                                return GestureDetector(
+                                  onTap: isLoading
                               ? null
                               : () {
                                   final otp = _controllers.map((c) => c.text).join();
                                   _verifyOtp(otp);
                                 },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 48,
+                                    decoration: ShapeDecoration(
+                                      color: isLoading
+                                          ? const Color(0xFFFF6B00).withOpacity(0.6)
+                                          : const Color(0xFFFF6B00),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12), // Rounded corners
+                                        side: const BorderSide(
+                                          width: 1,
+                                          color: Color(0xFFFF6B00),
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: state is AuthLoading
-                              ? SizedBox(
+                                    child: isLoading
+                                        ? Center(
+                                            child: SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Colors.white,
                                   ),
+                                            ),
                                 )
-                              : Text(
-                                  l10n.verify,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                                        : Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(
+                                                Icons.check_circle_outline,
+                                                size: 18,
                                     color: Colors.white,
                                   ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                ' Verify and continue',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 15,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
                                 ),
                         ),
                       );
                     },
                   ),
-                  
-                  const SizedBox(height: 20), // Exact spacing from button
-                  
-                  // Resend OTP Button
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        context.read<AuthBloc>().add(RequestOtp(
-                          widget.phone,
-                          isLogin: widget.isLogin,
-                          firstName: widget.firstName,
-                          lastName: widget.lastName,
-                        ));
-                      },
-                      child: Text(
-                        l10n.resendOtp,
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
+                          ],
                         ),
                       ),
                     ),
+                    // Footer
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(
+                        top: 13,
+                        left: 16,
+                        right: 16,
+                        bottom: 12,
+                      ),
+                      decoration: ShapeDecoration(
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFE6E6E6),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.lock_outline,
+                            size: 16,
+                            color: Color(0xFF9CA3AF),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Secure one-time code',
+                            style: TextStyle(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 13,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: ShapeDecoration(
+                              color: const Color(0xFF9CA3AF),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
                   ),
-                  
-                  const Spacer(), // Push content to top, ignore keyboard space
-                ],
+                          const SizedBox(width: 12),
+                          Text(
+                            'Logistix',
+                            style: TextStyle(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 13,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

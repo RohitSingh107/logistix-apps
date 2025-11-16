@@ -1,0 +1,16 @@
+flutter_native_splash:
+  color: "#D2691E"
+  image: "assets/images/logo without text/logo color.png"
+  android: true
+  ios: true
+  android_12:
+    image: "assets/images/logo without text/logo color.png"
+    color: "#D2691E"
+    icon_background_color: "#D2691E"
+    image_dark: "assets/images/logo without text/logo color.png"
+    color_dark: "#D2691E"
+    icon_background_color_dark: "#D2691E"
+  fullscreen: true
+  # Center the logo without cropping
+  android_gravity: center
+

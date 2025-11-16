@@ -20,10 +20,6 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/config/app_theme.dart';
-import '../../../../core/models/wallet_model.dart';
-import '../../../../core/di/service_locator.dart';
-import '../../domain/repositories/wallet_repository.dart';
 import '../bloc/wallet_bloc.dart';
 import '../widgets/transaction_list_item.dart';
 import '../widgets/add_balance_modal.dart';
@@ -70,185 +66,185 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('My Wallet'),
-        centerTitle: true,
-        backgroundColor: theme.colorScheme.surface,
-        foregroundColor: theme.colorScheme.onSurface,
-        elevation: 0,
-        actions: [
-          BlocBuilder<WalletBloc, WalletState>(
-            builder: (context, state) {
-              return IconButton(
-                icon: const Icon(Icons.refresh_outlined),
-                onPressed: state is WalletLoading 
-                  ? null 
-                  : () => context.read<WalletBloc>().add(RefreshWalletData()),
-              );
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: BlocBuilder<WalletBloc, WalletState>(
-          builder: (context, state) {
-            if (state is WalletLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            if (state is WalletError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: theme.colorScheme.onSurface.withOpacity(0.5),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Failed to load wallet data',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+        child: Column(
+          children: [
+            // Top Bar
+            _buildTopBar(),
+            // Content
+            Expanded(
+              child: BlocBuilder<WalletBloc, WalletState>(
+                builder: (context, state) {
+                  if (state is WalletLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFFF6B00),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      state.message,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.5),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => context.read<WalletBloc>().add(RefreshWalletData()),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
+                    );
+                  }
 
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<WalletBloc>().add(RefreshWalletData());
-              },
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  // Wallet Balance Section
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: _buildWalletBalanceCard(theme, state),
-                    ),
-                  ),
-                  
-                  // Quick Actions Section
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: _buildQuickActionsSection(theme),
-                    ),
-                  ),
-                  
-                  // Transactions Header
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Transaction History',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
+                  if (state is WalletError) {
+                    return _buildErrorState(state.message);
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<WalletBloc>().add(RefreshWalletData());
+                    },
+                    color: const Color(0xFFFF6B00),
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      slivers: [
+                        // Wallet Balance Section
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              top: 12,
+                              left: 16,
+                              right: 16,
+                              bottom: 16,
+                            ),
+                            child: _buildWalletBalanceCard(state),
+                          ),
+                        ),
+                        
+                        // Quick Actions Section
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                            child: _buildQuickActionsSection(),
+                          ),
+                        ),
+                        
+                          // Transactions Header
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                top: 8,
+                                left: 16,
+                                right: 16,
+                                bottom: 8,
+                              ),
+                              child: Row(
+                                children: [
+                                  const Text(
+                                    'Transaction History',
+                                    style: TextStyle(
+                                      color: Color(0xFF0B1220),
+                                      fontSize: 15,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  if (state is WalletLoaded)
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.of(context).pushNamed('/transaction-history');
+                                      },
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            '${state.transactions.length} transactions',
+                                            style: const TextStyle(
+                                              color: Color(0xFF9CA3AF),
+                                              fontSize: 13,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          const Icon(
+                                            Icons.arrow_forward_ios,
+                                            size: 12,
+                                            color: Color(0xFF9CA3AF),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
-                          const Spacer(),
-                          if (state is WalletLoaded)
-                            Text(
-                              '${state.transactions.length} transactions',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        
+                        // Transactions List
+                        if (state is WalletLoaded && state.transactions.isNotEmpty)
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final transaction = state.transactions[index];
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                                  child: TransactionListItem(transaction: transaction),
+                                );
+                              },
+                              childCount: state.transactions.length,
+                            ),
+                          )
+                        else
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(32.0),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.receipt_long_outlined,
+                                    size: 64,
+                                    color: const Color(0xFF9CA3AF).withOpacity(0.5),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'No transactions yet',
+                                    style: TextStyle(
+                                      color: Color(0xFF0B1220),
+                                      fontSize: 15,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Your transaction history will appear here',
+                                    style: TextStyle(
+                                      color: Color(0xFF9CA3AF),
+                                      fontSize: 13,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
                             ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  // Transactions List
-                  if (state is WalletLoaded && state.transactions.isNotEmpty)
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final transaction = state.transactions[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: TransactionListItem(transaction: transaction),
-                          );
-                        },
-                        childCount: state.transactions.length,
-                      ),
-                    )
-                  else
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.receipt_long_outlined,
-                              size: 64,
-                              color: theme.colorScheme.onSurface.withOpacity(0.3),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No transactions yet',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        
+                        // Loading indicator for pagination
+                        if (state is WalletLoadingMore)
+                          const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFFFF6B00),
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Your transaction history will appear here',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurface.withOpacity(0.5),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                          ),
+                        
+                        // Bottom padding
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 32),
                         ),
-                      ),
+                      ],
                     ),
-                  
-                  // Loading indicator for pagination
-                  if (state is WalletLoadingMore)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                    ),
-                  
-                  // Bottom padding
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 32),
-                  ),
-                ],
+                  );
+                },
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -260,33 +256,186 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
             builder: (context) => const AddBalanceModal(),
           );
         },
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
+        backgroundColor: const Color(0xFFFF6B00),
+        foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Add Money'),
+        label: const Text(
+          'Add Money',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildWalletBalanceCard(ThemeData theme, WalletState state) {
+  Widget _buildTopBar() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(
+        top: 12,
+        left: 16,
+        right: 16,
+        bottom: 9,
+      ),
+      decoration: const ShapeDecoration(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            width: 1,
+            color: Color(0xFFE5E7EB),
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: ShapeDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment(0.00, 0.00),
+                end: Alignment(1.00, 1.00),
+                colors: [Color(0xFFFF6B00), Color(0xFFFF7A1A)],
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            child: Image.asset(
+              'assets/images/logo without text/logo color.png',
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'My Wallet',
+              style: TextStyle(
+                color: Color(0xFF0B1220),
+                fontSize: 18,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              BlocBuilder<WalletBloc, WalletState>(
+                builder: (context, state) {
+                  return GestureDetector(
+                    onTap: state is WalletLoading 
+                      ? null 
+                      : () => context.read<WalletBloc>().add(RefreshWalletData()),
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      child: Icon(
+                        Icons.refresh_outlined,
+                        size: 22,
+                        color: state is WalletLoading 
+                          ? const Color(0xFF9CA3AF)
+                          : const Color(0xFF0B1220),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: const Color(0xFF9CA3AF).withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Failed to load wallet data',
+              style: TextStyle(
+                color: Color(0xFF0B1220),
+                fontSize: 15,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFF9CA3AF),
+                fontSize: 13,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            InkWell(
+              onTap: () => context.read<WalletBloc>().add(RefreshWalletData()),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: ShapeDecoration(
+                  color: const Color(0xFFFF6B00),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWalletBalanceCard(WalletState state) {
     final balance = state is WalletLoaded ? state.balance : 0.0;
     final isPositive = balance >= 0;
 
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
+      padding: const EdgeInsets.all(20),
+      decoration: ShapeDecoration(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.primary.withOpacity(0.8),
-          ],
+          colors: [Color(0xFFFF6B00), Color(0xFFFF7A1A)],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.2),
-          width: 1,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(
+            width: 1,
+            color: Color(0xFFE5E7EB),
+          ),
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
       child: Column(
@@ -296,13 +445,15 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.onPrimary.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
+                decoration: ShapeDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.account_balance_wallet,
-                  color: theme.colorScheme.onPrimary,
+                  color: Colors.white,
                   size: 24,
                 ),
               ),
@@ -311,18 +462,22 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Wallet Balance',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onPrimary.withOpacity(0.8),
-                        fontWeight: FontWeight.w500,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '₹${NumberFormat('#,##0.00').format(balance)}',
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        color: theme.colorScheme.onPrimary,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontFamily: 'Inter',
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -330,22 +485,26 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: ShapeDecoration(
                   color: isPositive 
-                      ? Colors.green.withOpacity(0.2)
-                      : theme.colorScheme.error.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isPositive ? Colors.green : theme.colorScheme.error,
-                    width: 1,
+                      ? Colors.white.withOpacity(0.2)
+                      : Colors.white.withOpacity(0.1),
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      color: isPositive ? Colors.white : Colors.white.withOpacity(0.5),
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(999),
                   ),
                 ),
                 child: Text(
-                  isPositive ? 'Positive' : 'Negative',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: isPositive ? Colors.green : theme.colorScheme.error,
-                    fontWeight: FontWeight.w600,
+                  isPositive ? 'Active' : 'Low',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ),
@@ -354,23 +513,21 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
           const SizedBox(height: 24),
           Row(
             children: [
-                             Expanded(
-                 child: _buildBalanceStat(
-                   theme,
-                   'Total Added',
-                   '₹${NumberFormat('#,##0.00').format(state is WalletLoaded ? state.balance : 0)}',
-                   Icons.trending_up,
-                 ),
-               ),
-               const SizedBox(width: 16),
-               Expanded(
-                 child: _buildBalanceStat(
-                   theme,
-                   'Total Spent',
-                   '₹${NumberFormat('#,##0.00').format(0)}',
-                   Icons.trending_down,
-                 ),
-               ),
+              Expanded(
+                child: _buildBalanceStat(
+                  'Total Added',
+                  '₹${NumberFormat('#,##0.00').format(state is WalletLoaded ? state.balance : 0)}',
+                  Icons.trending_up,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildBalanceStat(
+                  'Total Spent',
+                  '₹${NumberFormat('#,##0.00').format(0)}',
+                  Icons.trending_down,
+                ),
+              ),
             ],
           ),
         ],
@@ -378,7 +535,7 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
     );
   }
 
-  Widget _buildBalanceStat(ThemeData theme, String label, String value, IconData icon) {
+  Widget _buildBalanceStat(String label, String value, IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -386,14 +543,17 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
           children: [
             Icon(
               icon,
-              color: theme.colorScheme.onPrimary.withOpacity(0.7),
+              color: Colors.white.withOpacity(0.8),
               size: 16,
             ),
             const SizedBox(width: 4),
             Text(
               label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onPrimary.withOpacity(0.7),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 12,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w400,
               ),
             ),
           ],
@@ -401,8 +561,10 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: theme.colorScheme.onPrimary,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontFamily: 'Inter',
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -410,23 +572,28 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
     );
   }
 
-  Widget _buildQuickActionsSection(ThemeData theme) {
+  Widget _buildQuickActionsSection() {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-          width: 1,
+      padding: const EdgeInsets.all(13),
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(
+            width: 1,
+            color: Color(0xFFE6E6E6),
+          ),
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Quick Actions',
-            style: theme.textTheme.titleMedium?.copyWith(
+            style: TextStyle(
+              color: Color(0xFF0B1220),
+              fontSize: 15,
+              fontFamily: 'Inter',
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -435,7 +602,6 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
             children: [
               Expanded(
                 child: _buildQuickActionButton(
-                  theme,
                   'Add Money',
                   Icons.add,
                   () {
@@ -448,35 +614,28 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
                   },
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: _buildQuickActionButton(
-                  theme,
                   'Withdraw',
                   Icons.download,
                   () {
-                    // TODO: Implement withdraw functionality
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Withdraw functionality coming soon'),
+                        backgroundColor: Color(0xFF0B1220),
                       ),
                     );
                   },
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: _buildQuickActionButton(
-                  theme,
                   'History',
                   Icons.history,
                   () {
-                    // TODO: Implement detailed history view
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Detailed history coming soon'),
-                      ),
-                    );
+                    Navigator.of(context).pushNamed('/transaction-history');
                   },
                 ),
               ),
@@ -487,50 +646,52 @@ class _WalletScreenContentState extends State<_WalletScreenContent> {
     );
   }
 
-  Widget _buildQuickActionButton(ThemeData theme, String label, IconData icon, VoidCallback onPressed) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: theme.colorScheme.primary,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+  Widget _buildQuickActionButton(String label, IconData icon, VoidCallback onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: ShapeDecoration(
+          color: const Color(0xFFF3F4F6),
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(
+              width: 1,
+              color: Color(0xFFE5E7EB),
             ),
+            borderRadius: BorderRadius.circular(10),
           ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: ShapeDecoration(
+                color: const Color(0xFFFF6B00).withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFFFF6B00),
+                size: 20,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF0B1220),
+                fontSize: 12,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
   }
-} 
+}

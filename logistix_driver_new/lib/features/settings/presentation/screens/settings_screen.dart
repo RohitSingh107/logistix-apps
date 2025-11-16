@@ -1,44 +1,71 @@
-/// settings_screen.dart - Application Settings Interface
+/// settings_screen.dart - Profile & Settings Screen
 /// 
 /// Purpose:
-/// - Provides comprehensive application settings management
-/// - Handles theme switching and appearance customization
-/// - Manages notification preferences and app configurations
-/// 
-/// Key Logic:
-/// - Integrates with ThemeBloc for dynamic theme switching
-/// - Organizes settings into logical sections (Appearance, Notifications, Account, Support)
-/// - Provides theme selection with light, dark, and custom options
-/// - Handles notification settings and preferences
-/// - Implements clean section-based UI layout
-/// - Shows current theme selection with visual feedback
-/// - Persists user preferences through BLoC state management
-/// - Provides immediate visual feedback for theme changes
-/// - Includes expandable sections for organized settings presentation
+/// - Displays driver profile information and settings
+/// - Shows earnings and trip statistics
+/// - Provides access to account settings, documents, and support
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/config/app_theme.dart';
-import '../../../theme/presentation/bloc/theme_bloc.dart';
-import '../../../theme/presentation/bloc/theme_event.dart';
-import '../../../theme/presentation/bloc/theme_state.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../../core/models/user_model.dart';
+import '../../../../features/driver/domain/repositories/driver_repository.dart';
+import '../../../../features/auth/presentation/bloc/auth_bloc.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  late final DriverRepository _driverRepository;
+  Map<String, dynamic>? _driverProfile;
+  bool _isAvailable = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _driverRepository = serviceLocator<DriverRepository>();
+    _fetchDriverProfile();
+  }
+
+  Future<void> _fetchDriverProfile() async {
+    try {
+      final driver = await _driverRepository.getDriverProfile().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Timeout fetching driver profile');
+        },
+      );
+      
+      final profile = driver.toJson();
+      
+      if (mounted) {
+        setState(() {
+          _driverProfile = profile;
+          _isAvailable = profile['is_available'] ?? false;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching driver profile: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        print('🔄 SettingsScreen: AuthBloc state changed to ${state.runtimeType}');
-        
         if (state is AuthInitial) {
-          print('🚪 SettingsScreen: User logged out, navigating to login');
-          // User has been logged out, show success message and navigate
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Logged out successfully'),
@@ -47,7 +74,6 @@ class SettingsScreen extends StatelessWidget {
             ),
           );
           
-          // Force navigation to login screen as fallback
           Future.delayed(const Duration(milliseconds: 500), () {
             if (context.mounted) {
               Navigator.of(context).pushNamedAndRemoveUntil(
@@ -57,8 +83,6 @@ class SettingsScreen extends StatelessWidget {
             }
           });
         } else if (state is AuthError) {
-          print('❌ SettingsScreen: Logout failed: ${state.message}');
-          // Show error message if logout fails
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Logout failed: ${state.message}'),
@@ -68,661 +92,1035 @@ class SettingsScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Settings'),
-          centerTitle: true,
-          elevation: 0,
-          backgroundColor: theme.colorScheme.surface,
-          foregroundColor: theme.colorScheme.onSurface,
+        backgroundColor: Colors.white,
+        body: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: const Color(0xFFFF6B00),
         ),
-        body: ListView(
+              )
+            : SafeArea(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Account Settings Section
-            _buildSectionHeader(context, 'Account'),
-            _buildAccountSettings(context),
-            
-            const Divider(height: 32),
-            
-            // Theme Settings Section
-            _buildSectionHeader(context, 'Appearance'),
-            _buildThemeSettings(context),
-            
-            const Divider(height: 32),
-            
-            // Notification Settings
-            _buildSectionHeader(context, 'Notifications'),
-            _buildNotificationSettings(context),
-            
-            const Divider(height: 32),
-            
-            // Support Section
-            _buildSectionHeader(context, 'Support'),
-            _buildSupportSettings(context),
-            
-            const Divider(height: 32),
-            
-            // About Section
-            _buildSectionHeader(context, 'About'),
-            _buildAboutSettings(context),
-            
-            const SizedBox(height: 32),
-            
-            // Logout Section
-            _buildLogoutSection(context),
-            
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    final theme = Theme.of(context);
-    
-    return Padding(
-      padding: const EdgeInsets.all(16),
+                      // Header
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.only(
+                          top: 12,
+                          left: 16,
+                          right: 16,
+                          bottom: 9,
+                        ),
+                        decoration: ShapeDecoration(
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(
+                              width: 1,
+                              color: Color(0xFFE6E6E6),
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: ShapeDecoration(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                              child: Image.asset(
+                                'assets/images/logo without text/logo color.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Fallback to gradient if image not found
+                                  return Container(
+                                    decoration: ShapeDecoration(
+                                      gradient: const LinearGradient(
+                                        begin: Alignment(0.00, 0.00),
+                                        end: Alignment(1.00, 1.00),
+                                        colors: [Color(0xFFFF6B00), Color(0xFFFF7A1A)],
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
       child: Text(
-        title,
-        style: theme.textTheme.headlineSmall?.copyWith(
-          color: theme.colorScheme.primary,
+                                'Profile & Settings',
+                                style: TextStyle(
+                                  color: const Color(0xFF111111),
+                                  fontSize: 18,
+                                  fontFamily: 'Inter',
           fontWeight: FontWeight.w600,
         ),
       ),
-    );
-  }
-  
-  Widget _buildAccountSettings(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Column(
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                    vertical: 3,
+                                  ),
+                                  decoration: ShapeDecoration(
+                                    color: _isAvailable
+                                        ? const Color(0xFF16A34A)
+                                        : const Color(0xFFF3F4F6),
+                                    shape: RoundedRectangleBorder(
+                                      side: BorderSide(
+                                        width: 1,
+                                        color: _isAvailable
+                                            ? const Color(0xFF16A34A)
+                                            : const Color(0xFFE6E6E6),
+                                      ),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+            ),
+                                  child: Text(
+                                    'Online',
+                                    style: TextStyle(
+                                      color: _isAvailable
+                                          ? Colors.white
+                                          : const Color(0xFF9CA3AF),
+                                      fontSize: 12,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w400,
+          ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                GestureDetector(
+          onTap: () {
+                                    Navigator.of(context).pushNamed('/alerts');
+                                  },
+                                  child: Container(
+                                    width: 22,
+                                    height: 22,
+                                    child: const Icon(
+                                      Icons.notifications_outlined,
+                                      size: 22,
+                                      color: Color(0xFF111111),
+                                    ),
+            ),
+          ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Main Content
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Profile Card
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(13),
+                              decoration: ShapeDecoration(
+                                color: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    width: 1,
+                                    color: Color(0xFFE6E6E6),
+                                  ),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              Icons.person_outline,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 56,
+                                    height: 56,
+                                    clipBehavior: Clip.antiAlias,
+                                    decoration: ShapeDecoration(
+                                      image: _driverProfile != null &&
+                                              _driverProfile!['user'] != null &&
+                                              (_driverProfile!['user'] as User).profilePicture != null
+                                          ? DecorationImage(
+                                              image: NetworkImage(
+                                                (_driverProfile!['user'] as User).profilePicture!,
           ),
-          title: Text(
-            'Profile',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Edit your personal information',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            // TODO: Navigate to profile edit screen
-          },
-        ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.security_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'Security',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Change password and security settings',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            // TODO: Navigate to security settings
-          },
-        ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.payment_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'Payment Methods',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Manage your payment options',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            // TODO: Navigate to payment methods
-          },
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildThemeSettings(BuildContext context) {
-    return BlocBuilder<ThemeBloc, ThemeState>(
-      builder: (context, state) {
-        final currentTheme = state is ThemeLoaded ? state.themeName : AppTheme.lightTheme;
-        
-        return Column(
+                                              fit: BoxFit.fill,
+                                            )
+                                          : null,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      color: _driverProfile == null ||
+                                              _driverProfile!['user'] == null ||
+                                              (_driverProfile!['user'] as User).profilePicture == null
+                                          ? const Color(0xFFE6E6E6)
+                                          : null,
+                                    ),
+                                    child: _driverProfile == null ||
+                                            _driverProfile!['user'] == null ||
+                                            (_driverProfile!['user'] as User).profilePicture == null
+                                        ? const Icon(
+                                            Icons.person,
+                                            size: 28,
+                                            color: Color(0xFF9CA3AF),
+                                          )
+                                        : null,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildThemeTile(
-              context,
-              title: 'Light Theme',
-              subtitle: 'Clean and bright appearance',
-              value: AppTheme.lightTheme,
-              groupValue: currentTheme,
-              previewColors: [
-                const Color(0xFFD4A574),
-                const Color(0xFF4CAF50),
-                Colors.white,
-              ],
+                                        Text(
+                                          _driverProfile != null &&
+                                                  _driverProfile!['user'] != null
+                                              ? '${(_driverProfile!['user'] as User).firstName ?? ''} ${(_driverProfile!['user'] as User).lastName ?? ''}'
+                                              : 'Driver',
+                                          style: TextStyle(
+                                            color: const Color(0xFF111111),
+                                            fontSize: 16,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w600,
+                                          ),
             ),
-            _buildThemeTile(
-              context,
-              title: 'Dark Theme',
-              subtitle: 'Easy on the eyes in low light',
-              value: AppTheme.darkTheme,
-              groupValue: currentTheme,
-              previewColors: [
-                const Color(0xFFE5B88A),
-                const Color(0xFF81C784),
-                const Color(0xFF1E1E1E),
-              ],
-            ),
-            _buildThemeTile(
-              context,
-              title: 'Blue Theme',
-              subtitle: 'Professional blue accent',
-              value: AppTheme.blueTheme,
-              groupValue: currentTheme,
-              previewColors: [
-                const Color(0xFF1976D2),
-                const Color(0xFF00ACC1),
-                Colors.white,
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Delhi NCR • 2 yrs driving',
+                                          style: TextStyle(
+                                            color: const Color(0xFF9CA3AF),
+                                            fontSize: 13,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 9,
+                                                vertical: 3,
+                                              ),
+                                              decoration: ShapeDecoration(
+                                                shape: RoundedRectangleBorder(
+                                                  side: const BorderSide(
+                                                    width: 1,
+                                                    color: Color(0xFFE6E6E6),
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(999),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                'ID: ${_driverProfile?['id'] ?? 'LX-0000'}',
+                                                style: TextStyle(
+                                                  color: const Color(0xFF9CA3AF),
+                                                  fontSize: 12,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              padding: const EdgeInsets.only(
+                                                top: 3,
+                                                left: 9,
+                                                right: 9,
+                                                bottom: 5,
+                                              ),
+                                              decoration: ShapeDecoration(
+                                                color: const Color(0xFFF3F4F6),
+                                                shape: RoundedRectangleBorder(
+                                                  side: const BorderSide(
+                                                    width: 1,
+                                                    color: Color(0xFFE6E6E6),
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(999),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                _getRatingDisplay(),
+                                                style: TextStyle(
+                                                  color: const Color(0xFF9CA3AF),
+                                                  fontSize: 12,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ),
+                                            ),
               ],
             ),
           ],
-        );
-      },
-    );
-  }
-  
-  Widget _buildThemeTile(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required String value,
-    required String groupValue,
-    required List<Color> previewColors,
-  }) {
-    final theme = Theme.of(context);
-    final isSelected = value == groupValue;
-    
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: isSelected 
-          ? theme.colorScheme.primary.withOpacity(0.1)
-          : theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isSelected 
-            ? theme.colorScheme.primary
-            : theme.colorScheme.outline.withOpacity(0.1),
-          width: isSelected ? 2 : 1,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      // TODO: Navigate to edit profile
+                                    },
+                                    child: Container(
+                                      width: 20,
+                                      height: 20,
+                                      child: const Icon(
+                                        Icons.edit_outlined,
+                                        size: 20,
+                                        color: Color(0xFF111111),
+                                      ),
         ),
       ),
-      child: RadioListTile<String>(
-        title: Text(
-          title,
-          style: theme.textTheme.titleMedium,
+                                ],
+                              ),
         ),
-        subtitle: Text(
-          subtitle,
-          style: theme.textTheme.bodySmall,
-        ),
-        value: value,
-        groupValue: groupValue,
-        onChanged: (String? newValue) {
-          if (newValue != null) {
-            context.read<ThemeBloc>().add(ChangeThemeEvent(newValue));
-          }
-        },
-        secondary: Row(
+                            const SizedBox(height: 12),
+                            // Earnings Summary
+                            Row(
           mainAxisSize: MainAxisSize.min,
-          children: previewColors.map((color) => Container(
-            width: 24,
-            height: 24,
-            margin: const EdgeInsets.only(right: 4),
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.3),
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.all(11),
+                                    decoration: ShapeDecoration(
+                                      color: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        side: const BorderSide(
+                                          width: 1,
+                                          color: Color(0xFFE6E6E6),
               ),
-            ),
-          )).toList(),
+                                        borderRadius: BorderRadius.circular(8),
         ),
       ),
-    );
-  }
-  
-  Widget _buildNotificationSettings(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Column(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+                                        Text(
+                                          'This week',
+                                          style: TextStyle(
+                                            color: const Color(0xFF9CA3AF),
+                                            fontSize: 12,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
+            ),
+          ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '₹${_driverProfile?['week_earnings'] ?? _driverProfile?['total_earnings'] ?? '0'}',
+                                          style: TextStyle(
+                                            color: const Color(0xFF111111),
+                                            fontSize: 16,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w600,
+                                          ),
+          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.all(11),
+                                    decoration: ShapeDecoration(
+                                      color: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        side: const BorderSide(
+                                          width: 1,
+                                          color: Color(0xFFE6E6E6),
+                                        ),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              Icons.notifications_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Trips',
+                                          style: TextStyle(
+                                            color: const Color(0xFF9CA3AF),
+                                            fontSize: 12,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w400,
+          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${_driverProfile?['total_trips'] ?? '0'}',
+                                          style: TextStyle(
+                                            color: const Color(0xFF111111),
+                                            fontSize: 16,
+                                            fontFamily: 'Inter',
+                                            fontWeight: FontWeight.w600,
+                                          ),
+          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            // Account Section
+                            Container(
+                              width: double.infinity,
+                              clipBehavior: Clip.antiAlias,
+                              decoration: ShapeDecoration(
+                                color: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    width: 1,
+                                    color: Color(0xFFE6E6E6),
+                                  ),
+              borderRadius: BorderRadius.circular(8),
             ),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.only(
+                                      top: 12,
+                                      left: 12,
+                                      right: 12,
+                                      bottom: 13,
+                                    ),
+                                    child: Text(
+                                      'Account',
+                                      style: TextStyle(
+                                        color: const Color(0xFF111111),
+                                        fontSize: 15,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w600,
           ),
-          title: Text(
-            'Push Notifications',
-            style: theme.textTheme.titleMedium,
+                                    ),
+                                  ),
+                                  _buildAccountItem(
+                                    icon: Icons.description_outlined,
+                                    title: 'Documents',
+                                    subtitle: 'License, RC, Insurance',
+                                    onTap: () {
+                                      Navigator.of(context).pushNamed('/driver/documents');
+                                    },
           ),
-          subtitle: Text(
-            'Receive updates about your deliveries',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: Switch(
-            value: true,
-            onChanged: (bool value) {
-              // TODO: Implement notification settings
+                                  _buildAccountItem(
+                                    icon: Icons.account_balance_outlined,
+                                    title: 'Bank & Payouts',
+                                    subtitle: 'HDFC • **** 4931',
+                                    onTap: () {
+                                      // TODO: Navigate to bank & payouts
             },
           ),
-        ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.email_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'Email Notifications',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Get order updates via email',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: Switch(
-            value: false,
-            onChanged: (bool value) {
-              // TODO: Implement email settings
-            },
-          ),
-        ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.sms_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'SMS Notifications',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Receive SMS alerts for important updates',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: Switch(
-            value: true,
-            onChanged: (bool value) {
-              // TODO: Implement SMS settings
-            },
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildSupportSettings(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Column(
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: ShapeDecoration(
+                                      shape: RoundedRectangleBorder(
+                                        side: const BorderSide(
+                                          width: 1,
+                                          color: Color(0xFFE6E6E6),
+                                        ),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+                                        Container(
+                                          width: 22,
+                                          height: 22,
+                                          child: const Icon(
+                                            Icons.security_outlined,
+                                            size: 22,
+                                            color: Color(0xFF111111),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Security',
+                                                style: TextStyle(
+                                                  color: const Color(0xFF111111),
+                                                  fontSize: 15,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'Password, 2-step verification',
+                                                style: TextStyle(
+                                                  color: const Color(0xFF9CA3AF),
+                                                  fontSize: 13,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w400,
+          ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          width: 18,
+                                          height: 18,
+                                          child: const Icon(
+                                            Icons.arrow_forward_ios,
+                                            size: 18,
+                                            color: Color(0xFF9CA3AF),
+                                          ),
+                                        ),
+                                      ],
+        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            // Support Section
+                            Container(
+                              width: double.infinity,
+                              clipBehavior: Clip.antiAlias,
+                              decoration: ShapeDecoration(
+                                color: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    width: 1,
+                                    color: Color(0xFFE6E6E6),
+                                  ),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              Icons.help_outline,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.only(
+                                      top: 12,
+                                      left: 12,
+                                      right: 12,
+                                      bottom: 13,
           ),
-          title: Text(
-            'Help & Support',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Get help with your account',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                                    child: Text(
+                                      'Support',
+                                      style: TextStyle(
+                                        color: const Color(0xFF111111),
+                                        fontSize: 15,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  _buildAccountItem(
+                                    icon: Icons.help_outline,
+                                    title: 'Help Center',
+                                    subtitle: 'FAQs and issue resolution',
           onTap: () {
-            // TODO: Navigate to help and support
+                                      // TODO: Navigate to help center
           },
         ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.chat_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: ShapeDecoration(
+                                      shape: RoundedRectangleBorder(
+                                        side: const BorderSide(
+                                          width: 1,
+                                          color: Color(0xFFE6E6E6),
+                                        ),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: 22,
+                                          height: 22,
+                                          child: const Icon(
+                                            Icons.chat_bubble_outline,
+                                            size: 22,
+                                            color: Color(0xFF111111),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Chat with support',
+                                                style: TextStyle(
+                                                  color: const Color(0xFF111111),
+                                                  fontSize: 15,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w500,
           ),
-          title: Text(
-            'Contact Us',
-            style: theme.textTheme.titleMedium,
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'Average reply in 5 min',
+                                                style: TextStyle(
+                                                  color: const Color(0xFF9CA3AF),
+                                                  fontSize: 13,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w400,
           ),
-          subtitle: Text(
-            'Reach out to our support team',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          width: 18,
+                                          height: 18,
+                                          child: const Icon(
+                                            Icons.arrow_forward_ios,
+                                            size: 18,
+                                            color: Color(0xFF9CA3AF),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            // Logout Button
+                            Container(
+                              width: double.infinity,
+                              height: 51,
+                              decoration: ShapeDecoration(
+                                color: const Color(0xFF333333),
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    width: 1,
+                                    color: Color(0xFFE6E6E6),
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
           onTap: () {
-            // TODO: Navigate to contact us
-          },
-        ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.feedback_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'Send Feedback',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Share your thoughts with us',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            // TODO: Navigate to feedback
-          },
-        ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.star_outline,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'Rate App',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Rate us on the app store',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            // TODO: Open app store rating
-          },
+                                    _showLogoutBottomSheet(context);
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 18,
+                                        height: 18,
+                                        child: const Icon(
+                                          Icons.arrow_forward,
+                                          size: 18,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        ' Logout',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w500,
+                                        ),
         ),
       ],
-    );
-  }
-  
-  Widget _buildAboutSettings(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Column(
-      children: [
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.info_outline,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'App Version',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            '1.0.0',
-            style: theme.textTheme.bodySmall,
-          ),
-        ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.privacy_tip_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'Privacy Policy',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Read our privacy policy',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            // TODO: Navigate to privacy policy
-          },
-        ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.description_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'Terms of Service',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Read our terms of service',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            // TODO: Navigate to terms of service
-          },
-        ),
-        ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.update_outlined,
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            'Check for Updates',
-            style: theme.textTheme.titleMedium,
-          ),
-          subtitle: Text(
-            'Check for app updates',
-            style: theme.textTheme.bodySmall,
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            // TODO: Check for updates
-          },
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildLogoutSection(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout? You will need to log in again to access your account.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.error,
-                          foregroundColor: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
                         ),
-                        child: const Text('Logout'),
                       ),
                     ],
                   ),
-                );
-                if (confirm == true) {
-                  try {
-                    // Show loading indicator
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Logging out...'),
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
-                    
-                    // Implement logout functionality
-                    context.read<AuthBloc>().add(Logout());
-                    
-                    // Show success message
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Logged out successfully'),
-                        backgroundColor: Colors.green,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  } catch (e) {
-                    // Show error message if logout fails
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Failed to logout: ${e.toString()}'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.error,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
+      ),
+    );
+  }
+
+  void _showLogoutBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: ShapeDecoration(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(
+              width: 1,
+              color: Color(0xFFE6E6E6),
+            ),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+          ),
+        ),
+        padding: const EdgeInsets.only(
+          top: 17,
+          left: 16,
+          right: 16,
+          bottom: 12,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+            // Drag Handle
+            Center(
+              child: Container(
+                width: 44,
+                height: 4,
+                decoration: ShapeDecoration(
+                  color: const Color(0xFFE6E6E6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Title
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.logout,
+                    size: 22,
+                    color: Color(0xFF111111),
+          ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Log out of Logistix?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: const Color(0xFF111111),
+                      fontSize: 16,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+          ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Description
+            Center(
+              child: Text(
+                'You will stop receiving trip requests until you sign in\nagain.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 13,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w400,
+          ),
+        ),
+            ),
+            const SizedBox(height: 12),
+            // Info Box
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(9),
+              decoration: ShapeDecoration(
+                color: const Color(0xFF333333),
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(
+                    width: 1,
+                    color: Color(0xFFE6E6E6),
+                  ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Saved progress and uploaded documents\nremain secure.',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Buttons
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: GestureDetector(
+          onTap: () {
+                      Navigator.of(context).pop();
+          },
+                    child: Container(
+                      height: 51,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFF333333),
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFE6E6E6),
+                          ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.close,
+                            size: 18,
+                            color: Colors.white,
+          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            ' Cancel',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+          ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+          onTap: () {
+                      Navigator.of(context).pop();
+                      context.read<AuthBloc>().add(Logout());
+                    },
+                    child: Container(
+                      height: 51,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFDC2626),
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1,
+                            color: Color(0xFFDC2626),
+                          ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.logout,
+                            size: 18,
+                            color: Colors.white,
+          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            ' Log out',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+          ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getRatingDisplay() {
+    final rating = _driverProfile?['average_rating'];
+    if (rating == null) {
+      return '4.9★';
+    }
+    
+    // Handle both String and numeric values
+    if (rating is num) {
+      return '${rating.toStringAsFixed(1)}★';
+    } else if (rating is String) {
+      // Try to parse as double, fallback to original string
+      final parsed = double.tryParse(rating);
+      if (parsed != null) {
+        return '${parsed.toStringAsFixed(1)}★';
+      }
+      return '$rating★';
+    }
+    
+    return '4.9★';
+  }
+
+  Widget _buildAccountItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+            width: double.infinity,
+      padding: const EdgeInsets.only(
+        top: 12,
+        left: 12,
+        right: 12,
+        bottom: 13,
+      ),
+      decoration: ShapeDecoration(
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(
+            width: 1,
+            color: Color(0xFFE6E6E6),
+          ),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                child: Icon(
+                  icon,
+                  size: 22,
+                  color: const Color(0xFF111111),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: const Color(0xFF111111),
+                        fontSize: 15,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 13,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 18,
+                height: 18,
+                child: const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 18,
+                  color: Color(0xFF9CA3AF),
             ),
           ),
         ],
+          ),
+        ),
       ),
     );
   }

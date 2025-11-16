@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 572.94 683.23">
+  <defs>
+    <style>
+      .cls-1 {
+        font-family: Helvetica-Bold, Helvetica;
+        font-size: 117.81px;
+        font-weight: 700;
+        letter-spacing: 0em;
+      }
+
+      .cls-1, .cls-2 {
+        fill: #231f20;
+      }
+    </style>
+  </defs>
+  <g>
+    <polygon class="cls-2" points="360.14 285.34 360.14 285.38 279.48 396.87 185.31 527.07 25.79 527.07 24.58 526.24 198.82 285.34 25.52 45.76 186.87 45.76 213.46 82.57 279.48 173.81 360.14 285.34"/>
+    <polygon class="cls-2" points="533.44 45.76 522.59 60.76 398.44 232.43 317.74 120.89 372.09 45.76 533.44 45.76"/>
+    <path class="cls-2" d="M548.42,525.47l-1.21.83h-159.52c-21.37-29.5-42.73-59-64.1-88.5,27.69-36.03,55.38-72.05,83.07-108.08,47.26,65.25,94.51,130.49,141.77,195.74Z"/>
+  </g>
+  <text class="cls-1" transform="translate(15.73 649.77)"><tspan x="0" y="0">LOGISTIX</tspan></text>
+</svg>

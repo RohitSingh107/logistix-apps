@@ -40,7 +40,7 @@ class DriverDocument {
   final DateTime? verifiedAt;
   final String? notes;
   @JsonKey(name: 'is_expired')
-  final String isExpired;
+  final bool isExpired;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @JsonKey(name: 'updated_at')

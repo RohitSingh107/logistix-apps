@@ -225,24 +225,26 @@ class NotificationService {
       print("🚗 Showing ride request popup for booking: $bookingId");
       
       // Use global navigator key to show popup
-      if (_navigatorKey?.currentContext == null) {
-        print("❌ No navigator context available for showing popup");
-        return;
-      }
-      
-      final rideActionService = serviceLocator<RideActionService>();
-      
-      showDialog(
-        context: _navigatorKey!.currentContext!,
-        barrierDismissible: false,
-        builder: (context) => RideRequestPopup(
+      // Add a small delay to ensure navigator context is ready
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (_navigatorKey?.currentContext == null) {
+          print("❌ No navigator context available for showing popup");
+          return;
+        }
+        
+        final rideActionService = serviceLocator<RideActionService>();
+        
+        showDialog(
+          context: _navigatorKey!.currentContext!,
+          barrierDismissible: false,
+          builder: (context) => RideRequestPopup(
           notification: notification,
           onRideAction: (bookingId, accepted) async {
             try {
               if (accepted) {
                 final trip = await rideActionService.acceptRide(bookingId);
                 
-                // Show success message and redirect to trip screen
+                // Show success message (navigation is handled by the popup widget)
                 if (_navigatorKey?.currentContext != null) {
                   ScaffoldMessenger.of(_navigatorKey!.currentContext!).showSnackBar(
                     SnackBar(
@@ -251,16 +253,6 @@ class NotificationService {
                       duration: const Duration(seconds: 2),
                     ),
                   );
-                  
-                  // Redirect to trip screen after successful acceptance
-                  Future.delayed(const Duration(seconds: 1), () {
-                    if (_navigatorKey?.currentContext != null) {
-                      Navigator.of(_navigatorKey!.currentContext!).pushNamed(
-                        '/driver-trip',
-                        arguments: trip,
-                      );
-                    }
-                  });
                 }
                 
                 return trip;
@@ -273,10 +265,11 @@ class NotificationService {
               rethrow;
             }
           },
-        ),
-      );
-      
-      print("✅ Ride request popup shown successfully");
+          ),
+        );
+        
+        print("✅ Ride request popup shown successfully");
+      });
     } catch (e) {
       print("❌ Error showing ride request popup: $e");
     }
@@ -312,6 +305,7 @@ class NotificationService {
         showWhen: true,
         enableVibration: true,
         playSound: true,
+        icon: '@mipmap/ic_launcher',
         // Remove sound file reference to avoid crashes
         // sound: RawResourceAndroidNotificationSound('notification_sound'),
       );

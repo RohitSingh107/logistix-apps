@@ -16,7 +16,7 @@ Driver _$DriverFromJson(Map<String, dynamic> json) => Driver(
       fcmToken: json['fcm_token'] as String?,
       averageRating: json['average_rating'] as String,
       totalEarnings: (json['total_earnings'] as num).toDouble(),
-      location: json['location'] as Map<String, dynamic>?,
+      location: Driver._locationFromJson(json['location']),
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
@@ -35,7 +35,7 @@ Map<String, dynamic> _$DriverToJson(Driver instance) => <String, dynamic>{
       'fcm_token': instance.fcmToken,
       'average_rating': instance.averageRating,
       'total_earnings': instance.totalEarnings,
-      'location': instance.location,
+      'location': Driver._locationToJson(instance.location),
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };

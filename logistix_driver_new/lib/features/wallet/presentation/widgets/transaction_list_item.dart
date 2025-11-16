@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/config/app_theme.dart';
 import '../../../../core/models/wallet_model.dart';
 
 class TransactionListItem extends StatelessWidget {
@@ -13,46 +12,43 @@ class TransactionListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isCredit = transaction.amount > 0;
     final transactionColor = isCredit 
-        ? Colors.green 
-        : Colors.red;
+        ? const Color(0xFF16A34A) // Green for credit
+        : const Color(0xFFDC2626); // Red for debit
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+      padding: const EdgeInsets.all(13),
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(
+            width: 1,
+            color: Color(0xFFE6E6E6),
           ),
-        ],
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
       child: Row(
         children: [
           // Transaction Icon
           Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
+            width: 40,
+            height: 40,
+            decoration: ShapeDecoration(
               color: transactionColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppRadius.sm),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: Icon(
               _getTransactionIcon(),
               color: transactionColor,
-              size: 24,
+              size: 20,
             ),
           ),
           
-          const SizedBox(width: AppSpacing.md),
+          const SizedBox(width: 12),
           
           // Transaction Details
           Expanded(
@@ -61,25 +57,35 @@ class TransactionListItem extends StatelessWidget {
               children: [
                 Text(
                   _getTransactionTitle(),
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: const TextStyle(
+                    color: Color(0xFF0B1220),
+                    fontSize: 15,
+                    fontFamily: 'Inter',
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                if (transaction.remarks != null && transaction.remarks!.isNotEmpty)
+                if (transaction.remarks != null && transaction.remarks!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
                   Text(
                     transaction.remarks!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    style: const TextStyle(
+                      color: Color(0xFF9CA3AF),
+                      fontSize: 13,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w400,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                const SizedBox(height: AppSpacing.xs),
+                ],
+                const SizedBox(height: 2),
                 Text(
                   DateFormat('MMM dd, yyyy • hh:mm a').format(transaction.createdAt),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 12,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -92,27 +98,32 @@ class TransactionListItem extends StatelessWidget {
             children: [
               Text(
                 '${isCredit ? '+' : ''}₹${NumberFormat('#,##,###.##').format(transaction.amount.abs())}',
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: TextStyle(
                   color: transactionColor,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xs),
+              const SizedBox(height: 4),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
+                  horizontal: 9,
+                  vertical: 3,
                 ),
-                decoration: BoxDecoration(
+                decoration: ShapeDecoration(
                   color: transactionColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.xs),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
                 child: Text(
                   transaction.typeTx,
-                  style: theme.textTheme.bodySmall?.copyWith(
+                  style: TextStyle(
                     color: transactionColor,
-                    fontWeight: FontWeight.w500,
                     fontSize: 10,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -152,4 +163,4 @@ class TransactionListItem extends StatelessWidget {
         return 'Transaction';
     }
   }
-} 
+}

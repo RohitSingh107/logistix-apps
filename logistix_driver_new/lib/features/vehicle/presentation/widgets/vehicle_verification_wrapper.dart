@@ -26,55 +26,61 @@ class _VehicleVerificationWrapperState extends State<VehicleVerificationWrapper>
       print('🔍 VehicleVerificationWrapper: Checking verification status...');
       final result = await _verificationService.checkVerificationStatus();
       print('📊 VehicleVerificationWrapper: Status = ${result.status}, Driver = ${result.driver?.id}, isVerified = ${result.driver?.isVerified}');
+      print('📊 VehicleVerificationWrapper: Driver details - ID: ${result.driver?.id}, isVerified: ${result.driver?.isVerified}, type: ${result.driver?.isVerified.runtimeType}');
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
+      // Use a small delay to ensure the widget is mounted and ready
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      if (!mounted) {
+        print('⚠️ VehicleVerificationWrapper: Widget not mounted, skipping navigation');
+        return;
+      }
 
-        switch (result.status) {
-          case DriverVerificationStatus.noProfile:
-            print('👤 VehicleVerificationWrapper: No profile, navigating to CreateDriverProfileScreen');
-            // Navigate to create driver profile
+      switch (result.status) {
+        case DriverVerificationStatus.noProfile:
+          print('👤 VehicleVerificationWrapper: No profile, navigating to CreateDriverProfileScreen');
+          // Navigate to create driver profile
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const CreateDriverProfileScreen(),
+            ),
+          );
+          break;
+
+        case DriverVerificationStatus.unverified:
+          // Check if driver is_verified is false - show document screen
+          // Otherwise show vehicle screen
+          if (result.driver != null && !result.driver!.isVerified) {
+            print('📄 VehicleVerificationWrapper: Driver not verified (is_verified=false), navigating to DriverDocumentsScreen');
+            // Driver profile exists but not verified - show document upload screen
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) => const CreateDriverProfileScreen(),
+                builder: (context) => const DriverDocumentsScreen(),
               ),
             );
-            break;
-
-          case DriverVerificationStatus.unverified:
-            // Check if driver is_verified is false - show document screen
-            // Otherwise show vehicle screen
-            if (result.driver != null && !result.driver!.isVerified) {
-              print('📄 VehicleVerificationWrapper: Driver not verified (is_verified=false), navigating to DriverDocumentsScreen');
-              // Driver profile exists but not verified - show document upload screen
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const DriverDocumentsScreen(),
-                ),
-              );
-            } else {
-              print('🚗 VehicleVerificationWrapper: No driver or other case, navigating to MyVehiclesScreen');
-              // No driver profile or other case - show vehicle management screen
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const MyVehiclesScreen(),
-                ),
-              );
-            }
-            break;
-
-          case DriverVerificationStatus.hasVerifiedVehicles:
-          case DriverVerificationStatus.fullyVerified:
-            print('✅ VehicleVerificationWrapper: Driver verified, navigating to MainNavigationScreen');
-            // Navigate to main app
+          } else {
+            print('🚗 VehicleVerificationWrapper: No driver or other case, navigating to MyVehiclesScreen');
+            // No driver profile or other case - show vehicle management screen
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) => const MainNavigationScreen(),
+                builder: (context) => const MyVehiclesScreen(),
               ),
             );
-            break;
-        }
-      });
+          }
+          break;
+
+        case DriverVerificationStatus.hasVerifiedVehicles:
+        case DriverVerificationStatus.fullyVerified:
+          print('✅ VehicleVerificationWrapper: Driver verified (status: ${result.status}), navigating to MainNavigationScreen');
+          print('✅ VehicleVerificationWrapper: Driver isVerified = ${result.driver?.isVerified}');
+          // Navigate to main app
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const MainNavigationScreen(),
+            ),
+          );
+          break;
+      }
     } catch (e) {
       print('❌ VehicleVerificationWrapper: Error checking status: $e');
       // On error, go to My Vehicles screen as fallback

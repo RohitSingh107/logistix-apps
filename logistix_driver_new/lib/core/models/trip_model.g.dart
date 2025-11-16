@@ -37,10 +37,8 @@ Trip _$TripFromJson(Map<String, dynamic> json) => Trip(
       updates: (json['updates'] as List<dynamic>?)
           ?.map((e) => TripUpdate.fromJson(e as Map<String, dynamic>))
           .toList(),
-      updatesCount: (json['updates_count'] as num?)?.toInt(),
-      latestUpdate: json['latest_update'] == null
-          ? null
-          : TripUpdate.fromJson(json['latest_update'] as Map<String, dynamic>),
+      updatesCount: Trip._updatesCountFromJson(json['updates_count']),
+      latestUpdate: Trip._latestUpdateFromJson(json['latest_update']),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -61,8 +59,8 @@ Map<String, dynamic> _$TripToJson(Trip instance) => <String, dynamic>{
       'is_payment_done': instance.isPaymentDone,
       'stop_points': instance.stopPoints,
       'updates': instance.updates,
-      'updates_count': instance.updatesCount,
-      'latest_update': instance.latestUpdate,
+      'updates_count': Trip._updatesCountToJson(instance.updatesCount),
+      'latest_update': Trip._latestUpdateToJson(instance.latestUpdate),
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
     };

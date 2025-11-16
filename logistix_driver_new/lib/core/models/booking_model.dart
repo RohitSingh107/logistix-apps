@@ -15,6 +15,7 @@ library;
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
 import 'stop_point_model.dart';
+import 'trip_model.dart';
 
 part 'booking_model.g.dart';
 
@@ -246,4 +247,31 @@ class BookingRequestRequest {
 
   factory BookingRequestRequest.fromJson(Map<String, dynamic> json) => _$BookingRequestRequestFromJson(json);
   Map<String, dynamic> toJson() => _$BookingRequestRequestToJson(this);
+}
+
+@JsonSerializable()
+class BookingAccept {
+  final String message;
+  final Trip trip;
+
+  const BookingAccept({
+    required this.message,
+    required this.trip,
+  });
+
+  factory BookingAccept.fromJson(Map<String, dynamic> json) => _$BookingAcceptFromJson(json);
+  Map<String, dynamic> toJson() => _$BookingAcceptToJson(this);
+}
+
+@JsonSerializable()
+class BookingAcceptRequest {
+  @JsonKey(name: 'booking_request_id')
+  final int bookingRequestId;
+
+  const BookingAcceptRequest({
+    required this.bookingRequestId,
+  });
+
+  factory BookingAcceptRequest.fromJson(Map<String, dynamic> json) => _$BookingAcceptRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$BookingAcceptRequestToJson(this);
 } 

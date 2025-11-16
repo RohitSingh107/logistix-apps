@@ -100,3 +100,27 @@ Map<String, dynamic> _$BookingRequestRequestToJson(
       'instructions': instance.instructions,
       'stop_points': instance.stopPoints,
     };
+
+BookingAccept _$BookingAcceptFromJson(Map<String, dynamic> json) =>
+    BookingAccept(
+      message: json['message'] as String,
+      trip: Trip.fromJson(json['trip'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$BookingAcceptToJson(BookingAccept instance) =>
+    <String, dynamic>{
+      'message': instance.message,
+      'trip': instance.trip,
+    };
+
+BookingAcceptRequest _$BookingAcceptRequestFromJson(
+        Map<String, dynamic> json) =>
+    BookingAcceptRequest(
+      bookingRequestId: (json['booking_request_id'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$BookingAcceptRequestToJson(
+        BookingAcceptRequest instance) =>
+    <String, dynamic>{
+      'booking_request_id': instance.bookingRequestId,
+    };

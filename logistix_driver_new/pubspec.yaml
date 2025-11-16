@@ -1,5 +1,5 @@
 name: logistix_driver
-description: A Flutter driver application for Logistix.
+description: A Flutter application for Logistix Partner.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -7,6 +7,7 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
+  sentry_flutter: ^9.8.0
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -59,6 +60,7 @@ dependencies:
   geolocator: ^14.0.2
 
 dev_dependencies:
+  sentry_dart_plugin: ^3.2.0
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
@@ -75,3 +77,8 @@ flutter:
   assets:
     - .env
     - assets/images/ 
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: true
+  project: flutter
+  org: logistix

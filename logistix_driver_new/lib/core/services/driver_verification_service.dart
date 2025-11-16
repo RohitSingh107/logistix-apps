@@ -51,8 +51,10 @@ class DriverVerificationService {
       Driver? driver;
       try {
         driver = await _driverRepository.getDriverProfile();
+        print('✅ DriverVerificationService: Driver profile fetched - ID: ${driver.id}, isVerified: ${driver.isVerified} (type: ${driver.isVerified.runtimeType})');
       } catch (e) {
         // Driver profile doesn't exist (404 or 500)
+        print('❌ DriverVerificationService: Driver profile not found: $e');
         return DriverVerificationResult(
           status: DriverVerificationStatus.noProfile,
           message: 'Driver profile not found. Please create your profile.',
@@ -74,23 +76,31 @@ class DriverVerificationService {
       );
 
       // Step 4: Determine status
-      if (driver.isVerified && hasVerifiedDocuments) {
-        // Fully verified driver with verified vehicles
+      // IMPORTANT: Check driver.isVerified FIRST - if true, always return fullyVerified
+      print('🔍 DriverVerificationService: Checking isVerified - value: ${driver.isVerified}, type: ${driver.isVerified.runtimeType}');
+      if (driver.isVerified == true) {
+        print('✅ DriverVerificationService: Driver is verified! Returning fullyVerified status');
+        // Driver is verified by admin - navigate to home screen regardless of document status
         return DriverVerificationResult(
           status: DriverVerificationStatus.fullyVerified,
           driver: driver,
           vehicleDocuments: vehicleDocuments,
-          hasVerifiedDocuments: true,
+          hasVerifiedDocuments: hasVerifiedDocuments,
           message: 'Driver fully verified and ready to start trips.',
         );
-      } else if (hasVerifiedDocuments) {
-        // Has verified vehicles but driver profile not fully verified
+      } else {
+        print('⚠️ DriverVerificationService: Driver is NOT verified (isVerified: ${driver.isVerified}), checking documents...');
+      }
+      
+      // Driver is NOT verified - check document status to determine next step
+      if (hasVerifiedDocuments) {
+        // Has verified documents but driver not verified yet (shouldn't happen, but handle it)
         return DriverVerificationResult(
           status: DriverVerificationStatus.hasVerifiedVehicles,
           driver: driver,
           vehicleDocuments: vehicleDocuments,
           hasVerifiedDocuments: true,
-          message: 'You have verified vehicles. You can start accepting trips.',
+          message: 'You have verified vehicles. Waiting for admin verification.',
         );
       } else if (vehicleDocuments.isNotEmpty) {
         // Has documents but none verified

@@ -60,10 +60,10 @@ class Trip extends BaseModel {
   @JsonKey(name: 'stop_points')
   final List<StopPoint>? stopPoints;
   final List<TripUpdate>? updates;
-  @JsonKey(name: 'updates_count')
-  final int? updatesCount;
-  @JsonKey(name: 'latest_update')
-  final TripUpdate? latestUpdate;
+  @JsonKey(name: 'updates_count', fromJson: _updatesCountFromJson, toJson: _updatesCountToJson)
+  final String? updatesCount;
+  @JsonKey(name: 'latest_update', fromJson: _latestUpdateFromJson, toJson: _latestUpdateToJson)
+  final String? latestUpdate;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @JsonKey(name: 'updated_at')
@@ -95,6 +95,33 @@ class Trip extends BaseModel {
   @override
   Map<String, dynamic> toJson() => _$TripToJson(this);
 
+  /// Convert updates_count from API format (int or String) to String
+  static String? _updatesCountFromJson(dynamic json) {
+    if (json == null) return null;
+    if (json is String) return json;
+    if (json is num) return json.toString();
+    return json.toString();
+  }
+
+  /// Convert updates_count String to API format
+  static dynamic _updatesCountToJson(String? updatesCount) {
+    if (updatesCount == null) return null;
+    return int.tryParse(updatesCount) ?? updatesCount;
+  }
+
+  /// Convert latest_update from API format (int or String) to String
+  static String? _latestUpdateFromJson(dynamic json) {
+    if (json == null) return null;
+    if (json is String) return json;
+    if (json is num) return json.toString();
+    return json.toString();
+  }
+
+  /// Convert latest_update String to API format
+  static dynamic _latestUpdateToJson(String? latestUpdate) {
+    return latestUpdate;
+  }
+
   /// Create a copy of this trip with updated fields
   Trip copyWith({
     int? id,
@@ -112,8 +139,8 @@ class Trip extends BaseModel {
     bool? isPaymentDone,
     List<StopPoint>? stopPoints,
     List<TripUpdate>? updates,
-    int? updatesCount,
-    TripUpdate? latestUpdate,
+    String? updatesCount,
+    String? latestUpdate,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -179,13 +206,16 @@ class Trip extends BaseModel {
   int get stopPointsCount => stopPoints?.length ?? 0;
 
   /// Get updates count
-  int get totalUpdates => updatesCount ?? 0;
+  int get totalUpdates {
+    if (updatesCount == null) return 0;
+    return int.tryParse(updatesCount!) ?? 0;
+  }
 
   /// Get latest update message
-  String get latestUpdateMessage => latestUpdate?.updateMessage ?? 'No updates available';
+  String get latestUpdateMessage => latestUpdate ?? 'No updates available';
 
   /// Get formatted latest update time
-  String get latestUpdateTime => latestUpdate?.formattedCreatedAt ?? 'N/A';
+  String get latestUpdateTime => latestUpdate ?? 'N/A';
 
   /// Check if trip has stop points
   bool get hasStopPoints => stopPoints != null && stopPoints!.isNotEmpty;

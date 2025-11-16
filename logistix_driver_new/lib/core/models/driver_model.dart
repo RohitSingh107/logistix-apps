@@ -37,7 +37,8 @@ class Driver {
   final String averageRating;
   @JsonKey(name: 'total_earnings')
   final double totalEarnings;
-  final Map<String, dynamic>? location;
+  @JsonKey(name: 'location', fromJson: _locationFromJson, toJson: _locationToJson)
+  final String location;
   @JsonKey(name: 'created_at')
   final DateTime? createdAt;
   @JsonKey(name: 'updated_at')
@@ -53,13 +54,51 @@ class Driver {
     this.fcmToken,
     required this.averageRating,
     required this.totalEarnings,
-    this.location,
+    required this.location,
     this.createdAt,
     this.updatedAt,
   });
 
   factory Driver.fromJson(Map<String, dynamic> json) => _$DriverFromJson(json);
   Map<String, dynamic> toJson() => _$DriverToJson(this);
+
+  /// Convert location from API format (Map or String) to String
+  static String _locationFromJson(dynamic json) {
+    if (json == null) {
+      return '';
+    }
+    if (json is String) {
+      return json;
+    }
+    if (json is Map<String, dynamic>) {
+      // If it's a Map with latitude and longitude, convert to string format
+      final lat = json['latitude']?.toString() ?? '';
+      final lng = json['longitude']?.toString() ?? '';
+      if (lat.isNotEmpty && lng.isNotEmpty) {
+        return 'SRID=4326;POINT ($lng $lat)';
+      }
+      return '';
+    }
+    return json.toString();
+  }
+
+  /// Convert location String to API format
+  static dynamic _locationToJson(String location) {
+    // Try to parse the location string back to Map if it's in POINT format
+    try {
+      final regex = RegExp(r'POINT \(([0-9.-]+) ([0-9.-]+)\)');
+      final match = regex.firstMatch(location);
+      if (match != null) {
+        return {
+          'longitude': double.parse(match.group(1)!),
+          'latitude': double.parse(match.group(2)!),
+        };
+      }
+    } catch (e) {
+      // If parsing fails, return as string
+    }
+    return location;
+  }
 }
 
 @JsonSerializable()
